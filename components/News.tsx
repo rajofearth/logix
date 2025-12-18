@@ -1,23 +1,28 @@
+"use client";
+
 import Image from "next/image";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function News() {
+    const { t } = useLanguage();
+
     const newsItems = [
         {
             image: "/news-van.png",
-            title: "Integration with SAP is now complete and fully operational.",
-            description: "Users can now integrate Logix with SAP for comprehensive financial and...",
+            title: t("newsItem1Title"),
+            description: t("newsItem1Desc"),
             date: "Dec 24",
         },
         {
             image: "/news-ev.png",
-            title: "Logix supports electric vehicles and fleet tools.",
-            description: "We've added tools for managing EV fleets, including battery level monito...",
+            title: t("newsItem2Title"),
+            description: t("newsItem2Desc"),
             date: "Dec 17",
         },
         {
             image: "/news-truck.png",
-            title: "Big data technology: The future of fleet optimization.",
-            description: "Real-time data analysis unlocks new opportunities for cost reduction and...",
+            title: t("newsItem3Title"),
+            description: t("newsItem3Desc"),
             date: "Dec 14",
         },
     ];
@@ -27,10 +32,10 @@ export function News() {
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                        News and updates.
+                        {t("newsTitle")}
                     </h2>
                     <p className="text-black/60 mx-auto max-w-lg">
-                        Stay up-to-date with the latest developments and innovations in fleet management.
+                        {t("newsSubtitle")}
                     </p>
                 </div>
 
@@ -60,10 +65,10 @@ export function News() {
 
                 <div className="flex items-center justify-center gap-4">
                     <button className="bg-black text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-black/80 transition-colors">
-                        Subscribe
+                        {t("newsSubscribe")}
                     </button>
                     <button className="bg-gray-100 text-black px-8 py-3 rounded-full text-sm font-bold hover:bg-gray-200 transition-colors">
-                        Show All
+                        {t("newsShowAll")}
                     </button>
                 </div>
             </div>

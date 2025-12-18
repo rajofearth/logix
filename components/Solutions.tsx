@@ -1,58 +1,63 @@
+"use client";
+
 import { SolutionLink } from "./SolutionLink";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export function Solutions() {
+    const { t } = useLanguage();
+
     return (
         <section className="bg-white py-24 px-4 overflow-visible">
             <div className="max-w-4xl mx-auto">
                 <div className="text-left text-3xl md:text-4xl font-semibold leading-[1.4] text-black">
-                    Our fleet management solutions include{" "}
+                    {t("solutionsHeadline")}{" "}
                     <SolutionLink
                         image="/tracking-preview.png"
-                        description="Track your trucks, vans, cars, trailers and assets with GPS tracking."
+                        description={t("solutionsTrackingDesc")}
                     >
-                        vehicle tracking
+                        {t("vehicleTracking").toLowerCase()}
                     </SolutionLink>{" "}
-                    for real-time updates and tools like{" "}
+                    for {t("en") === "en" ? "real-time updates" : "रिअल-टाइम अपडेट"} and tools like{" "}
                     <SolutionLink
                         image="/maintenance-preview.png"
-                        description="Optimize vehicle uptime with data-driven maintenance schedules."
+                        description={t("solutionsMaintenanceDesc")}
                     >
-                        predictive maintenance
+                        {t("predictiveMaintenance").toLowerCase()}
                     </SolutionLink>{" "}
                     to prevent breakdowns. We help streamline operations with{" "}
                     <SolutionLink
                         image="/workforce-preview.png"
-                        description="Manage your team efficiently with intelligent scheduling tools."
+                        description={t("solutionsWorkforceDesc")}
                     >
-                        workforce management
+                        {t("workforceManagement").toLowerCase()}
                     </SolutionLink>{" "}
                     and ensure{" "}
                     <SolutionLink
                         image="/maintenance-preview.png"
-                        description="Stay ahead of industry standards with automated compliance reporting."
+                        description={t("solutionsComplianceDesc")}
                     >
-                        regulatory compliance
+                        {t("regulatoryCompliance").toLowerCase()}
                     </SolutionLink>{" "}
                     and driver safety. Additionally, we support{" "}
                     <SolutionLink
                         image="/tracking-preview.png"
-                        description="Incentivize safe driving habits with detailed performance analytics."
+                        description={t("solutionsSustainabilityDesc")}
                     >
-                        sustainability efforts
+                        {t("solutionsSustainabilityEfforts")}
                     </SolutionLink>{" "}
                     and{" "}
                     <SolutionLink
                         image="/tracking-preview.png"
-                        description="Transition smoothly to electric fleets with range and charging data."
+                        description={t("solutionsEVDesc")}
                     >
-                        EV integration
+                        {t("solutionsEVIntegration")}
                     </SolutionLink>
                     , optimizing costs through efficient{" "}
                     <SolutionLink
                         image="/workforce-preview.png"
-                        description="Reduce administrative overhead with integrated business tools."
+                        description={t("solutionsBusinessDesc")}
                     >
-                        business administration
+                        {t("solutionsBusinessAdmin")}
                     </SolutionLink>
                     .
                 </div>

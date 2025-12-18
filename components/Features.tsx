@@ -1,22 +1,28 @@
+"use client";
+
+import { useLanguage } from "@/lib/LanguageContext";
+
 export function Features() {
+    const { t } = useLanguage();
+
     const features = [
         {
-            badge: "Time saving",
+            badge: t("featureTimeSaving"),
             stat: "20%",
-            substat: "less mundanity",
-            description: "Process automation frees you to focus on other tasks.",
+            substat: t("featureLessMundanity"),
+            description: t("featureTimeSavingDesc"),
         },
         {
-            badge: "Safety",
+            badge: t("featureSafety"),
             stat: "50%",
-            substat: "fewer accidents.",
-            description: "Analyzing driving behavior improves road safety.",
+            substat: t("featureFewerAccidents"),
+            description: t("featureSafetyDesc"),
         },
         {
-            badge: "Improving efficiency",
+            badge: t("featureEfficiency"),
             stat: "30%",
-            substat: "reduction in fuel costs.",
-            description: "Route optimization saves up to a third on fuel.",
+            substat: t("featureFuelReduction"),
+            description: t("featureEfficiencyDesc"),
         },
     ];
 
@@ -25,10 +31,10 @@ export function Features() {
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
-                        Useful for business.
+                        {t("featuresTitle")}
                     </h2>
                     <p className="text-black/60 max-w-xl mx-auto">
-                        Our technologies enhance business efficiency and driver safety.
+                        {t("featuresSubtitle")}
                     </p>
                 </div>
 
