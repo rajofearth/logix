@@ -1,10 +1,10 @@
-import { Navbar } from "@/components/Navbar";
-import { Hero } from "@/components/Hero";
-import { TruckDisplay } from "@/components/TruckDisplay";
-import { Features } from "@/components/Features";
-import { Results } from "@/components/Results";
-import { Solutions } from "@/components/Solutions";
-import { News } from "@/components/News";
+import { Navbar } from "@/components/layout/Navbar";
+import { Hero } from "@/components/sections/Hero";
+import { TruckDisplay } from "@/components/sections/TruckDisplay";
+import { Features } from "@/components/sections/Features";
+import { Results } from "@/components/sections/Results";
+import { Solutions } from "@/components/sections/Solutions";
+import { News } from "@/components/sections/News";
 
 export default function Page() {
     return (

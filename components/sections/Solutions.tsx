@@ -1,6 +1,6 @@
 "use client";
 
-import { SolutionLink } from "./SolutionLink";
+import { SolutionLink } from "@/components/shared/SolutionLink";
 import { useLanguage } from "@/lib/LanguageContext";
 
 export function Solutions() {
@@ -12,49 +12,53 @@ export function Solutions() {
                 <div className="text-left text-3xl md:text-4xl font-semibold leading-[1.4] text-black">
                     {t("solutionsHeadline")}{" "}
                     <SolutionLink
-                        image="/tracking-preview.png"
+                        image="/images/tracking-preview.png"
                         description={t("solutionsTrackingDesc")}
                     >
                         {t("vehicleTracking").toLowerCase()}
-                    </SolutionLink>{" "}
-                    for {t("en") === "en" ? "real-time updates" : "रिअल-टाइम अपडेट"} and tools like{" "}
+                    </SolutionLink>
+                    {t("solutionsFor")}
+                    {t("solutionsRealTimeUpdates")}
+                    {t("solutionsAndToolsLike")}{" "}
                     <SolutionLink
-                        image="/maintenance-preview.png"
+                        image="/images/maintenance-preview.png"
                         description={t("solutionsMaintenanceDesc")}
                     >
                         {t("predictiveMaintenance").toLowerCase()}
-                    </SolutionLink>{" "}
-                    to prevent breakdowns. We help streamline operations with{" "}
+                    </SolutionLink>
+                    {t("solutionsToPreventBreakdowns")}
+                    {t("solutionsStreamlineOperations")}
                     <SolutionLink
-                        image="/workforce-preview.png"
+                        image="/images/workforce-preview.png"
                         description={t("solutionsWorkforceDesc")}
                     >
                         {t("workforceManagement").toLowerCase()}
-                    </SolutionLink>{" "}
-                    and ensure{" "}
+                    </SolutionLink>
+                    {t("solutionsAndEnsure")}{" "}
                     <SolutionLink
-                        image="/maintenance-preview.png"
+                        image="/images/maintenance-preview.png"
                         description={t("solutionsComplianceDesc")}
                     >
                         {t("regulatoryCompliance").toLowerCase()}
-                    </SolutionLink>{" "}
-                    and driver safety. Additionally, we support{" "}
+                    </SolutionLink>
+                    {t("solutionsAndDriverSafety")}
+                    {t("solutionsAdditionallySupport")}{" "}
                     <SolutionLink
-                        image="/tracking-preview.png"
+                        image="/images/tracking-preview.png"
                         description={t("solutionsSustainabilityDesc")}
                     >
                         {t("solutionsSustainabilityEfforts")}
-                    </SolutionLink>{" "}
-                    and{" "}
+                    </SolutionLink>
+                    {t("solutionsAndConnective")}{" "}
                     <SolutionLink
-                        image="/tracking-preview.png"
+                        image="/images/tracking-preview.png"
                         description={t("solutionsEVDesc")}
                     >
                         {t("solutionsEVIntegration")}
                     </SolutionLink>
-                    , optimizing costs through efficient{" "}
+                    {t("solutionsOptimizingCosts")}
                     <SolutionLink
-                        image="/workforce-preview.png"
+                        image="/images/workforce-preview.png"
                         description={t("solutionsBusinessDesc")}
                     >
                         {t("solutionsBusinessAdmin")}

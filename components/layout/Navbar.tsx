@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage, Language } from "@/lib/LanguageContext";
 
 const languages = [
   { code: "en", name: "English", flag: "🇺🇸" },
@@ -18,8 +18,6 @@ const languages = [
 
 export function Navbar() {
   const { language, setLanguage, t } = useLanguage();
-
-  const currentLang = languages.find(l => l.code === language) || languages[0];
 
   return (
     <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto w-full">
@@ -102,7 +100,7 @@ export function Navbar() {
             {languages.map((lang) => (
               <DropdownMenuItem
                 key={lang.code}
-                onClick={() => setLanguage(lang.code as any)}
+                onClick={() => setLanguage(lang.code as Language)}
                 className={`rounded-xl px-3 py-1.5 cursor-pointer transition-colors flex items-center justify-between ${language === lang.code ? 'bg-black/5 font-semibold' : 'focus:bg-black/5'}`}
               >
                 <div className="flex items-center gap-2">

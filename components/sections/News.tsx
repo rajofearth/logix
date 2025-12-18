@@ -8,19 +8,19 @@ export function News() {
 
     const newsItems = [
         {
-            image: "/news-van.png",
+            image: "/images/news-van.png",
             title: t("newsItem1Title"),
             description: t("newsItem1Desc"),
             date: "Dec 24",
         },
         {
-            image: "/news-ev.png",
+            image: "/images/news-ev.png",
             title: t("newsItem2Title"),
             description: t("newsItem2Desc"),
             date: "Dec 17",
         },
         {
-            image: "/news-truck.png",
+            image: "/images/news-truck.png",
             title: t("newsItem3Title"),
             description: t("newsItem3Desc"),
             date: "Dec 14",
