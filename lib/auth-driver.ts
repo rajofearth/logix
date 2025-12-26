@@ -43,29 +43,26 @@ export const driverAuth = betterAuth({
   },
   plugins: [
     phoneNumber({
-      sendOTP({ phoneNumber, code }, request) {
-        // Don't await - as per BetterAuth docs to prevent timing attacks
-        (async () => {
-          try {
-            if (client && accountSid) {
-              const message = await client.messages.create({
-                body: `Your Logix verification code is: ${code}`,
-                from: process.env.TWILIO_PHONE_NUMBER || '+1234567890',
-                to: phoneNumber,
-              });
-              console.log(`[SMS] OTP sent to ${phoneNumber}. Message SID: ${message.sid}`);
-            } else {
-              console.log(`[DEV] OTP for ${phoneNumber}: ${code}`);
-              console.warn("Twilio not configured. OTP logged to console instead of SMS.");
-            }
-          } catch (error) {
-            console.error(`[SMS] Failed to send OTP to ${phoneNumber}:`, error);
+      async sendOTP({ phoneNumber, code }, request) {
+        try {
+          if (client && accountSid) {
+            const message = await client.messages.create({
+              body: `Your Logix verification code is: ${code}`,
+              from: process.env.TWILIO_PHONE_NUMBER || '+1234567890',
+              to: phoneNumber,
+            });
+            console.log(`[SMS] OTP sent to ${phoneNumber}. Message SID: ${message.sid}`);
+          } else {
+            console.log(`[DEV] OTP for ${phoneNumber}: ${code}`);
+            console.warn("Twilio not configured. OTP logged to console instead of SMS.");
           }
-        })();
+        } catch (error) {
+          console.error(`[SMS] Failed to send OTP to ${phoneNumber}:`, error);
+          // Don't throw - let the OTP flow continue even if SMS fails
+        }
       },
       signUpOnVerification: {
         getTempEmail: (phoneNumber) => {
-          // Generate temp email from phone number for BetterAuth requirement
           return `${phoneNumber.replace(/\D/g, '')}@driver.logix.temp`;
         },
         getTempName: (phoneNumber) => {
