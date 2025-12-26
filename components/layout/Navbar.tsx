@@ -113,7 +113,7 @@ export function Navbar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <button className="bg-black text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-black/80 transition-75">
+        <button className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-medium hover:bg-primary/80 transition-75">
           {t("demo")}
         </button>
       </div>
