@@ -18,13 +18,51 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   )
 }
 
-function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
+function SelectValue({ 
+  className, 
+  placeholder,
+  children,
+  ...props 
+}: SelectPrimitive.Value.Props & {
+  placeholder?: string
+}) {
+  const content = React.useMemo(() => {
+    if (!placeholder) return children
+
+    const childFn =
+      typeof children === "function"
+        ? (children as (value: unknown) => React.ReactNode)
+        : undefined
+
+    const childNode = typeof children === "function" ? undefined : children
+
+    return (value: unknown) => {
+      const rendered = childFn ? childFn(value) : childNode
+      if (rendered != null) return rendered
+
+      if (value == null) return placeholder
+
+      if (
+        typeof value === "string" ||
+        typeof value === "number" ||
+        typeof value === "boolean" ||
+        typeof value === "bigint"
+      ) {
+        return String(value)
+      }
+
+      return placeholder
+    }
+  }, [children, placeholder])
+
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
       className={cn("flex flex-1 text-left", className)}
       {...props}
-    />
+    >
+      {content}
+    </SelectPrimitive.Value>
   )
 }
 
