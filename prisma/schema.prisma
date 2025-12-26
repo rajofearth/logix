@@ -9,40 +9,40 @@ datasource db {
 }
 
 model Driver {
-  id                      String        @id @default(uuid()) @db.Uuid
+  id                      String          @id @default(uuid()) @db.Uuid
   name                    String
-  dob                     DateTime?     @db.Date
-  photoUrl                String?       @map("photo_url")
-  aadharNo                String?       @unique @map("aadhar_no")
-  isAadharVerified        Boolean       @default(false) @map("is_aadhar_verified")
-  aadharCardFile          String?       @map("aadhar_card_file")
-  aadharCardFileKey       String?       @map("aadhar_card_file_key")
-  driverLicenseNo         String?       @unique @map("driver_license_no")
-  isDriverLicenseVerified Boolean       @default(false) @map("is_driver_license_verified")
-  driverLicenseFile       String?       @map("driver_license_file")
-  driverLicenseFileKey    String?       @map("driver_license_file_key")
-  panCardNo               String?       @unique @map("pan_card_no")
-  isPanCardVerified       Boolean       @default(false) @map("is_pan_card_verified")
-  panCardFile             String?       @map("pan_card_file")
-  panCardFileKey          String?       @map("pan_card_file_key")
-  createdAt               DateTime      @default(now()) @map("created_at")
-  updatedAt               DateTime      @updatedAt @map("updated_at")
+  dob                     DateTime?       @db.Date
+  photoUrl                String?         @map("photo_url")
+  aadharNo                String?         @unique @map("aadhar_no")
+  isAadharVerified        Boolean         @default(false) @map("is_aadhar_verified")
+  aadharCardFile          String?         @map("aadhar_card_file")
+  aadharCardFileKey       String?         @map("aadhar_card_file_key")
+  driverLicenseNo         String?         @unique @map("driver_license_no")
+  isDriverLicenseVerified Boolean         @default(false) @map("is_driver_license_verified")
+  driverLicenseFile       String?         @map("driver_license_file")
+  driverLicenseFileKey    String?         @map("driver_license_file_key")
+  panCardNo               String?         @unique @map("pan_card_no")
+  isPanCardVerified       Boolean         @default(false) @map("is_pan_card_verified")
+  panCardFile             String?         @map("pan_card_file")
+  panCardFileKey          String?         @map("pan_card_file_key")
+  createdAt               DateTime        @default(now()) @map("created_at")
+  updatedAt               DateTime        @updatedAt @map("updated_at")
   verifiedDriver          VerifiedDriver?
 
-  email         String
-  emailVerified Boolean   @default(false) @map("email_verified")
-  image         String?
-  phoneNumber   String?   @unique @map("phone_number")
-  phoneNumberVerified Boolean @default(false) @map("phone_number_verified")
-  sessions      Session[]
-  accounts      Account[]
+  email               String
+  emailVerified       Boolean   @default(false) @map("email_verified")
+  image               String?
+  phoneNumber         String?   @unique @map("phone_number")
+  phoneNumberVerified Boolean   @default(false) @map("phone_number_verified")
+  sessions            Session[]
+  accounts            Account[]
 
   @@map("users")
   @@unique([email])
 }
 
 model VerifiedDriver {
-  driverId    String   @id @map("user_id") @db.Uuid
+  driverId   String   @id @map("user_id") @db.Uuid
   isVerified Boolean  @default(false) @map("is_verified")
   createdAt  DateTime @default(now()) @map("created_at")
   driver     Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
@@ -87,28 +87,31 @@ model Account {
 }
 
 model AdminUser {
-  id              String   @id @default(uuid()) @db.Uuid
-  name            String
-  email           String   @unique
-  emailVerified   Boolean  @default(false) @map("email_verified")
-  image           String?  @map("profile_photo_url")
-  sessions        AdminSession[]
-  accounts        AdminAccount[]
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id            String         @id @default(uuid()) @db.Uuid
+  name          String
+  email         String         @unique
+  emailVerified Boolean        @default(false) @map("email_verified")
+  image         String?        @map("profile_photo_url")
+  sessions      AdminSession[]
+  accounts      AdminAccount[]
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+
+
 
   @@map("admin_users")
 }
 
 model AdminSession {
-  id        String   @id
+  id        String    @id
   expiresAt DateTime
   token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String   @db.Uuid @map("user_id")
+  userId    String    @db.Uuid @map("user_id")
   user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
