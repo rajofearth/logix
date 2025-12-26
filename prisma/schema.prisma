@@ -1,0 +1,38 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id                      String        @id @default(uuid()) @db.Uuid
+  name                    String
+  dob                     DateTime      @db.Date
+  photoUrl                String?       @map("photo_url")
+  aadharNo                String?       @unique @map("aadhar_no")
+  isAadharVerified        Boolean       @default(false) @map("is_aadhar_verified")
+  aadharCardFile          String?       @map("aadhar_card_file")
+  driverLicenseNo         String?       @unique @map("driver_license_no")
+  isDriverLicenseVerified Boolean       @default(false) @map("is_driver_license_verified")
+  driverLicenseFile       String?       @map("driver_license_file")
+  panCardNo               String?       @unique @map("pan_card_no")
+  isPanCardVerified       Boolean       @default(false) @map("is_pan_card_verified")
+  panCardFile             String?       @map("pan_card_file")
+  createdAt               DateTime      @default(now()) @map("created_at")
+  updatedAt               DateTime      @updatedAt @map("updated_at")
+  verifiedUser            VerifiedUser?
+
+  @@map("users")
+}
+
+model VerifiedUser {
+  userId     String   @id @map("user_id") @db.Uuid
+  isVerified Boolean  @default(false) @map("is_verified")
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("verified_users")
+}
