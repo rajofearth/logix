@@ -18,6 +18,8 @@ export const ourFileRouter = {
         headers: req.headers,
       });
 
+      if (!session?.user?.id) throw new UploadThingError("Unauthorized");
+
       return { adminUserId: session.user.id };
     })
     .onUploadComplete(async ({ metadata, file }) => {
