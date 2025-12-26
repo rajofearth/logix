@@ -8,7 +8,7 @@ import { News } from "@/components/sections/News";
 
 export default function Page() {
     return (
-        <main className="min-h-screen bg-white text-black selection:bg-black selection:text-white">
+        <main className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background">
             <Navbar />
             <Hero />
             <TruckDisplay />

@@ -27,13 +27,13 @@ export function Features() {
     ];
 
     return (
-        <section className="bg-white py-24 px-4">
+        <section className="bg-background py-24 px-4">
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4 text-foreground">
                         {t("featuresTitle")}
                     </h2>
-                    <p className="text-black/60 max-w-xl mx-auto">
+                    <p className="text-muted-foreground max-w-xl mx-auto">
                         {t("featuresSubtitle")}
                     </p>
                 </div>
@@ -42,18 +42,18 @@ export function Features() {
                     {features.map((feature, index) => (
                         <div
                             key={index}
-                            className="bg-white border border-gray-100 rounded-[2rem] p-10 shadow-sm hover:shadow-md transition-shadow"
+                            className="bg-card border border-border rounded-[2rem] p-10 shadow-sm hover:shadow-md transition-shadow"
                         >
-                            <span className="inline-block bg-gray-50 text-black/40 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-10">
+                            <span className="inline-block bg-muted text-muted-foreground text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full mb-10">
                                 {feature.badge}
                             </span>
                             <div className="mb-6">
-                                <div className="text-5xl font-bold mb-2">{feature.stat}</div>
-                                <div className="text-xl font-bold leading-tight">
+                                <div className="text-5xl font-bold mb-2 text-foreground">{feature.stat}</div>
+                                <div className="text-xl font-bold leading-tight text-foreground">
                                     {feature.substat}
                                 </div>
                             </div>
-                            <p className="text-black/40 text-sm leading-relaxed max-w-[200px]">
+                            <p className="text-muted-foreground text-sm leading-relaxed max-w-[200px]">
                                 {feature.description}
                             </p>
                         </div>

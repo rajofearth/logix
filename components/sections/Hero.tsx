@@ -12,15 +12,33 @@ export function Hero() {
     const titleSecondLine = titleParts.slice(3).join(' ');
 
     return (
-        <div className="flex flex-col items-center text-center px-4 pt-20 pb-16 max-w-4xl mx-auto">
-            <h1 className="text-6xl md:text-8xl font-bold tracking-tight mb-8 leading-[0.9]">
+        <div
+            className="flex flex-col items-center text-center px-4 pt-20 pb-16 max-w-4xl mx-auto"
+            style={{
+                backgroundColor: "var(--color-background)",
+                color: "var(--color-foreground)",
+            }}
+        >
+            <h1
+                className="text-6xl md:text-8xl font-bold tracking-tight mb-8 leading-[0.9]"
+                style={{ color: "var(--color-foreground)" }}
+            >
                 {titleFirstLine}<br />{titleSecondLine}
             </h1>
-            <p className="text-lg md:text-xl text-black/60 max-w-2xl leading-relaxed">
+            <p
+                className="text-lg md:text-xl max-w-2xl leading-relaxed"
+                style={{ color: "var(--color-muted-foreground)" }}
+            >
                 {t("heroSubtitle")}
             </p>
             <div className="mt-8">
-                <Button className="rounded-full px-8 py-6 text-base">
+                <Button
+                    className="rounded-full px-8 py-6 text-base"
+                    style={{
+                        backgroundColor: "var(--color-primary)",
+                        color: "var(--color-primary-foreground)"
+                    }}
+                >
                     {t("demo")}
                 </Button>
             </div>

@@ -7,9 +7,9 @@ export function Solutions() {
     const { t } = useLanguage();
 
     return (
-        <section className="bg-white py-24 px-4 overflow-visible">
+        <section className="bg-background py-24 px-4 overflow-visible">
             <div className="max-w-4xl mx-auto">
-                <div className="text-left text-3xl md:text-4xl font-semibold leading-[1.4] text-black">
+                <div className="text-left text-3xl md:text-4xl font-semibold leading-[1.4] text-foreground">
                     {t("solutionsHeadline")}{" "}
                     <SolutionLink
                         image="/images/tracking-preview.png"

@@ -18,11 +18,17 @@ interface SolutionLinkProps {
 export function SolutionLink({ children, image, description }: SolutionLinkProps) {
     return (
         <HoverCard>
-            <HoverCardTrigger className="cursor-pointer underline decoration-gray-300 underline-offset-4 hover:decoration-black transition-colors">
+            <HoverCardTrigger className="cursor-pointer underline decoration-border underline-offset-4 hover:decoration-foreground transition-colors">
                 {children}
             </HoverCardTrigger>
             <HoverCardContent
-                className="w-[280px] p-0 overflow-hidden rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] border-gray-100 bg-white"
+                className="w-[280px] p-0 overflow-hidden rounded-2xl
+                  shadow-2xl
+                  bg-background/80 
+                  backdrop-blur-md
+                  border border-border
+                  text-foreground
+                  animate-in fade-in zoom-in-95 duration-200"
                 sideOffset={16}
             >
                 <div className="relative h-32 w-full">
@@ -34,12 +40,12 @@ export function SolutionLink({ children, image, description }: SolutionLinkProps
                     />
                 </div>
                 <div className="p-5">
-                    <p className="text-sm text-black/60 leading-relaxed mb-4">
+                    <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                         {description}
                     </p>
                     <Link
                         href="#"
-                        className="text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all"
+                        className="text-xs font-bold flex items-center gap-1 hover:gap-2 transition-all text-foreground"
                     >
                         Show more <ArrowRight className="w-3 h-3" />
                     </Link>

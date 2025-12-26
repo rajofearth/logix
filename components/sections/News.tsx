@@ -28,13 +28,22 @@ export function News() {
     ];
 
     return (
-        <section className="bg-white py-24 px-4">
+        <section
+            className="py-24 px-4"
+            style={{ backgroundColor: "var(--color-background)" }}
+        >
             <div className="max-w-6xl mx-auto">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                    <h2
+                        className="text-4xl md:text-5xl font-bold tracking-tight mb-4"
+                        style={{ color: "var(--color-foreground)" }}
+                    >
                         {t("newsTitle")}
                     </h2>
-                    <p className="text-black/60 mx-auto max-w-lg">
+                    <p
+                        className="mx-auto max-w-lg"
+                        style={{ color: "var(--color-muted-foreground)" }}
+                    >
                         {t("newsSubtitle")}
                     </p>
                 </div>
@@ -50,13 +59,22 @@ export function News() {
                                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                                 />
                             </div>
-                            <h3 className="text-xl font-bold leading-tight mb-3 group-hover:text-black/70 transition-colors">
+                            <h3
+                                className="text-xl font-bold leading-tight mb-3 group-hover:opacity-80 transition-colors"
+                                style={{ color: "var(--color-foreground)" }}
+                            >
                                 {item.title}
                             </h3>
-                            <p className="text-black/40 text-sm mb-6 flex-grow">
+                            <p
+                                className="text-sm mb-6 flex-grow"
+                                style={{ color: "var(--color-muted-foreground)" }}
+                            >
                                 {item.description}
                             </p>
-                            <div className="text-black/20 text-xs font-bold uppercase tracking-wider">
+                            <div
+                                className="text-xs font-bold uppercase tracking-wider"
+                                style={{ color: "var(--color-border)" }}
+                            >
                                 {item.date}
                             </div>
                         </div>
@@ -64,10 +82,22 @@ export function News() {
                 </div>
 
                 <div className="flex items-center justify-center gap-4">
-                    <button className="bg-black text-white px-8 py-3 rounded-full text-sm font-bold hover:bg-black/80 transition-colors">
+                    <button
+                        className="px-8 py-3 rounded-full text-sm font-bold transition-colors"
+                        style={{
+                            backgroundColor: "var(--color-primary)",
+                            color: "var(--color-primary-foreground)",
+                        }}
+                    >
                         {t("newsSubscribe")}
                     </button>
-                    <button className="bg-gray-100 text-black px-8 py-3 rounded-full text-sm font-bold hover:bg-gray-200 transition-colors">
+                    <button
+                        className="px-8 py-3 rounded-full text-sm font-bold transition-colors"
+                        style={{
+                            backgroundColor: "var(--color-muted)",
+                            color: "var(--color-foreground)",
+                        }}
+                    >
                         {t("newsShowAll")}
                     </button>
                 </div>
