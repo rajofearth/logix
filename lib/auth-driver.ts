@@ -3,10 +3,9 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "node:crypto";
 
-// Website auth (admins)
-export const auth = betterAuth({
+export const driverAuth = betterAuth({
   advanced: {
-    cookiePrefix: "admin-auth",
+    cookiePrefix: "driver-auth",
     database: {
       generateId: () => randomUUID(),
     },
@@ -15,19 +14,21 @@ export const auth = betterAuth({
     provider: "postgresql",
   }),
   user: {
-    modelName: "AdminUser",
+    modelName: "Driver",
   },
   session: {
-    modelName: "AdminSession",
+    modelName: "Session",
   },
   account: {
-    modelName: "AdminAccount",
+    modelName: "Account",
   },
   verification: {
-    modelName: "AdminVerification",
+    modelName: "Verification",
   },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
   },
 });
+
+

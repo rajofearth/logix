@@ -1,21 +1,27 @@
-"use client"
+"use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
-import { Loader2, Key } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 
-export default function SignIn() {
+function sanitizeFrom(from: string | undefined): string | undefined {
+  if (!from) return undefined;
+  // Only allow internal paths to avoid open-redirects.
+  if (!from.startsWith("/") || from.startsWith("//")) return undefined;
+  return from;
+}
+
+export default function SignIn({ from }: Readonly<{ from?: string }>) {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
 
   return (
     <Card className="max-w-md">
@@ -51,23 +57,11 @@ export default function SignIn() {
                 id="password"
                 type="password"
                 placeholder="password"
-                autoComplete="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
-            <div className="flex items-center gap-2">
-                <Checkbox
-                  id="remember"
-                  onClick={() => {
-                    setRememberMe(!rememberMe);
-                  }}
-                />
-                <Label htmlFor="remember">Remember me</Label>
-              </div>
-
-          
 
           <Button
               type="submit"
@@ -80,11 +74,14 @@ export default function SignIn() {
                     password
                 },
                 {
-                  onRequest: (ctx) => {
+                  onRequest: () => {
                     setLoading(true);
                   },
-                  onResponse: (ctx) => {
+                  onResponse: () => {
                     setLoading(false);
+                  },
+                  onSuccess: () => {
+                    router.replace(sanitizeFrom(from) ?? "/dashboard");
                   },
                 },
                 );
@@ -102,6 +99,14 @@ export default function SignIn() {
           
         </div>
       </CardContent>
+      <CardFooter className="flex justify-center text-sm text-muted-foreground">
+        <p>
+          Don&apos;t have an account?{" "}
+          <Link href="/auth/sign-up" className="text-foreground underline underline-offset-4">
+            Sign up
+          </Link>
+        </p>
+      </CardFooter>
       
     </Card>
   );

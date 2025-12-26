@@ -8,10 +8,10 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
+model Driver {
   id                      String        @id @default(uuid()) @db.Uuid
   name                    String
-  dob                     DateTime      @db.Date
+  dob                     DateTime?     @db.Date
   photoUrl                String?       @map("photo_url")
   aadharNo                String?       @unique @map("aadhar_no")
   isAadharVerified        Boolean       @default(false) @map("is_aadhar_verified")
@@ -24,10 +24,10 @@ model User {
   panCardFile             String?       @map("pan_card_file")
   createdAt               DateTime      @default(now()) @map("created_at")
   updatedAt               DateTime      @updatedAt @map("updated_at")
-  verifiedUser            VerifiedUser?
+  verifiedDriver          VerifiedDriver?
 
   email         String
-  emailVerified Boolean   @default(false)
+  emailVerified Boolean   @default(false) @map("email_verified")
   image         String?
   sessions      Session[]
   accounts      Account[]
@@ -36,11 +36,11 @@ model User {
   @@unique([email])
 }
 
-model VerifiedUser {
-  userId     String   @id @map("user_id") @db.Uuid
+model VerifiedDriver {
+  driverId    String   @id @map("user_id") @db.Uuid
   isVerified Boolean  @default(false) @map("is_verified")
   createdAt  DateTime @default(now()) @map("created_at")
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  driver     Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@map("verified_users")
 }
@@ -53,8 +53,8 @@ model Session {
   updatedAt DateTime @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      Driver   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([token])
   @@index([userId])
@@ -65,8 +65,8 @@ model Account {
   id                    String    @id
   accountId             String
   providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String    @db.Uuid
+  user                  Driver    @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -79,6 +79,68 @@ model Account {
 
   @@index([userId])
   @@map("account")
+}
+
+model AdminUser {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  email           String   @unique
+  emailVerified   Boolean  @default(false) @map("email_verified")
+  image           String?  @map("profile_photo_url")
+  sessions        AdminSession[]
+  accounts        AdminAccount[]
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("admin_users")
+}
+
+model AdminSession {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid @map("user_id")
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@index([userId])
+  @@map("admin_session")
+}
+
+model AdminAccount {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid @map("user_id")
+  user                  AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("admin_account")
+}
+
+model AdminVerification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("admin_verification")
 }
 
 model Verification {
