@@ -32,6 +32,8 @@ model Driver {
   email         String
   emailVerified Boolean   @default(false) @map("email_verified")
   image         String?
+  phoneNumber   String?   @unique @map("phone_number")
+  phoneNumberVerified Boolean @default(false) @map("phone_number_verified")
   sessions      Session[]
   accounts      Account[]
 
