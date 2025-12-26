@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import {
   IconCreditCard,
   IconDotsVertical,
@@ -28,6 +29,8 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar'
+import { signOut } from '@/lib/auth-client'
+import { getInitials } from '@/lib/utils'
 
 export function NavUser({
   user,
@@ -35,18 +38,26 @@ export function NavUser({
   user: {
     name: string
     email: string
-    avatar: string
+    image?: string
   }
 }) {
   const { isMobile } = useSidebar()
+  const router = useRouter()
+
+  const handleLogout = async () => {
+    await signOut()
+    router.push("/auth/sign-in")
+  }
+
+  const initials = getInitials(user.name)
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
         <DropdownMenu>
           <DropdownMenuTrigger render={<SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground" />}><Avatar className="h-8 w-8 rounded-lg grayscale">
-                                  <AvatarImage src={user.avatar} alt={user.name} />
-                                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
+                                  <AvatarImage src={user.image} alt={user.name} />
+                                  <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
                                 </Avatar><div className="grid flex-1 text-left text-sm leading-tight">
                                   <span className="truncate font-medium">{user.name}</span>
                                   <span className="text-muted-foreground truncate text-xs">
@@ -59,20 +70,22 @@ export function NavUser({
             align="end"
             sideOffset={4}
           >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.name}</span>
-                  <span className="text-muted-foreground truncate text-xs">
-                    {user.email}
-                  </span>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                  <Avatar className="h-8 w-8 rounded-lg">
+                    <AvatarImage src={user.image} alt={user.name} />
+                    <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">{user.name}</span>
+                    <span className="text-muted-foreground truncate text-xs">
+                      {user.email}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            </DropdownMenuLabel>
+              </DropdownMenuLabel>
+            </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
@@ -89,7 +102,7 @@ export function NavUser({
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
               <IconLogout />
               Log out
             </DropdownMenuItem>
