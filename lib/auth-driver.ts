@@ -15,6 +15,7 @@ if (!accountSid || !authToken) {
 const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export const driverAuth = betterAuth({
+  basePath: "/api/auth/driver",
   advanced: {
     cookiePrefix: "driver-auth",
     database: {
