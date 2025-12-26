@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
+import { Slot } from "@radix-ui/react-slot"
 
 import { cn } from "@/lib/utils"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
@@ -14,9 +15,33 @@ function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
   return <MenuPrimitive.Portal data-slot="dropdown-menu-portal" {...props} />
 }
 
-function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-  return <MenuPrimitive.Trigger data-slot="dropdown-menu-trigger" {...props} />
-}
+const DropdownMenuTrigger = React.forwardRef<
+  HTMLButtonElement,
+  MenuPrimitive.Trigger.Props & { asChild?: boolean }
+>(({ asChild = false, children, ...props }, ref) => {
+  if (asChild) {
+    const child = React.Children.only(children) as React.ReactElement
+    // When asChild is true, pass the child to the render prop
+    // Base UI will merge the trigger props with the child's props
+    return (
+      <MenuPrimitive.Trigger
+        data-slot="dropdown-menu-trigger"
+        {...props}
+        render={child}
+      />
+    )
+  }
+  return (
+    <MenuPrimitive.Trigger
+      ref={ref}
+      data-slot="dropdown-menu-trigger"
+      {...props}
+    >
+      {children}
+    </MenuPrimitive.Trigger>
+  )
+})
+DropdownMenuTrigger.displayName = "DropdownMenuTrigger"
 
 function DropdownMenuContent({
   align = "start",
