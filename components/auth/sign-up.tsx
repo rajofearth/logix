@@ -13,9 +13,10 @@ import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import Image from "next/image";
 import { Loader2, X } from "lucide-react";
-import { signUp } from "@/lib/auth-client";
+import { authClient, signUp } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { uploadFiles } from "@/lib/uploadthing";
 
 export default function SignUp() {
 	const [firstName, setFirstName] = useState("");
@@ -119,8 +120,8 @@ export default function SignUp() {
 									<Image
 										src={imagePreview}
 										alt="Profile preview"
-										layout="fill"
-										objectFit="cover"
+										fill
+										className="object-cover"
 									/>
 								</div>
 							)}
@@ -149,11 +150,15 @@ export default function SignUp() {
 						className="w-full"
 						disabled={loading}
 						onClick={async () => {
+							if (password !== passwordConfirmation) {
+								toast.error("Passwords do not match");
+								return;
+							}
+
 							await signUp.email({
 								email,
 								password,
 								name: `${firstName} ${lastName}`,
-								image: image ? await convertImageToBase64(image) : "",
 								callbackURL: "/dashboard",
 								fetchOptions: {
 									onResponse: () => {
@@ -166,6 +171,22 @@ export default function SignUp() {
 										toast.error(ctx.error.message);
 									},
 									onSuccess: async () => {
+										if (image) {
+											try {
+												const uploaded = await uploadFiles("adminProfilePicture", {
+													files: [image],
+												});
+												const url = uploaded?.[0]?.url;
+												if (!url) throw new Error("Upload succeeded but URL is missing");
+
+												await authClient.updateUser({ image: url });
+											} catch (e) {
+												const message =
+													e instanceof Error ? e.message : "Failed to upload profile image";
+												toast.error(message);
+											}
+										}
+
 										router.push("/dashboard");
 									},
 								},
@@ -183,13 +204,4 @@ export default function SignUp() {
           
 		</Card>
 	);
-}
-
-async function convertImageToBase64(file: File): Promise<string> {
-	return new Promise((resolve, reject) => {
-		const reader = new FileReader();
-		reader.onloadend = () => resolve(reader.result as string);
-		reader.onerror = reject;
-		reader.readAsDataURL(file);
-	});
 }

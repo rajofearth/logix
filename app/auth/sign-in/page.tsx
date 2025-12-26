@@ -1,13 +1,14 @@
 import SignIn from "@/components/auth/sign-in";
 
 type SignInPageProps = {
-  searchParams?: {
+  searchParams?: Promise<{
     from?: string;
-  };
+  }>;
 };
 
-export default function SignInPage({ searchParams }: SignInPageProps) {
-  return <SignIn from={searchParams?.from} />;
+export default async function SignInPage({ searchParams }: SignInPageProps) {
+  const sp = await searchParams;
+  return <SignIn from={sp?.from} />;
 }
 
 
