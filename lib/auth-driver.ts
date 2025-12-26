@@ -70,8 +70,8 @@ export const driverAuth = betterAuth({
         },
       },
       otpLength: 6,
-      expiresIn: 120, // 2 minutes
-      allowedAttempts: 5, // Increase from default 3 to prevent 403 during testing
+      expiresIn: 60, // 1 minute - short for testing, increase for production
+      allowedAttempts: 10, // High limit for testing
     }),
   ],
 });
