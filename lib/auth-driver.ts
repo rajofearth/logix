@@ -16,6 +16,7 @@ const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export const driverAuth = betterAuth({
   basePath: "/api/auth/driver",
+  trustedOrigins: ["*,loctracker://*"], // Allow all origins for mobile app
   advanced: {
     cookiePrefix: "driver-auth",
     database: {
