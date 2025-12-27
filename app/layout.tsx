@@ -34,6 +34,7 @@ export const metadata: Metadata = {
 
 import { LanguageProvider } from "@/lib/LanguageContext";
 import { ThemeProvider } from "@/components/theme/theme-provider";
+import { Toaster } from "@/ui/sonner";
 
 export default function RootLayout({
   children,
@@ -48,6 +49,7 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>{children}</LanguageProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );
