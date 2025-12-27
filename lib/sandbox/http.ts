@@ -27,13 +27,26 @@ export async function sandboxPost<TReq extends object, TResData>(
   });
 
   const json = (await res.json()) as SandboxResponse<TResData>;
+  
+  // Check if response has error structure even if status is ok
+  if ("error" in json || ("message" in json && !("data" in json))) {
+    const errorMsg =
+      json && typeof json === "object" && "message" in json && typeof json.message === "string"
+        ? json.message
+        : `Sandbox request failed (${res.status})`;
+    console.error(`[Sandbox] API error response:`, JSON.stringify(json, null, 2));
+    throw new Error(errorMsg);
+  }
+  
   if (!res.ok) {
     const msg =
       json && typeof json === "object" && "message" in json && typeof json.message === "string"
         ? json.message
         : `Sandbox request failed (${res.status})`;
+    console.error(`[Sandbox] HTTP error (${res.status}):`, JSON.stringify(json, null, 2));
     throw new Error(msg);
   }
+  
   return json;
 }
 
