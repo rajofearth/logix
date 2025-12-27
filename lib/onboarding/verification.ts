@@ -30,7 +30,10 @@ export async function recomputeDriverVerified(driverId: string): Promise<{
   await prisma.verifiedDriver.upsert({
     where: { driverId },
     create: { driverId, isVerified },
-    update: { isVerified },
+    update: { 
+      isVerified,
+      // Don't update completedAt here - only set it explicitly in finalize route
+    },
   });
 
   return { isVerified };

@@ -61,10 +61,11 @@ model Driver {
 }
 
 model VerifiedDriver {
-  driverId   String   @id @map("user_id") @db.Uuid
-  isVerified Boolean  @default(false) @map("is_verified")
-  createdAt  DateTime @default(now()) @map("created_at")
-  driver     Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  driverId    String    @id @map("user_id") @db.Uuid
+  isVerified  Boolean   @default(false) @map("is_verified")
+  completedAt DateTime? @map("completed_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  driver      Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@map("verified_users")
 }
