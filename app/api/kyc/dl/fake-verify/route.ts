@@ -7,14 +7,19 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as { drivingLicenseNo?: string; phoneNumber?: string };
+    let body: { drivingLicenseNo?: string; phoneNumber?: string } = {};
+    try {
+      body = (await req.json()) as { drivingLicenseNo?: string; phoneNumber?: string };
+    } catch (e) {
+      return jsonError("Invalid JSON body", 400);
+    }
     
     // Use lenient auth - allows phone verification fallback for onboarding
     const { driverId } = await requireDriverSessionOrPhoneVerified(
       req.headers,
       body.phoneNumber,
     );
-    const drivingLicenseNo = body.drivingLicenseNo?.trim().toUpperCase();
+    const drivingLicenseNo = body.drivingLicenseNo?.trim()?.toUpperCase();
     if (!drivingLicenseNo) return jsonError("drivingLicenseNo is required", 422);
 
     const driver = await prisma.driver.findUnique({
@@ -36,7 +41,8 @@ export async function POST(req: Request) {
     return jsonOk({ isDriverLicenseVerified: true, isVerified });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
-    if (msg === "Unauthorized") return jsonError("Unauthorized", 401);
+    console.error("[DL fake-verify] Error:", e);
+    if (msg === "Unauthorized" || msg.includes("Unauthorized")) return jsonError("Unauthorized", 401);
     return jsonError(msg, 500);
   }
 }
