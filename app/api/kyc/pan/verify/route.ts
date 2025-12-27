@@ -90,9 +90,17 @@ export async function POST(req: Request) {
       );
     }
 
+    const nameAsPerPan = driver.name?.trim();
+    if (!nameAsPerPan) {
+      return jsonError(
+        "Name is required for PAN verification. Please verify your Aadhaar first to get your name.",
+        409,
+      );
+    }
+
     const resp = await sandboxPanVerifyDetails({
       pan,
-      nameAsPerPan: driver.name,
+      nameAsPerPan,
       dateOfBirth: toDdMmYyyy(dobToUse),
       reason: "For KYC",
     });

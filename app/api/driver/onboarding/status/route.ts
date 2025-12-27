@@ -90,6 +90,7 @@ export async function GET(req: Request) {
       isVerified,
       // Include driver data for reference
       driver: {
+        name: driver.name,
         phoneNumber: driver.phoneNumber,
         aadharNo: driver.aadharNo,
         panCardNo: driver.panCardNo,

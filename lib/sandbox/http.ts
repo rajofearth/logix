@@ -15,7 +15,9 @@ export async function sandboxPost<TReq extends object, TResData>(
   const token = await getSandboxAccessToken();
   const apiKeyPrefix = cfg.apiKey.startsWith("key_test_") ? "test" : cfg.apiKey.startsWith("key_live_") ? "live" : "unknown";
   const url = `${cfg.baseUrl}${path}`;
+  const bodyStr = JSON.stringify(body);
   console.log(`[Sandbox] Request to ${url} (API key: ${apiKeyPrefix}, baseUrl: ${cfg.baseUrl})`);
+  console.log(`[Sandbox] Request body:`, bodyStr);
   const res = await fetch(url, {
     method: "POST",
     headers: {
@@ -26,7 +28,7 @@ export async function sandboxPost<TReq extends object, TResData>(
       // IMPORTANT: Sandbox token is NOT a bearer token
       authorization: token,
     },
-    body: JSON.stringify(body),
+    body: bodyStr,
   });
 
   const json = (await res.json()) as SandboxResponse<TResData>;
