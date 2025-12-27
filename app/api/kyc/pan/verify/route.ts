@@ -25,8 +25,8 @@ function toDdMmYyyy(date: Date): string {
   const dd = String(date.getUTCDate()).padStart(2, "0");
   const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
   const yyyy = String(date.getUTCFullYear());
-  // Sandbox PAN verify expects dd/mm/yyyy format (slashes, not dashes)
-  return `${dd}/${mm}/${yyyy}`;
+  // Sandbox PAN verify expects dd-mm-yyyy format (dashes, matching Aadhaar response format)
+  return `${dd}-${mm}-${yyyy}`;
 }
 
 function parseDobFromClient(dob: string): Date | null {
