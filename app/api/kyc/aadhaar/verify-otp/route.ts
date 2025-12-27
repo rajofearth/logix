@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { sandboxAadhaarVerifyOtp } from "@/lib/sandbox/kyc";
-import { requireDriverSession } from "@/app/api/_utils/driver-session";
+import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { recomputeDriverVerified } from "@/lib/onboarding/verification";
 
@@ -18,8 +18,13 @@ function parseDdMmYyyy(dateStr: string): Date | null {
 
 export async function POST(req: Request) {
   try {
-    const { driverId } = await requireDriverSession(req.headers);
-    const body = (await req.json()) as { otp?: string };
+    const body = (await req.json()) as { otp?: string; phoneNumber?: string };
+    
+    // Use lenient auth - allows phone verification fallback for onboarding
+    const { driverId } = await requireDriverSessionOrPhoneVerified(
+      req.headers,
+      body.phoneNumber
+    );
     const otp = body.otp?.trim();
     if (!otp) return jsonError("otp is required", 422);
 

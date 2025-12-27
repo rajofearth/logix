@@ -1,13 +1,19 @@
 import { prisma } from "@/lib/prisma";
 import { sandboxPanAadhaarLinkStatus } from "@/lib/sandbox/kyc";
-import { requireDriverSession } from "@/app/api/_utils/driver-session";
+import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { driverId } = await requireDriverSession(req.headers);
+    const body = (await req.json()) as { phoneNumber?: string };
+    
+    // Use lenient auth - allows phone verification fallback for onboarding
+    const { driverId } = await requireDriverSessionOrPhoneVerified(
+      req.headers,
+      body.phoneNumber
+    );
 
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },

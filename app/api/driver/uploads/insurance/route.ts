@@ -1,16 +1,42 @@
 import { prisma } from "@/lib/prisma";
-import { requireDriverSession } from "@/app/api/_utils/driver-session";
+import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
-import { requireFormFile, utapi } from "../_utils";
+import { utapi } from "../_utils";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { driverId } = await requireDriverSession(req.headers);
-    const file = await requireFormFile(req);
+    // Extract phone number and file from form data
+    const form = await req.formData();
+    const phoneNumber = form.get("phoneNumber")?.toString();
+    const file = form.get("file");
+    
+    if (!file) {
+      return jsonError("file is required", 422);
+    }
+    
+    // Handle File (browser) format
+    let fileObj: File;
+    if (file instanceof File) {
+      fileObj = file;
+    } else if (typeof file === "object" && "stream" in file) {
+      // Handle Blob or other file-like objects (React Native)
+      const blob = file as Blob;
+      const fileWithName = blob as Blob & { name?: string };
+      const fileName = fileWithName.name || "upload";
+      fileObj = new File([blob], fileName, { type: blob.type || "application/octet-stream" });
+    } else {
+      return jsonError("file must be a File or Blob", 422);
+    }
+    
+    // Use lenient auth - allows phone verification fallback for onboarding
+    const { driverId } = await requireDriverSessionOrPhoneVerified(
+      req.headers,
+      phoneNumber
+    );
 
-    const result = await utapi.uploadFiles([file]);
+    const result = await utapi.uploadFiles([fileObj]);
     const uploadResult = result[0];
     if (!uploadResult || uploadResult.error || !uploadResult.data) {
       return jsonError(uploadResult?.error?.message ?? "Upload failed", 502);
