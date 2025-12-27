@@ -102,7 +102,7 @@ export async function POST(req: Request) {
       pan,
       nameAsPerPan,
       dateOfBirth: toDdMmYyyy(dobToUse),
-      reason: "For KYC",
+      reason: "For KYC verification and onboarding process",
     });
     if (!("data" in resp)) return jsonError("Sandbox error", 502);
 
