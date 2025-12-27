@@ -176,7 +176,7 @@ export default function SignUp() {
 												const uploaded = await uploadFiles("adminProfilePicture", {
 													files: [image],
 												});
-												const url = uploaded?.[0]?.url;
+												const url = uploaded?.[0]?.ufsUrl;
 												if (!url) throw new Error("Upload succeeded but URL is missing");
 
 												await authClient.updateUser({ image: url });

@@ -46,10 +46,10 @@ export async function POST(req: Request) {
 
     await prisma.driver.update({
       where: { id: driverId },
-      data: { aadharCardFile: uploaded.url, aadharCardFileKey: uploaded.key },
+      data: { aadharCardFile: uploaded.ufsUrl, aadharCardFileKey: uploaded.key },
     });
 
-    return jsonOk({ url: uploaded.url, fileKey: uploaded.key });
+    return jsonOk({ url: uploaded.ufsUrl, fileKey: uploaded.key });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     if (msg === "Unauthorized") return jsonError("Unauthorized", 401);

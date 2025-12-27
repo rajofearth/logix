@@ -56,13 +56,30 @@ export async function GET(req: Request) {
         insuranceNo: true,
         isInsuranceVerified: true,
         insuranceFileKey: true,
-        verifiedDriver: { select: { isVerified: true } },
+        // Safely include verifiedDriver relation (may not exist for all drivers)
+        verifiedDriver: { 
+          select: { isVerified: true } 
+        },
       },
     });
 
     if (!driver) return jsonError("Driver not found", 404);
 
     const nextStep = computeNextStep(driver);
+    
+    // Compute isVerified from individual flags if verifiedDriver relation doesn't exist
+    // This matches the logic in recomputeDriverVerified
+    const isVerifiedFromFlags = 
+      driver.phoneNumberVerified &&
+      driver.isAadharVerified &&
+      driver.isPanCardVerified &&
+      driver.isDriverLicenseVerified &&
+      driver.isVehiclePlateVerified &&
+      driver.isInsuranceVerified;
+    
+    // Use verifiedDriver relation if available, otherwise compute from flags
+    const isVerified = driver.verifiedDriver?.isVerified ?? isVerifiedFromFlags;
+    
     return jsonOk({
       step: nextStep,
       phoneNumberVerified: driver.phoneNumberVerified,
@@ -70,7 +87,7 @@ export async function GET(req: Request) {
       panVerified: driver.isPanCardVerified,
       driverLicenseVerified: driver.isDriverLicenseVerified,
       vehicleVerified: driver.isVehiclePlateVerified && driver.isInsuranceVerified,
-      isVerified: driver.verifiedDriver?.isVerified ?? false,
+      isVerified,
       // Include driver data for reference
       driver: {
         phoneNumber: driver.phoneNumber,

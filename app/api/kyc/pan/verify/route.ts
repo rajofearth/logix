@@ -35,9 +35,13 @@ export async function POST(req: Request) {
       },
     });
     if (!driver) return jsonError("Driver not found", 404);
-    if (driver.isPanCardVerified) return jsonOk({ alreadyVerified: true });
-    if (!driver.panCardFileKey) return jsonError("Upload PAN document first", 409);
-    if (!driver.dob) return jsonError("DOB missing. Verify Aadhaar first.", 409);
+    if (driver.isPanCardVerified) return jsonOk({ verified: true, alreadyVerified: true });
+    if (!driver.panCardFileKey) {
+      return jsonError("Please upload your PAN document first before verification", 409);
+    }
+    if (!driver.dob) {
+      return jsonError("Date of birth is required. Please verify your Aadhaar first to proceed with PAN verification.", 409);
+    }
 
     const resp = await sandboxPanVerifyDetails({
       pan,
@@ -57,7 +61,7 @@ export async function POST(req: Request) {
     });
 
     const { isVerified } = await recomputeDriverVerified(driverId);
-    return jsonOk({ isPanCardVerified: true, isVerified });
+    return jsonOk({ verified: true, isPanCardVerified: true, isVerified });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
     if (msg === "Unauthorized") return jsonError("Unauthorized", 401);
