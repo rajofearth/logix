@@ -59,9 +59,8 @@ export async function sandboxPanVerifyDetails(params: {
    * - Auth: authorization header is the Sandbox JWT access token (NOT Bearer)
    * - Request body keys follow Sandbox naming: name_as_per_pan, date_of_birth, consent, reason
    */
-  // Official Sandbox docs show @entity as empty string for PAN verify
   const body: PanVerifyDetailsRequest = {
-    "@entity": "",
+    "@entity": "in.co.sandbox.kyc.pan_verification.request",
     pan: params.pan,
     name_as_per_pan: params.nameAsPerPan,
     date_of_birth: params.dateOfBirth,

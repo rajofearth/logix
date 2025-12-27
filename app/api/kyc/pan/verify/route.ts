@@ -21,12 +21,11 @@ export const runtime = "nodejs";
  * - Body: { pan, name_as_per_pan, date_of_birth: "dd-mm-yyyy", consent: "Y", reason }
  * - Response envelope: { code, timestamp, transaction_id, data: {...} }
  */
-function toDdMmYyyy(date: Date): string {
+function toDdSlashMmSlashYyyy(date: Date): string {
   const dd = String(date.getUTCDate()).padStart(2, "0");
   const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
   const yyyy = String(date.getUTCFullYear());
-  // Sandbox PAN verify expects dd-mm-yyyy format (dashes, matching Aadhaar response format)
-  return `${dd}-${mm}-${yyyy}`;
+  return `${dd}/${mm}/${yyyy}`;
 }
 
 function parseDobFromClient(dob: string): Date | null {
@@ -102,8 +101,8 @@ export async function POST(req: Request) {
     const resp = await sandboxPanVerifyDetails({
       pan,
       nameAsPerPan,
-      dateOfBirth: toDdMmYyyy(dobToUse),
-      reason: "For KYC verification and onboarding process",
+      dateOfBirth: toDdSlashMmSlashYyyy(dobToUse),
+      reason: "For KYC",
     });
     if (!("data" in resp)) return jsonError("Sandbox error", 502);
 
