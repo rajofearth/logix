@@ -40,9 +40,22 @@ export async function POST(req: Request) {
     const { isVerified } = await recomputeDriverVerified(driverId);
     return jsonOk({ isDriverLicenseVerified: true, isVerified });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : "Unknown error";
+    const msg = e instanceof Error ? e.message : String(e);
     console.error("[DL fake-verify] Error:", e);
-    if (msg === "Unauthorized" || msg.includes("Unauthorized")) return jsonError("Unauthorized", 401);
+    
+    // Check for unauthorized errors (including nested error messages)
+    const errorStr = String(e);
+    if (
+      msg === "Unauthorized" ||
+      msg.includes("Unauthorized") ||
+      errorStr.includes("Unauthorized")
+    ) {
+      // Provide helpful message if phone number is missing
+      if (msg.includes("no phone number provided") || errorStr.includes("no phone number provided")) {
+        return jsonError("Session expired. Please provide phoneNumber in request body for onboarding.", 401);
+      }
+      return jsonError("Unauthorized", 401);
+    }
     return jsonError(msg, 500);
   }
 }
