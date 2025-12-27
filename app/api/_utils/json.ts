@@ -5,7 +5,9 @@ export function jsonOk<T>(data: T, init?: ResponseInit) {
 }
 
 export function jsonError(message: string, status = 400) {
-  return NextResponse.json({ error: { message } }, { status });
+  // Include both nested and top-level message for compatibility
+  // Some clients check body.message, others check body.error.message
+  return NextResponse.json({ error: { message }, message }, { status });
 }
 
 

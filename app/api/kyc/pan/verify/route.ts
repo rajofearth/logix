@@ -6,6 +6,21 @@ import { recomputeDriverVerified } from "@/lib/onboarding/verification";
 
 export const runtime = "nodejs";
 
+/**
+ * Internal API: POST /api/kyc/pan/verify
+ *
+ * - Request JSON: { pan: string, phoneNumber?: string }
+ * - Auth: prefers driver session, falls back to verified phoneNumber for onboarding
+ * - 409 Conflict when prerequisites are missing:
+ *   - PAN document not uploaded (missing panCardFileKey)
+ *   - Aadhaar not verified yet (missing dob, used for PAN verification)
+ *
+ * External dependency (Sandbox):
+ * - POST https://api.sandbox.co.in/kyc/pan
+ * - Headers: x-api-key, x-api-version, authorization (token, NOT Bearer), JSON content-type
+ * - Body: { pan, name_as_per_pan, date_of_birth: "dd-mm-yyyy", consent: "Y", reason }
+ * - Response envelope: { code, timestamp, transaction_id, data: {...} }
+ */
 function toDdMmYyyy(date: Date): string {
   const dd = String(date.getUTCDate()).padStart(2, "0");
   const mm = String(date.getUTCMonth() + 1).padStart(2, "0");
