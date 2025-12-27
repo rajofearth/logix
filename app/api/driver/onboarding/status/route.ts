@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireDriverSession } from "@/app/api/_utils/driver-session";
+import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 
 export const runtime = "nodejs";
@@ -23,7 +23,15 @@ function computeNextStep(d: {
 
 export async function GET(req: Request) {
   try {
-    const { driverId } = await requireDriverSession(req.headers);
+    // Extract phone number from query params for lenient auth
+    const url = new URL(req.url);
+    const phoneNumber = url.searchParams.get("phoneNumber") || undefined;
+    
+    // Use lenient auth - allows phone verification fallback for onboarding
+    const { driverId } = await requireDriverSessionOrPhoneVerified(
+      req.headers,
+      phoneNumber
+    );
 
     const driver = await prisma.driver.findUnique({
       where: { id: driverId },
@@ -56,9 +64,22 @@ export async function GET(req: Request) {
 
     const nextStep = computeNextStep(driver);
     return jsonOk({
-      driver,
-      nextStep,
-      isAccountVerified: driver.verifiedDriver?.isVerified ?? false,
+      step: nextStep,
+      phoneNumberVerified: driver.phoneNumberVerified,
+      aadhaarVerified: driver.isAadharVerified,
+      panVerified: driver.isPanCardVerified,
+      driverLicenseVerified: driver.isDriverLicenseVerified,
+      vehicleVerified: driver.isVehiclePlateVerified && driver.isInsuranceVerified,
+      isVerified: driver.verifiedDriver?.isVerified ?? false,
+      // Include driver data for reference
+      driver: {
+        phoneNumber: driver.phoneNumber,
+        aadharNo: driver.aadharNo,
+        panCardNo: driver.panCardNo,
+        driverLicenseNo: driver.driverLicenseNo,
+        vehiclePlateNo: driver.vehiclePlateNo,
+        insuranceNo: driver.insuranceNo,
+      },
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Unknown error";
