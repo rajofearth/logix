@@ -8,6 +8,12 @@ datasource db {
   provider = "postgresql"
 }
 
+enum VehicleOwnerType {
+  self
+  company
+  rented
+}
+
 model Driver {
   id                      String          @id @default(uuid()) @db.Uuid
   name                    String
@@ -15,6 +21,8 @@ model Driver {
   photoUrl                String?         @map("photo_url")
   aadharNo                String?         @unique @map("aadhar_no")
   isAadharVerified        Boolean         @default(false) @map("is_aadhar_verified")
+  aadhaarOtpReferenceId   String?         @map("aadhaar_otp_reference_id")
+  aadhaarOtpGeneratedAt   DateTime?       @map("aadhaar_otp_generated_at")
   aadharCardFile          String?         @map("aadhar_card_file")
   aadharCardFileKey       String?         @map("aadhar_card_file_key")
   driverLicenseNo         String?         @unique @map("driver_license_no")
@@ -23,8 +31,19 @@ model Driver {
   driverLicenseFileKey    String?         @map("driver_license_file_key")
   panCardNo               String?         @unique @map("pan_card_no")
   isPanCardVerified       Boolean         @default(false) @map("is_pan_card_verified")
+  panAadhaarLinkStatus    String?         @map("pan_aadhaar_link_status")
+  panAadhaarLinkCheckedAt DateTime?       @map("pan_aadhaar_link_checked_at")
   panCardFile             String?         @map("pan_card_file")
   panCardFileKey          String?         @map("pan_card_file_key")
+
+  vehicleOwnerType       VehicleOwnerType? @map("vehicle_owner_type")
+  vehiclePlateNo         String?           @map("vehicle_plate_no")
+  isVehiclePlateVerified Boolean           @default(false) @map("is_vehicle_plate_verified")
+  insuranceNo            String?           @map("insurance_no")
+  isInsuranceVerified    Boolean           @default(false) @map("is_insurance_verified")
+  insuranceFile          String?           @map("insurance_file")
+  insuranceFileKey       String?           @map("insurance_file_key")
+
   createdAt               DateTime        @default(now()) @map("created_at")
   updatedAt               DateTime        @updatedAt @map("updated_at")
   verifiedDriver          VerifiedDriver?
