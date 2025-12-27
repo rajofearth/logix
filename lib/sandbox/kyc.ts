@@ -35,8 +35,7 @@ export async function sandboxAadhaarVerifyOtp(params: {
   const cfg = getSandboxConfig();
   const referenceIdTrimmed = params.referenceId.trim();
   const body: AadhaarVerifyOtpRequest = {
-    // Sandbox docs show allowed value as empty string.
-    "@entity": "",
+    "@entity": "in.co.sandbox.kyc.aadhaar.okyc.request",
     reference_id: referenceIdTrimmed,
     otp: params.otp,
   };
