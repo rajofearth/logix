@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 /**
  * Internal API: POST /api/kyc/pan/verify
  *
- * - Request JSON: { pan: string, phoneNumber?: string }
+ * - Request JSON: { pan: string, dob?: string, phoneNumber?: string }
  * - Auth: prefers driver session, falls back to verified phoneNumber for onboarding
  * - 409 Conflict when prerequisites are missing:
  *   - PAN document not uploaded (missing panCardFileKey)
@@ -28,14 +28,35 @@ function toDdMmYyyy(date: Date): string {
   return `${dd}-${mm}-${yyyy}`;
 }
 
+function parseDobFromClient(dob: string): Date | null {
+  // Accept "DD/MM/YYYY" (mobile) and "DD-MM-YYYY" (internal)
+  const m = /^(\d{2})[/-](\d{2})[/-](\d{4})$/.exec(dob.trim());
+  if (!m) return null;
+  const dd = Number(m[1]);
+  const mm = Number(m[2]);
+  const yyyy = Number(m[3]);
+  if (dd < 1 || dd > 31 || mm < 1 || mm > 12 || yyyy < 1900 || yyyy > 2100) return null;
+  const d = new Date(Date.UTC(yyyy, mm - 1, dd));
+  // Guard against invalid rollovers like 31/02/2020
+  if (
+    Number.isNaN(d.getTime()) ||
+    d.getUTCFullYear() !== yyyy ||
+    d.getUTCMonth() + 1 !== mm ||
+    d.getUTCDate() !== dd
+  ) {
+    return null;
+  }
+  return d;
+}
+
 export async function POST(req: Request) {
   try {
-    const body = (await req.json()) as { pan?: string; phoneNumber?: string };
+    const body = (await req.json()) as { pan?: string; dob?: string; phoneNumber?: string };
     
     // Use lenient auth - allows phone verification fallback for onboarding
     const { driverId } = await requireDriverSessionOrPhoneVerified(
       req.headers,
-      body.phoneNumber
+      body.phoneNumber,
     );
     const pan = body.pan?.trim().toUpperCase();
     if (!pan) return jsonError("pan is required", 422);
@@ -54,14 +75,25 @@ export async function POST(req: Request) {
     if (!driver.panCardFileKey) {
       return jsonError("Please upload your PAN document first before verification", 409);
     }
-    if (!driver.dob) {
-      return jsonError("Date of birth is required. Please verify your Aadhaar first to proceed with PAN verification.", 409);
+
+    const requestDobRaw = body.dob?.trim();
+    const requestDob = requestDobRaw ? parseDobFromClient(requestDobRaw) : null;
+    if (requestDobRaw && !requestDob) {
+      return jsonError("Invalid date of birth. Use DD/MM/YYYY.", 422);
+    }
+
+    const dobToUse = driver.dob ?? requestDob;
+    if (!dobToUse) {
+      return jsonError(
+        "Date of birth is required. Please verify your Aadhaar first to proceed with PAN verification.",
+        409,
+      );
     }
 
     const resp = await sandboxPanVerifyDetails({
       pan,
       nameAsPerPan: driver.name,
-      dateOfBirth: toDdMmYyyy(driver.dob),
+      dateOfBirth: toDdMmYyyy(dobToUse),
       reason: "For KYC",
     });
     if (!("data" in resp)) return jsonError("Sandbox error", 502);
@@ -70,6 +102,7 @@ export async function POST(req: Request) {
     await prisma.driver.update({
       where: { id: driverId },
       data: {
+        ...(driver.dob ? {} : dobToUse ? { dob: dobToUse } : {}),
         panCardNo: pan,
         isPanCardVerified: true,
       },
