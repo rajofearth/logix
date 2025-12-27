@@ -63,6 +63,17 @@ export async function listJobs(): Promise<JobDTO[]> {
   return jobs.map(jobToDto)
 }
 
+export async function getJob(id: string): Promise<JobDTO> {
+  const parsedId = jobIdSchema.parse(id)
+  const job = await prisma.job.findUnique({
+    where: { id: parsedId },
+  })
+  if (!job) {
+    throw new Error("Job not found")
+  }
+  return jobToDto(job)
+}
+
 export async function createJob(input: JobUpsertInput): Promise<JobDTO> {
   const parsed = jobUpsertSchema.parse(input)
   const created = await prisma.job.create({

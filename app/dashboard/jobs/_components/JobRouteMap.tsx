@@ -27,6 +27,13 @@ export function JobRouteMap({
   const mapRef = React.useRef<import("mapbox-gl").Map | null>(null)
   const pickupMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
   const dropMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
+  const activePointRef = React.useRef<ActivePoint>(activePoint)
+  const pickupRef = React.useRef<LngLat | undefined>(pickup)
+  const onPickRef = React.useRef<typeof onPick>(onPick)
+
+  activePointRef.current = activePoint
+  pickupRef.current = pickup
+  onPickRef.current = onPick
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
 
@@ -59,22 +66,25 @@ export function JobRouteMap({
 
       map.on("click", (e) => {
         const coord: LngLat = { lng: e.lngLat.lng, lat: e.lngLat.lat }
+        const currentMode = activePointRef.current
+        const currentPickup = pickupRef.current
+        const pick = onPickRef.current
 
-        if (activePoint === "pickup") {
-          onPick("pickup", coord)
+        if (currentMode === "pickup") {
+          pick("pickup", coord)
           return
         }
-        if (activePoint === "drop") {
-          onPick("drop", coord)
+        if (currentMode === "drop") {
+          pick("drop", coord)
           return
         }
 
         // auto: first click pickup, second click drop, then keep updating drop
-        if (!pickup) {
-          onPick("pickup", coord)
+        if (!currentPickup) {
+          pick("pickup", coord)
           return
         }
-        onPick("drop", coord)
+        pick("drop", coord)
       })
 
       mapRef.current = map
@@ -89,7 +99,7 @@ export function JobRouteMap({
       pickupMarkerRef.current = null
       dropMarkerRef.current = null
     }
-  }, [drop, onPick, pickup, token, activePoint])
+  }, [token])
 
   React.useEffect(() => {
     const map = mapRef.current

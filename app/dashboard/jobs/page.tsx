@@ -6,7 +6,6 @@ import { toast } from "sonner"
 import type { JobDTO } from "./_types"
 import { deleteJob, listJobs } from "./_server/jobActions"
 import { JobsTable } from "./_components/JobsTable"
-import { JobFormDrawer } from "./_components/JobFormDrawer"
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
@@ -15,9 +14,6 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 export default function JobsPage() {
   const [jobs, setJobs] = React.useState<JobDTO[]>([])
   const [isLoading, setIsLoading] = React.useState(true)
-  const [drawerOpen, setDrawerOpen] = React.useState(false)
-  const [drawerMode, setDrawerMode] = React.useState<"create" | "edit">("create")
-  const [selectedJob, setSelectedJob] = React.useState<JobDTO | undefined>(undefined)
 
   const refresh = React.useCallback(async () => {
     setIsLoading(true)
@@ -35,18 +31,6 @@ export default function JobsPage() {
   React.useEffect(() => {
     void refresh()
   }, [refresh])
-
-  function openCreate() {
-    setSelectedJob(undefined)
-    setDrawerMode("create")
-    setDrawerOpen(true)
-  }
-
-  function openEdit(job: JobDTO) {
-    setSelectedJob(job)
-    setDrawerMode("edit")
-    setDrawerOpen(true)
-  }
 
   async function handleDelete(job: JobDTO) {
     const ok = window.confirm(`Delete "${job.title}"? This cannot be undone.`)
@@ -83,8 +67,6 @@ export default function JobsPage() {
               ) : (
                 <JobsTable
                   jobs={jobs}
-                  onCreate={openCreate}
-                  onEdit={openEdit}
                   onDelete={handleDelete}
                 />
               )}
@@ -92,16 +74,6 @@ export default function JobsPage() {
           </div>
         </div>
       </SidebarInset>
-
-      <JobFormDrawer
-        open={drawerOpen}
-        mode={drawerMode}
-        job={selectedJob}
-        onOpenChange={setDrawerOpen}
-        onSaved={async () => {
-          await refresh()
-        }}
-      />
     </SidebarProvider>
   )
 }

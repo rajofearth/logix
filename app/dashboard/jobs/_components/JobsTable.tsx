@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { IconDotsVertical, IconEdit, IconPlus, IconTrash } from "@tabler/icons-react"
+import { useRouter } from "next/navigation"
 
 import type { JobDTO } from "../_types"
 
@@ -34,22 +35,22 @@ function formatDateTime(iso: string): string {
 
 export function JobsTable({
   jobs,
-  onCreate,
-  onEdit,
   onDelete,
 }: {
   jobs: JobDTO[]
-  onCreate: () => void
-  onEdit: (job: JobDTO) => void
   onDelete: (job: JobDTO) => void
 }) {
+  const router = useRouter()
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-2 px-4 lg:px-6">
         <div className="text-base font-medium">Jobs</div>
-        <Button onClick={onCreate} size="sm">
-          <IconPlus className="size-4" />
-          Create Job
+        <Button asChild size="sm">
+          <a href="/dashboard/jobs/new">
+            <IconPlus className="size-4" />
+            Create Job
+          </a>
         </Button>
       </div>
 
@@ -98,7 +99,7 @@ export function JobsTable({
                           <span className="sr-only">Open menu</span>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-40">
-                          <DropdownMenuItem onClick={() => onEdit(job)}>
+                          <DropdownMenuItem onClick={() => router.push(`/dashboard/jobs/${job.id}/edit`)}>
                             <IconEdit className="size-4" />
                             Edit
                           </DropdownMenuItem>
