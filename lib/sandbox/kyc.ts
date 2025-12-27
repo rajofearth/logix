@@ -34,12 +34,10 @@ export async function sandboxAadhaarVerifyOtp(params: {
 }): Promise<SandboxResponse<AadhaarVerifyOtpResponseData>> {
   const cfg = getSandboxConfig();
   const referenceIdTrimmed = params.referenceId.trim();
-  const referenceId: string | number =
-    /^\d+$/.test(referenceIdTrimmed) ? Number(referenceIdTrimmed) : referenceIdTrimmed;
   const body: AadhaarVerifyOtpRequest = {
-    // Sandbox docs require a string; sending an explicit entity avoids empty-string validation issues.
-    "@entity": "in.co.sandbox.kyc.aadhaar.okyc.otp.verify.request",
-    reference_id: referenceId,
+    // Sandbox docs show allowed value as empty string.
+    "@entity": "",
+    reference_id: referenceIdTrimmed,
     otp: params.otp,
   };
   return sandboxPost<AadhaarVerifyOtpRequest, AadhaarVerifyOtpResponseData>(

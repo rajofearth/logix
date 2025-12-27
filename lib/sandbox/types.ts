@@ -38,10 +38,9 @@ export type AadhaarVerifyOtpRequest = {
    */
   "@entity": string;
   /**
-   * Sandbox returns reference_id as string|number for generate OTP, and in practice
-   * verify OTP may validate numeric IDs as numbers. Support both.
+   * Sandbox docs specify reference_id as string for verify OTP.
    */
-  reference_id: string | number;
+  reference_id: string;
   otp: string;
 };
 
