@@ -43,10 +43,32 @@ export const driverAuth = betterAuth({
     enabled: true,
     requireEmailVerification: false,
   },
+  hooks: {
+    after: [
+      {
+        matcher: (ctx) => ctx.path === "/phone-number/verify",
+        handler: async (ctx) => {
+          console.log(`[Better Auth] phone-number/verify hook:`, {
+            success: !ctx.error,
+            error: ctx.error,
+            phoneNumber: ctx.body?.phoneNumber,
+            codeLength: ctx.body?.code?.length,
+            timestamp: new Date().toISOString(),
+          });
+        },
+      },
+    ],
+  },
   plugins: [
     expo(),
     phoneNumber({
       async sendOTP({ phoneNumber, code }, request) {
+        console.log(`[Better Auth] sendOTP called:`, {
+          phoneNumber,
+          codeLength: code.length,
+          timestamp: new Date().toISOString(),
+        });
+        
         try {
           if (client && accountSid) {
             const message = await client.messages.create({
