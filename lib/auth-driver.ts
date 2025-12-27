@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { expo } from "@better-auth/expo"
 import { phoneNumber } from "better-auth/plugins";
 import { prisma } from "@/lib/prisma";
 import { randomUUID } from "node:crypto";
@@ -16,7 +17,7 @@ const client = accountSid && authToken ? twilio(accountSid, authToken) : null;
 
 export const driverAuth = betterAuth({
   basePath: "/api/auth/driver",
-  trustedOrigins: ["*,loctracker://*"], // Allow all origins for mobile app
+  trustedOrigins: ["loctracker://"], // Use the specific scheme for the mobile app
   advanced: {
     cookiePrefix: "driver-auth",
     database: {
@@ -43,6 +44,7 @@ export const driverAuth = betterAuth({
     requireEmailVerification: false,
   },
   plugins: [
+    expo(),
     phoneNumber({
       async sendOTP({ phoneNumber, code }, request) {
         try {
