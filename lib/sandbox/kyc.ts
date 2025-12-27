@@ -5,8 +5,6 @@ import type {
   AadhaarGenerateOtpResponseData,
   AadhaarVerifyOtpRequest,
   AadhaarVerifyOtpResponseData,
-  PanAadhaarLinkStatusRequest,
-  PanAadhaarLinkStatusResponseData,
   PanVerifyDetailsRequest,
   PanVerifyDetailsResponseData,
   SandboxResponse,
@@ -69,23 +67,4 @@ export async function sandboxPanVerifyDetails(params: {
   };
   return sandboxPost<PanVerifyDetailsRequest, PanVerifyDetailsResponseData>("/kyc/pan/verify", body);
 }
-
-export async function sandboxPanAadhaarLinkStatus(params: {
-  pan: string;
-  aadhaarNumber: string;
-  reason: string;
-}): Promise<SandboxResponse<PanAadhaarLinkStatusResponseData>> {
-  const body: PanAadhaarLinkStatusRequest = {
-    "@entity": "_aadhaar.status",
-    pan: params.pan,
-    aadhaar_number: params.aadhaarNumber,
-    consent: "Y",
-    reason: params.reason,
-  };
-  return sandboxPost<PanAadhaarLinkStatusRequest, PanAadhaarLinkStatusResponseData>(
-    "/kyc/pan-aadhaar/status",
-    body,
-  );
-}
-
 

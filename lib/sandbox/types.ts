@@ -66,19 +66,3 @@ export type PanVerifyDetailsResponseData = {
   date_of_birth_match?: string;
 };
 
-export type PanAadhaarLinkStatusRequest = {
-  "@entity": "_aadhaar.status";
-  pan: string;
-  aadhaar_number: string;
-  consent: "Y" | "y";
-  reason: string;
-};
-
-export type PanAadhaarLinkStatusResponseData = {
-  "@entity"?: string;
-  aadhaar_seeding_status?: string;
-  pan_status?: string;
-  message?: string;
-};
-
-
