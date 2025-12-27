@@ -55,7 +55,7 @@ export async function sandboxPanVerifyDetails(params: {
 }): Promise<SandboxResponse<PanVerifyDetailsResponseData>> {
   /**
    * Sandbox API: Verify PAN Details
-   * - Endpoint: POST /kyc/pan (baseUrl defaults to https://api.sandbox.co.in)
+   * - Endpoint: POST /kyc/pan/verify (baseUrl defaults to https://api.sandbox.co.in)
    * - Auth: authorization header is the Sandbox JWT access token (NOT Bearer)
    * - Request body keys follow Sandbox naming: name_as_per_pan, date_of_birth, consent, reason
    */
@@ -67,8 +67,7 @@ export async function sandboxPanVerifyDetails(params: {
     consent: "Y",
     reason: params.reason,
   };
-  // Changelog indicates new endpoint: POST https://api.sandbox.co.in/kyc/pan
-  return sandboxPost<PanVerifyDetailsRequest, PanVerifyDetailsResponseData>("/kyc/pan", body);
+  return sandboxPost<PanVerifyDetailsRequest, PanVerifyDetailsResponseData>("/kyc/pan/verify", body);
 }
 
 export async function sandboxPanAadhaarLinkStatus(params: {

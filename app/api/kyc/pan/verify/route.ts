@@ -16,7 +16,7 @@ export const runtime = "nodejs";
  *   - Aadhaar not verified yet (missing dob, used for PAN verification)
  *
  * External dependency (Sandbox):
- * - POST https://api.sandbox.co.in/kyc/pan
+ * - POST https://api.sandbox.co.in/kyc/pan/verify
  * - Headers: x-api-key, x-api-version, authorization (token, NOT Bearer), JSON content-type
  * - Body: { pan, name_as_per_pan, date_of_birth: "dd-mm-yyyy", consent: "Y", reason }
  * - Response envelope: { code, timestamp, transaction_id, data: {...} }

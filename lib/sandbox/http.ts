@@ -13,7 +13,10 @@ export async function sandboxPost<TReq extends object, TResData>(
 ): Promise<SandboxResponse<TResData>> {
   const cfg = getSandboxConfig();
   const token = await getSandboxAccessToken();
-  const res = await fetch(`${cfg.baseUrl}${path}`, {
+  const apiKeyPrefix = cfg.apiKey.startsWith("key_test_") ? "test" : cfg.apiKey.startsWith("key_live_") ? "live" : "unknown";
+  const url = `${cfg.baseUrl}${path}`;
+  console.log(`[Sandbox] Request to ${url} (API key: ${apiKeyPrefix}, baseUrl: ${cfg.baseUrl})`);
+  const res = await fetch(url, {
     method: "POST",
     headers: {
       accept: "application/json",
