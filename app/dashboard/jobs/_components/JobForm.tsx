@@ -9,6 +9,7 @@ import type { DirectionsResult, JobDTO, JobUpsertInput, LngLat } from "../_types
 import { dateTimeLocalToIso, isoToDateTimeLocalValue } from "../_utils/datetime"
 import { createJob, updateJob } from "../_server/jobActions"
 import { getDirections } from "../_server/mapboxDirections"
+import { reverseGeocode } from "../_server/mapboxGeocoding"
 import { JobRouteMap } from "./JobRouteMap"
 
 import { Button } from "@/components/ui/button"
@@ -122,11 +123,31 @@ export function JobForm({
   }, [form.pickup, form.drop])
 
   function handlePick(kind: "pickup" | "drop", coord: LngLat) {
-    setForm((prev) => ({
-      ...prev,
-      pickup: kind === "pickup" ? coord : prev.pickup,
-      drop: kind === "drop" ? coord : prev.drop,
-    }))
+    setForm((prev) => {
+      const next: FormState = {
+        ...prev,
+        pickup: kind === "pickup" ? coord : prev.pickup,
+        drop: kind === "drop" ? coord : prev.drop,
+      }
+      return next
+    })
+
+    // Auto-fill address from the clicked coordinate (do not overwrite if user already typed something).
+    void (async () => {
+      try {
+        const address = await reverseGeocode(coord)
+        setForm((prev) => {
+          if (kind === "pickup") {
+            if (prev.pickupAddress.trim()) return prev
+            return { ...prev, pickupAddress: address }
+          }
+          if (prev.dropAddress.trim()) return prev
+          return { ...prev, dropAddress: address }
+        })
+      } catch {
+        // Best-effort: leave address as-is if reverse geocode fails
+      }
+    })()
   }
 
   const canSave = Boolean(
@@ -289,6 +310,36 @@ export function JobForm({
               Drop
             </ToggleGroupItem>
           </ToggleGroup>
+        </div>
+
+        <div className="text-muted-foreground flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex size-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold text-green-600">
+                P
+              </span>
+              <span>Pickup</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex size-5 items-center justify-center rounded-full border bg-white text-[11px] font-bold text-red-600">
+                D
+              </span>
+              <span>Drop</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex h-0.5 w-8 rounded bg-blue-600" />
+              <span>Route</span>
+            </div>
+          </div>
+          <div>
+            {activePoint === "pickup"
+              ? "Click map to set pickup"
+              : activePoint === "drop"
+                ? "Click map to set drop"
+                : !form.pickup
+                  ? "Click map to set pickup, then drop"
+                  : "Click map to set drop"}
+          </div>
         </div>
 
         <JobRouteMap

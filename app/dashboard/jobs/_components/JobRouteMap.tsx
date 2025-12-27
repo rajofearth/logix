@@ -36,6 +36,28 @@ export function JobRouteMap({
   onPickRef.current = onPick
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
+  const routeRef = React.useRef<typeof routeGeoJson>(routeGeoJson)
+  routeRef.current = routeGeoJson
+
+  function buildMarkerEl(kind: "pickup" | "drop"): HTMLDivElement {
+    const el = document.createElement("div")
+    el.style.width = "28px"
+    el.style.height = "28px"
+    el.style.borderRadius = "999px"
+    el.style.display = "flex"
+    el.style.alignItems = "center"
+    el.style.justifyContent = "center"
+    el.style.fontSize = "12px"
+    el.style.fontWeight = "700"
+    el.style.color = "white"
+    el.style.border = "2px solid rgba(255,255,255,0.95)"
+    el.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"
+    el.style.userSelect = "none"
+    el.style.transform = "translateY(-2px)"
+    el.textContent = kind === "pickup" ? "P" : "D"
+    el.style.background = kind === "pickup" ? "#16a34a" : "#dc2626"
+    return el
+  }
 
   React.useEffect(() => {
     if (!containerRef.current) return
@@ -64,6 +86,58 @@ export function JobRouteMap({
 
       map.addControl(new mapboxgl.default.NavigationControl(), "top-right")
 
+      const ensureRouteLayers = () => {
+        // addSource/addLayer only after style is loaded (Mapbox GL JS docs)
+        if (!map.isStyleLoaded()) return
+
+        const sourceId = "job-route"
+        const casingLayerId = "job-route-casing"
+        const lineLayerId = "job-route-line"
+
+        const existingSource = map.getSource(sourceId)
+        const currentRoute = routeRef.current
+
+        if (currentRoute) {
+          if (!existingSource) {
+            map.addSource(sourceId, {
+              type: "geojson",
+              data: currentRoute,
+            })
+          } else {
+            ;(existingSource as import("mapbox-gl").GeoJSONSource).setData(
+              currentRoute
+            )
+          }
+
+          if (!map.getLayer(casingLayerId)) {
+            map.addLayer({
+              id: casingLayerId,
+              type: "line",
+              source: sourceId,
+              layout: { "line-join": "round", "line-cap": "round" },
+              paint: {
+                "line-color": "#0b1220",
+                "line-width": 7,
+                "line-opacity": 0.35,
+              },
+            })
+          }
+          if (!map.getLayer(lineLayerId)) {
+            map.addLayer({
+              id: lineLayerId,
+              type: "line",
+              source: sourceId,
+              layout: { "line-join": "round", "line-cap": "round" },
+              paint: { "line-color": "#2563eb", "line-width": 4 },
+            })
+          }
+        } else {
+          if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId)
+          if (map.getLayer(casingLayerId)) map.removeLayer(casingLayerId)
+          if (existingSource) map.removeSource(sourceId)
+        }
+      }
+
       map.on("click", (e) => {
         const coord: LngLat = { lng: e.lngLat.lng, lat: e.lngLat.lat }
         const currentMode = activePointRef.current
@@ -85,6 +159,15 @@ export function JobRouteMap({
           return
         }
         pick("drop", coord)
+      })
+
+      map.on("load", () => {
+        // Ensure canvas is properly sized (common in flex layouts)
+        map.resize()
+        ensureRouteLayers()
+      })
+      map.on("style.load", () => {
+        ensureRouteLayers()
       })
 
       mapRef.current = map
@@ -113,7 +196,7 @@ export function JobRouteMap({
       if (pickup) {
         if (!pickupMarkerRef.current) {
           pickupMarkerRef.current = new mapboxgl.default.Marker({
-            color: "#22c55e",
+            element: buildMarkerEl("pickup"),
           })
             .setLngLat([pickup.lng, pickup.lat])
             .addTo(map)
@@ -128,7 +211,7 @@ export function JobRouteMap({
       if (drop) {
         if (!dropMarkerRef.current) {
           dropMarkerRef.current = new mapboxgl.default.Marker({
-            color: "#ef4444",
+            element: buildMarkerEl("drop"),
           })
             .setLngLat([drop.lng, drop.lat])
             .addTo(map)
@@ -142,7 +225,11 @@ export function JobRouteMap({
 
       // Route line
       const sourceId = "job-route"
-      const layerId = "job-route-line"
+      const casingLayerId = "job-route-casing"
+      const lineLayerId = "job-route-line"
+
+      // addSource/addLayer only after style is loaded (Mapbox GL JS docs)
+      if (!map.isStyleLoaded()) return
 
       const existingSource = map.getSource(sourceId)
       if (routeGeoJson) {
@@ -151,20 +238,37 @@ export function JobRouteMap({
             type: "geojson",
             data: routeGeoJson,
           })
-          map.addLayer({
-            id: layerId,
-            type: "line",
-            source: sourceId,
-            layout: { "line-join": "round", "line-cap": "round" },
-            paint: { "line-color": "#2563eb", "line-width": 4 },
-          })
+          // casing first (outline)
+          if (!map.getLayer(casingLayerId)) {
+            map.addLayer({
+              id: casingLayerId,
+              type: "line",
+              source: sourceId,
+              layout: { "line-join": "round", "line-cap": "round" },
+              paint: {
+                "line-color": "#0b1220",
+                "line-width": 7,
+                "line-opacity": 0.35,
+              },
+            })
+          }
+          if (!map.getLayer(lineLayerId)) {
+            map.addLayer({
+              id: lineLayerId,
+              type: "line",
+              source: sourceId,
+              layout: { "line-join": "round", "line-cap": "round" },
+              paint: { "line-color": "#2563eb", "line-width": 4 },
+            })
+          }
         } else {
           ;(existingSource as import("mapbox-gl").GeoJSONSource).setData(
             routeGeoJson
           )
         }
       } else {
-        if (map.getLayer(layerId)) map.removeLayer(layerId)
+        if (map.getLayer(lineLayerId)) map.removeLayer(lineLayerId)
+        if (map.getLayer(casingLayerId)) map.removeLayer(casingLayerId)
         if (existingSource) map.removeSource(sourceId)
       }
 
