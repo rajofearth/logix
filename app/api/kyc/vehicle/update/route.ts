@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireDriverSession } from "@/app/api/_utils/driver-session";
+import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { recomputeDriverVerified } from "@/lib/onboarding/verification";
 
@@ -9,12 +9,18 @@ type Body = {
   ownerType?: "self" | "company" | "rented";
   plate?: string;
   insuranceNo?: string;
+  phoneNumber?: string;
 };
 
 export async function POST(req: Request) {
   try {
-    const { driverId } = await requireDriverSession(req.headers);
     const body = (await req.json()) as Body;
+    
+    // Use lenient auth - allows phone verification fallback for onboarding
+    const { driverId } = await requireDriverSessionOrPhoneVerified(
+      req.headers,
+      body.phoneNumber,
+    );
     const ownerType = body.ownerType;
     const plate = body.plate?.trim().toUpperCase();
     const insuranceNo = body.insuranceNo?.trim().toUpperCase();

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { requireDriverSession } from "@/app/api/_utils/driver-session";
+import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { recomputeDriverVerified } from "@/lib/onboarding/verification";
 
@@ -7,8 +7,13 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { driverId } = await requireDriverSession(req.headers);
-    const body = (await req.json()) as { drivingLicenseNo?: string };
+    const body = (await req.json()) as { drivingLicenseNo?: string; phoneNumber?: string };
+    
+    // Use lenient auth - allows phone verification fallback for onboarding
+    const { driverId } = await requireDriverSessionOrPhoneVerified(
+      req.headers,
+      body.phoneNumber,
+    );
     const drivingLicenseNo = body.drivingLicenseNo?.trim().toUpperCase();
     if (!drivingLicenseNo) return jsonError("drivingLicenseNo is required", 422);
 
