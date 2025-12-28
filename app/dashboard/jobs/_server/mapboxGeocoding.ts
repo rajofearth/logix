@@ -48,7 +48,7 @@ export async function reverseGeocode(coord: LngLat): Promise<string> {
 export async function searchNearbyPlaces(
   coord: LngLat,
   category: string = "gas_station",
-  limit: number = 25
+  limit: number = 10
 ): Promise<Array<{ name: string; coord: LngLat }>> {
   const parsed = lngLatSchema.parse(coord)
   const token = getMapboxAccessToken()

@@ -36,25 +36,25 @@ export function TrackingMap({
         if (kind === "fuel" && station) {
             const card = document.createElement("div")
             card.style.background = "white"
-            card.style.padding = "4px 8px"
+            card.style.padding = "2px 6px"
             card.style.borderRadius = "4px"
             card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)"
-            card.style.marginBottom = "4px"
-            card.style.fontSize = "10px"
+            card.style.marginBottom = "6px"
+            card.style.fontSize = "9px"
             card.style.fontWeight = "600"
             card.style.whiteSpace = "nowrap"
             card.style.textAlign = "center"
             card.style.color = "#0f172a"
             card.innerHTML = `
                 <div>${station.name}</div>
-                ${station.distance ? `<div style="color: #64748b; font-size: 9px;">${(station.distance / 1000).toFixed(1)}km</div>` : ''}
+                ${station.distance ? `<div style="color: #64748b; font-size: 8px;">${(station.distance / 1000).toFixed(1)}km</div>` : ''}
             `
             wrapper.appendChild(card)
         }
 
         const el = document.createElement("div")
-        el.style.width = kind === "fuel" ? "24px" : "28px"
-        el.style.height = kind === "fuel" ? "24px" : "28px"
+        el.style.width = kind === "fuel" ? "32px" : "28px"
+        el.style.height = kind === "fuel" ? "32px" : "28px"
         el.style.borderRadius = "999px"
         el.style.display = "flex"
         el.style.alignItems = "center"
@@ -68,7 +68,7 @@ export function TrackingMap({
 
         if (kind === "fuel") {
             el.style.background = "#fbbf24"
-            el.innerHTML = `<svg viewBox="0 0 24 24" fill="none"> <rect x="4" y="4" width="12" height="18" rx="2" fill="#EF4444" /> <rect x="6" y="7" width="8" height="6" rx="1" fill="#1F2937" /> <path d="M17 5a2 2 0 0 1 2 2v2a2 2 0 1 1-4 0V7a2 2 0 0 1 2-2z" fill="#1F2937" /> <path d="M17 11v5" stroke="#1F2937" stroke-width="2" stroke-linecap="round"/> </svg>`
+            el.innerHTML = `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"> <rect x="4" y="4" width="12" height="18" rx="2" fill="#EF4444" /> <rect x="6" y="7" width="8" height="6" rx="1" fill="#1F2937" /> <path d="M17 5a2 2 0 0 1 2 2v2a2 2 0 1 1-4 0V7a2 2 0 0 1 2-2z" fill="#1F2937" /> <path d="M17 11v5" stroke="#1F2937" stroke-width="2" stroke-linecap="round"/> </svg>`
         } else {
             el.textContent = kind === "pickup" ? "P" : "D"
             el.style.background = kind === "pickup" ? "#16a34a" : "#dc2626"
