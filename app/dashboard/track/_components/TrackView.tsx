@@ -23,7 +23,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
     const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
-    const [fuelStations, setFuelStations] = useState<Array<{ name: string; coord: LngLat }>>([]);
+    const [fuelStations, setFuelStations] = useState<Array<{ name: string; address?: string; distance?: number; coord: LngLat }>>([]);
 
     useEffect(() => {
         if (!selectedDelivery) {

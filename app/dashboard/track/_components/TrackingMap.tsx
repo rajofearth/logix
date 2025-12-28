@@ -12,7 +12,7 @@ export function TrackingMap({
     pickup?: LngLat
     drop?: LngLat
     routeGeoJson?: GeoJsonFeature<LineStringGeometry> | null
-    fuelStations?: Array<{ name: string; coord: LngLat }>
+    fuelStations?: Array<{ name: string; address?: string; distance?: number; coord: LngLat }>
 }) {
     const containerRef = React.useRef<HTMLDivElement | null>(null)
     const mapRef = React.useRef<import("mapbox-gl").Map | null>(null)
@@ -26,7 +26,32 @@ export function TrackingMap({
     const routeRef = React.useRef<typeof routeGeoJson>(routeGeoJson)
     routeRef.current = routeGeoJson
 
-    function buildMarkerEl(kind: "pickup" | "drop" | "fuel"): HTMLDivElement {
+    function buildMarkerEl(kind: "pickup" | "drop" | "fuel", station?: { name: string; address?: string; distance?: number }): HTMLDivElement {
+        const wrapper = document.createElement("div")
+        wrapper.style.display = "flex"
+        wrapper.style.flexDirection = "column"
+        wrapper.style.alignItems = "center"
+        wrapper.style.pointerEvents = "auto"
+
+        if (kind === "fuel" && station) {
+            const card = document.createElement("div")
+            card.style.background = "white"
+            card.style.padding = "4px 8px"
+            card.style.borderRadius = "4px"
+            card.style.boxShadow = "0 2px 4px rgba(0,0,0,0.1)"
+            card.style.marginBottom = "4px"
+            card.style.fontSize = "10px"
+            card.style.fontWeight = "600"
+            card.style.whiteSpace = "nowrap"
+            card.style.textAlign = "center"
+            card.style.color = "#0f172a"
+            card.innerHTML = `
+                <div>${station.name}</div>
+                ${station.distance ? `<div style="color: #64748b; font-size: 9px;">${(station.distance / 1000).toFixed(1)}km</div>` : ''}
+            `
+            wrapper.appendChild(card)
+        }
+
         const el = document.createElement("div")
         el.style.width = kind === "fuel" ? "24px" : "28px"
         el.style.height = kind === "fuel" ? "24px" : "28px"
@@ -43,13 +68,15 @@ export function TrackingMap({
 
         if (kind === "fuel") {
             el.style.background = "#fbbf24"
-            el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8a2 2 0 0 1 2-2h2.5"/><path d="M7.5 12h3a2 2 0 0 1 2 2v+8"/><path d="M16 13.5V6a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v6"/><path d="M14 6h.5a2.5 2.5 0 0 1 2.5 2.5v3.5"/></svg>`
+            el.innerHTML = `<svg viewBox="0 0 24 24" fill="none"> <rect x="4" y="4" width="12" height="18" rx="2" fill="#EF4444" /> <rect x="6" y="7" width="8" height="6" rx="1" fill="#1F2937" /> <path d="M17 5a2 2 0 0 1 2 2v2a2 2 0 1 1-4 0V7a2 2 0 0 1 2-2z" fill="#1F2937" /> <path d="M17 11v5" stroke="#1F2937" stroke-width="2" stroke-linecap="round"/> </svg>`
         } else {
             el.textContent = kind === "pickup" ? "P" : "D"
             el.style.background = kind === "pickup" ? "#16a34a" : "#dc2626"
             el.style.transform = "translateY(-2px)"
         }
-        return el
+
+        wrapper.appendChild(el)
+        return wrapper
     }
 
     React.useEffect(() => {
@@ -255,10 +282,10 @@ export function TrackingMap({
 
             fuelStations.forEach(station => {
                 const marker = new mapboxgl.default.Marker({
-                    element: buildMarkerEl("fuel")
+                    element: buildMarkerEl("fuel", station)
                 })
                     .setLngLat([station.coord.lng, station.coord.lat])
-                    .setPopup(new mapboxgl.default.Popup({ offset: 25, closeButton: false }).setText(station.name))
+                    // Removed popup call since it's now part of the marker element
                     .addTo(map)
 
                 fuelMarkersRef.current.push(marker)
