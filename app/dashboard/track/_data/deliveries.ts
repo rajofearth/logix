@@ -1,3 +1,21 @@
+export interface Driver {
+    name: string;
+    role: string;
+    avatar: string;
+    experience: string;
+    license: string;
+    idNumber: string;
+    licenseClass: string;
+    insuranceNumber: string;
+}
+
+export interface DeliveryStatus {
+    currentLocation: string;
+    lastStop: string;
+    distance: string;
+    currentSpeed: string;
+}
+
 export interface Delivery {
     id: string;
     type: string;
@@ -15,6 +33,8 @@ export interface Delivery {
         company: string;
         avatar: string;
     };
+    driver: Driver;
+    status: DeliveryStatus;
     isActive: boolean;
 }
 
@@ -36,6 +56,22 @@ export const deliveries: Delivery[] = [
             company: "Horizon Medical Group",
             avatar: "/avatar1.jpg",
         },
+        driver: {
+            name: "Philip Osborne",
+            role: "Driver",
+            avatar: "/driver1.jpg",
+            experience: "12 years",
+            license: "CDL",
+            idNumber: "2415-63-7867",
+            licenseClass: "A, D",
+            insuranceNumber: "987-34-2415",
+        },
+        status: {
+            currentLocation: "Route I-75",
+            lastStop: "6h ago",
+            distance: "120/180 mi",
+            currentSpeed: "76 mph",
+        },
         isActive: true,
     },
     {
@@ -55,6 +91,22 @@ export const deliveries: Delivery[] = [
             company: "Innovate Tech, LLC",
             avatar: "/avatar2.jpg",
         },
+        driver: {
+            name: "Sarah Mitchell",
+            role: "Driver",
+            avatar: "/driver2.jpg",
+            experience: "8 years",
+            license: "CDL",
+            idNumber: "3521-78-4532",
+            licenseClass: "A, B",
+            insuranceNumber: "654-21-8790",
+        },
+        status: {
+            currentLocation: "Route I-90",
+            lastStop: "2h ago",
+            distance: "45/120 mi",
+            currentSpeed: "62 mph",
+        },
         isActive: false,
     },
     {
@@ -73,6 +125,22 @@ export const deliveries: Delivery[] = [
             name: "Sarah Johnson",
             company: "Fresh Foods Inc.",
             avatar: "/avatar3.jpg",
+        },
+        driver: {
+            name: "Mike Thompson",
+            role: "Driver",
+            avatar: "/driver3.jpg",
+            experience: "15 years",
+            license: "CDL",
+            idNumber: "1987-45-6321",
+            licenseClass: "A, C, D",
+            insuranceNumber: "321-67-9854",
+        },
+        status: {
+            currentLocation: "Route 41",
+            lastStop: "1h ago",
+            distance: "8/25 mi",
+            currentSpeed: "45 mph",
         },
         isActive: false,
     },

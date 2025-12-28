@@ -3,10 +3,12 @@
 import * as React from "react";
 import { useState } from "react";
 import { MapPin } from "lucide-react";
-import { deliveries } from "./_data/deliveries";
+import { deliveries, type Delivery } from "./_data/deliveries";
 import { DeliveryCard } from "./_components/DeliveryCard";
 import { SearchBar } from "./_components/SearchBar";
 import { TrackingMap } from "./_components/TrackingMap";
+import { DeliveryStatusBar } from "./_components/DeliveryStatusBar";
+import { DriverInfoPanel } from "./_components/DriverInfoPanel";
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
@@ -15,6 +17,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 export default function TrackPage() {
     const [searchQuery, setSearchQuery] = useState("");
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+    const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
 
     const filteredDeliveries = deliveries.filter(
         (delivery) =>
@@ -22,6 +25,10 @@ export default function TrackPage() {
             delivery.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
             delivery.client.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    const handleDeliveryClick = (delivery: Delivery) => {
+        setSelectedDelivery(selectedDelivery?.id === delivery.id ? null : delivery);
+    };
 
     return (
         <SidebarProvider
@@ -60,7 +67,9 @@ export default function TrackPage() {
                                     key={delivery.id}
                                     delivery={delivery}
                                     isHovered={hoveredCard === delivery.id}
+                                    isSelected={selectedDelivery?.id === delivery.id}
                                     onHover={setHoveredCard}
+                                    onClick={() => handleDeliveryClick(delivery)}
                                 />
                             ))}
 
@@ -74,12 +83,31 @@ export default function TrackPage() {
                         </div>
                     </div>
 
-                    {/* Right Panel - Map (hidden on mobile) */}
-                    <div className="hidden md:flex flex-1 min-w-0">
+                    {/* Right Panel - Map with floating components */}
+                    <div className="hidden md:flex flex-1 min-w-0 relative">
                         <TrackingMap
                             deliveries={filteredDeliveries}
-                            selectedDeliveryId={hoveredCard}
+                            selectedDeliveryId={selectedDelivery?.id || hoveredCard}
                         />
+
+                        {/* Floating Status Bar - Top Center */}
+                        {selectedDelivery && (
+                            <div className="absolute top-4 left-0 right-0 z-10 flex justify-center animate-in fade-in slide-in-from-top-2 duration-300">
+                                <DeliveryStatusBar
+                                    currentLocation={selectedDelivery.status.currentLocation}
+                                    lastStop={selectedDelivery.status.lastStop}
+                                    distance={selectedDelivery.status.distance}
+                                    currentSpeed={selectedDelivery.status.currentSpeed}
+                                />
+                            </div>
+                        )}
+
+                        {/* Floating Driver Info - Bottom Center */}
+                        {selectedDelivery && (
+                            <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center animate-in fade-in slide-in-from-bottom-2 duration-300">
+                                <DriverInfoPanel driver={selectedDelivery.driver} />
+                            </div>
+                        )}
                     </div>
                 </div>
             </SidebarInset>

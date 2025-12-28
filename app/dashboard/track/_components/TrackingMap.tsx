@@ -12,7 +12,7 @@ interface TrackingMapProps {
 export function TrackingMap({ deliveries, selectedDeliveryId }: TrackingMapProps) {
     const containerRef = React.useRef<HTMLDivElement | null>(null);
     const mapRef = React.useRef<import("mapbox-gl").Map | null>(null);
-    const markersRef = React.useRef<Map<string, { origin: import("mapbox-gl").Marker; dest: import("mapbox-gl").Marker }>>(new Map());
+    const markersRef = React.useRef<{ origin: import("mapbox-gl").Marker; dest: import("mapbox-gl").Marker } | null>(null);
 
     const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -27,6 +27,7 @@ export function TrackingMap({ deliveries, selectedDeliveryId }: TrackingMapProps
         };
     }, []);
 
+    // Initialize map
     React.useEffect(() => {
         if (!containerRef.current || !token || mapRef.current) return;
 
@@ -50,161 +51,182 @@ export function TrackingMap({ deliveries, selectedDeliveryId }: TrackingMapProps
             map.on("load", () => {
                 map.resize();
                 mapRef.current = map;
-
-                // Add all delivery routes and markers
-                deliveries.forEach((delivery, index) => {
-                    const coords = getDeliveryCoords(index);
-                    const isActive = delivery.isActive;
-                    const routeId = `route-${delivery.id}`;
-
-                    // Add route source
-                    map.addSource(routeId, {
-                        type: "geojson",
-                        data: {
-                            type: "Feature",
-                            properties: { id: delivery.id },
-                            geometry: {
-                                type: "LineString",
-                                coordinates: [coords.origin, coords.dest],
-                            },
-                        },
-                    });
-
-                    // Add route line
-                    map.addLayer({
-                        id: `${routeId}-line`,
-                        type: "line",
-                        source: routeId,
-                        layout: {
-                            "line-join": "round",
-                            "line-cap": "round",
-                        },
-                        paint: {
-                            "line-color": isActive ? "#f97316" : "#cbd5e1",
-                            "line-width": isActive ? 4 : 2,
-                            "line-opacity": isActive ? 1 : 0.5,
-                        },
-                    });
-
-                    // Create markers
-                    const createMarker = (type: "origin" | "dest", lngLat: [number, number]) => {
-                        const el = document.createElement("div");
-                        const isOrigin = type === "origin";
-                        el.style.cssText = `
-              width: ${isActive ? "24px" : "18px"};
-              height: ${isActive ? "24px" : "18px"};
-              border-radius: 50%;
-              background: ${isOrigin ? "#10b981" : "#f97316"};
-              border: 3px solid white;
-              box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-              cursor: pointer;
-              transition: all 0.2s ease;
-              opacity: ${isActive ? 1 : 0.6};
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            `;
-
-                        if (!isOrigin && isActive) {
-                            el.innerHTML = `<span style="font-size: 10px;">🚛</span>`;
-                        }
-
-                        el.addEventListener("mouseenter", () => {
-                            el.style.transform = "scale(1.2)";
-                            el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.3)";
-                        });
-                        el.addEventListener("mouseleave", () => {
-                            el.style.transform = "scale(1)";
-                            el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.2)";
-                        });
-
-                        const popup = new mapboxgl.default.Popup({
-                            offset: 25,
-                            closeButton: false,
-                        }).setHTML(
-                            `<div style="padding: 8px; min-width: 160px;">
-                <div style="font-size: 10px; color: #64748b; margin-bottom: 2px;">${isOrigin ? "Origin" : "Destination"}</div>
-                <div style="font-weight: 600; font-size: 12px; color: #0f172a;">${isOrigin ? delivery.origin.address : delivery.destination.address}</div>
-                <div style="font-size: 10px; color: #64748b; margin-top: 2px;">${isOrigin ? delivery.origin.detail : delivery.destination.detail}</div>
-              </div>`
-                        );
-
-                        return new mapboxgl.default.Marker({ element: el })
-                            .setLngLat(lngLat)
-                            .setPopup(popup)
-                            .addTo(map);
-                    };
-
-                    const originMarker = createMarker("origin", coords.origin);
-                    const destMarker = createMarker("dest", coords.dest);
-
-                    markersRef.current.set(delivery.id, { origin: originMarker, dest: destMarker });
-                });
             });
         })();
 
         return () => {
             isMounted = false;
-            markersRef.current.forEach(({ origin, dest }) => {
-                origin.remove();
-                dest.remove();
-            });
-            markersRef.current.clear();
+            if (markersRef.current) {
+                markersRef.current.origin.remove();
+                markersRef.current.dest.remove();
+                markersRef.current = null;
+            }
             if (mapRef.current) {
                 mapRef.current.remove();
                 mapRef.current = null;
             }
         };
-    }, [token, deliveries, getDeliveryCoords]);
+    }, [token]);
 
-    // Highlight selected delivery
+    // Update map when selected delivery changes
     React.useEffect(() => {
         const map = mapRef.current;
-        if (!map || !map.isStyleLoaded()) return;
+        if (!map) return;
 
-        deliveries.forEach((delivery, index) => {
-            const routeLineId = `route-${delivery.id}-line`;
-            const isSelected = selectedDeliveryId === delivery.id;
-            const isActive = delivery.isActive;
+        // Wait for map to be ready
+        if (!map.isStyleLoaded()) {
+            const onLoad = () => updateMapForSelectedDelivery();
+            map.once("load", onLoad);
+            return;
+        }
 
-            if (map.getLayer(routeLineId)) {
-                map.setPaintProperty(routeLineId, "line-color",
-                    isSelected ? "#ea580c" : (isActive ? "#f97316" : "#cbd5e1")
-                );
-                map.setPaintProperty(routeLineId, "line-width",
-                    isSelected ? 5 : (isActive ? 4 : 2)
-                );
-                map.setPaintProperty(routeLineId, "line-opacity",
-                    isSelected ? 1 : (isActive ? 1 : 0.4)
-                );
+        updateMapForSelectedDelivery();
+
+        async function updateMapForSelectedDelivery() {
+            if (!map) return;
+            const mapboxgl = await import("mapbox-gl");
+
+            // Clear previous markers
+            if (markersRef.current) {
+                markersRef.current.origin.remove();
+                markersRef.current.dest.remove();
+                markersRef.current = null;
             }
 
-            const markers = markersRef.current.get(delivery.id);
-            if (markers) {
-                const scale = isSelected ? 1.15 : 1;
-                const opacity = isSelected ? 1 : (isActive ? 0.9 : 0.5);
-
-                [markers.origin, markers.dest].forEach(marker => {
-                    const el = marker.getElement();
-                    el.style.transform = `scale(${scale})`;
-                    el.style.opacity = String(opacity);
-                });
+            // Clear previous route
+            const routeId = "selected-route";
+            if (map.getLayer(`${routeId}-line`)) {
+                map.removeLayer(`${routeId}-line`);
             }
-        });
+            if (map.getSource(routeId)) {
+                map.removeSource(routeId);
+            }
 
-        // Pan to selected delivery
-        if (selectedDeliveryId) {
-            const selectedIndex = deliveries.findIndex(d => d.id === selectedDeliveryId);
-            if (selectedIndex !== -1) {
-                const coords = getDeliveryCoords(selectedIndex);
-                const centerLng = (coords.origin[0] + coords.dest[0]) / 2;
-                const centerLat = (coords.origin[1] + coords.dest[1]) / 2;
+            // If no delivery selected, reset view
+            if (!selectedDeliveryId) {
                 map.easeTo({
-                    center: [centerLng, centerLat],
-                    zoom: 13,
+                    center: defaultCenter,
+                    zoom: 12,
                     duration: 400,
                 });
+                return;
             }
+
+            // Find selected delivery
+            const selectedIndex = deliveries.findIndex(d => d.id === selectedDeliveryId);
+            if (selectedIndex === -1) return;
+
+            const delivery = deliveries[selectedIndex];
+            const coords = getDeliveryCoords(selectedIndex);
+
+            // Add route line
+            map.addSource(routeId, {
+                type: "geojson",
+                data: {
+                    type: "Feature",
+                    properties: {},
+                    geometry: {
+                        type: "LineString",
+                        coordinates: [coords.origin, coords.dest],
+                    },
+                },
+            });
+
+            map.addLayer({
+                id: `${routeId}-line`,
+                type: "line",
+                source: routeId,
+                layout: {
+                    "line-join": "round",
+                    "line-cap": "round",
+                },
+                paint: {
+                    "line-color": "#f97316",
+                    "line-width": 4,
+                },
+            });
+
+            // Create origin marker
+            const originEl = document.createElement("div");
+            originEl.style.cssText = `
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #10b981;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        cursor: pointer;
+        transition: all 0.2s ease;
+      `;
+            originEl.addEventListener("mouseenter", () => {
+                originEl.style.transform = "scale(1.2)";
+            });
+            originEl.addEventListener("mouseleave", () => {
+                originEl.style.transform = "scale(1)";
+            });
+
+            const originPopup = new mapboxgl.default.Popup({
+                offset: 25,
+                closeButton: false,
+            }).setHTML(
+                `<div style="padding: 8px; min-width: 160px;">
+          <div style="font-size: 10px; color: #64748b; margin-bottom: 2px;">Origin</div>
+          <div style="font-weight: 600; font-size: 12px; color: #0f172a;">${delivery.origin.address}</div>
+          <div style="font-size: 10px; color: #64748b; margin-top: 2px;">${delivery.origin.detail}</div>
+        </div>`
+            );
+
+            const originMarker = new mapboxgl.default.Marker({ element: originEl })
+                .setLngLat(coords.origin)
+                .setPopup(originPopup)
+                .addTo(map);
+
+            // Create destination marker with truck icon
+            const destEl = document.createElement("div");
+            destEl.style.cssText = `
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: #f97316;
+        border: 3px solid white;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+            destEl.innerHTML = `<span style="font-size: 12px;">🚛</span>`;
+            destEl.addEventListener("mouseenter", () => {
+                destEl.style.transform = "scale(1.2)";
+            });
+            destEl.addEventListener("mouseleave", () => {
+                destEl.style.transform = "scale(1)";
+            });
+
+            const destPopup = new mapboxgl.default.Popup({
+                offset: 25,
+                closeButton: false,
+            }).setHTML(
+                `<div style="padding: 8px; min-width: 160px;">
+          <div style="font-size: 10px; color: #64748b; margin-bottom: 2px;">Destination</div>
+          <div style="font-weight: 600; font-size: 12px; color: #0f172a;">${delivery.destination.address}</div>
+          <div style="font-size: 10px; color: #64748b; margin-top: 2px;">${delivery.destination.detail}</div>
+        </div>`
+            );
+
+            const destMarker = new mapboxgl.default.Marker({ element: destEl })
+                .setLngLat(coords.dest)
+                .setPopup(destPopup)
+                .addTo(map);
+
+            markersRef.current = { origin: originMarker, dest: destMarker };
+
+            // Fit bounds to show both markers
+            const bounds = new mapboxgl.default.LngLatBounds();
+            bounds.extend(coords.origin);
+            bounds.extend(coords.dest);
+            map.fitBounds(bounds, { padding: 80, maxZoom: 14, duration: 500 });
         }
     }, [selectedDeliveryId, deliveries, getDeliveryCoords]);
 

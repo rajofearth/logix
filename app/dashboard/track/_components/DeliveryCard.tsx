@@ -10,20 +10,31 @@ import type { Delivery } from "../_data/deliveries";
 interface DeliveryCardProps {
     delivery: Delivery;
     isHovered: boolean;
+    isSelected?: boolean;
     onHover: (id: string | null) => void;
+    onClick?: () => void;
 }
 
-export function DeliveryCard({ delivery, isHovered, onHover }: DeliveryCardProps) {
+export function DeliveryCard({
+    delivery,
+    isHovered,
+    isSelected,
+    onHover,
+    onClick
+}: DeliveryCardProps) {
     return (
         <Card
             onMouseEnter={() => onHover(delivery.id)}
             onMouseLeave={() => onHover(null)}
+            onClick={onClick}
             className={cn(
                 "transition-all duration-300 cursor-pointer",
-                delivery.isActive
-                    ? "ring-2 ring-primary/40 bg-primary/5 dark:bg-primary/10"
-                    : "hover:ring-1 hover:ring-primary/20",
-                isHovered && "scale-[1.02] shadow-lg"
+                isSelected
+                    ? "ring-2 ring-primary bg-primary/10 dark:bg-primary/15 shadow-md"
+                    : delivery.isActive
+                        ? "ring-2 ring-primary/40 bg-primary/5 dark:bg-primary/10"
+                        : "hover:ring-1 hover:ring-primary/20",
+                isHovered && !isSelected && "scale-[1.02] shadow-lg"
             )}
         >
             <CardContent className="p-0">
@@ -86,14 +97,7 @@ export function DeliveryCard({ delivery, isHovered, onHover }: DeliveryCardProps
                         </div>
                     </div>
 
-                    {/* Action Button */}
-                    <Button
-                        variant="outline"
-                        size="icon"
-                        className="size-8 rounded-full hover:bg-primary/10 hover:border-primary/30 hover:text-primary transition-all duration-200 hover:scale-110 active:scale-95"
-                    >
-                        <Phone className="size-3.5" />
-                    </Button>
+
                 </div>
             </CardContent>
         </Card>
