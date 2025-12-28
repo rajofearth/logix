@@ -1,11 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin } from "lucide-react";
 import { type Delivery } from "../_data/deliveries";
 import { DeliveryCard } from "./DeliveryCard";
 import { SearchBar } from "./SearchBar";
+import { TrackingMap } from "./TrackingMap";
+import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
+import type { GeoJsonFeature, LineStringGeometry } from "@/app/dashboard/jobs/_types";
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
@@ -19,11 +22,34 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
+    const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
+
+    useEffect(() => {
+        if (!selectedDelivery) {
+            setRouteGeoJson(null);
+            return;
+        }
+
+        const fetchRoute = async () => {
+            try {
+                const result = await getDirections(
+                    { lat: selectedDelivery.origin.lat, lng: selectedDelivery.origin.lng },
+                    { lat: selectedDelivery.destination.lat, lng: selectedDelivery.destination.lng }
+                );
+                setRouteGeoJson(result.routeGeoJson);
+            } catch (error) {
+                console.error("Failed to fetch directions:", error);
+                setRouteGeoJson(null);
+            }
+        };
+
+        fetchRoute();
+    }, [selectedDelivery]);
 
     const filteredDeliveries = initialDeliveries.filter(
         (delivery) =>
             delivery.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            delivery.type.toLowerCase().includes(searchQuery.toLowerCase()) 
+            delivery.type.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     const handleDeliveryClick = (delivery: Delivery) => {
@@ -75,6 +101,33 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                 </div>
                             )}
                         </div>
+                    </div>
+
+                    {/* Right Panel - Map */}
+                    <div className="flex-1 overflow-hidden relative">
+                        {selectedDelivery ? (
+                            <TrackingMap
+                                pickup={{
+                                    lat: selectedDelivery.origin.lat,
+                                    lng: selectedDelivery.origin.lng,
+                                }}
+                                drop={{
+                                    lat: selectedDelivery.destination.lat,
+                                    lng: selectedDelivery.destination.lng,
+                                }}
+                                routeGeoJson={routeGeoJson}
+                            />
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full bg-muted/10 text-muted-foreground p-6 text-center">
+                                <div className="bg-muted/20 p-4 rounded-full mb-4">
+                                    <MapPin className="size-8 opacity-50" />
+                                </div>
+                                <h3 className="font-semibold mb-1">Select a Delivery</h3>
+                                <p className="text-sm max-w-[250px]">
+                                    Click on a delivery card to view its route on the map
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                 </div>

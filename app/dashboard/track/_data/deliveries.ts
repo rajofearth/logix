@@ -23,10 +23,14 @@ export interface Delivery {
     origin: {
         address: string;
         detail: string;
+        lat: number;
+        lng: number;
     };
     destination: {
         address: string;
         detail: string;
+        lat: number;
+        lng: number;
     };
     driver: Driver;
     status: DeliveryStatus;
@@ -41,10 +45,14 @@ export const deliveries: Delivery[] = [
         origin: {
             address: "1000 W Fulton Market, Chicago",
             detail: "Rd. Santa Ana, Illinois 85486",
+            lat: 41.8869,
+            lng: -87.6535,
         },
         destination: {
             address: "225 E Chicago Ave, Chicago",
             detail: "Rd. Inglewood, Maine 98380",
+            lat: 41.8967,
+            lng: -87.6206,
         },
         driver: {
             name: "Philip Osborne",
@@ -71,10 +79,14 @@ export const deliveries: Delivery[] = [
         origin: {
             address: "222 W Merchandise Mart Plaza",
             detail: "Rd. Santa Ana, Illinois 85486",
+            lat: 41.8887,
+            lng: -87.6353,
         },
         destination: {
             address: "1200 N North Branch St, Chicago",
             detail: "Rd. Inglewood, Maine 98380",
+            lat: 41.9042,
+            lng: -87.6543,
         },
         driver: {
             name: "Sarah Mitchell",
@@ -101,10 +113,14 @@ export const deliveries: Delivery[] = [
         origin: {
             address: "500 W Madison St, Chicago",
             detail: "Rd. Downtown, Illinois 60661",
+            lat: 41.8819,
+            lng: -87.6398,
         },
         destination: {
             address: "800 S Michigan Ave, Chicago",
             detail: "Rd. Loop District, Illinois 60605",
+            lat: 41.8722,
+            lng: -87.6247,
         },
         driver: {
             name: "Mike Thompson",
@@ -131,10 +147,14 @@ export const deliveries: Delivery[] = [
         origin: {
             address: "333 W 35th St, Chicago",
             detail: "Rd. South Side, Illinois 60616",
+            lat: 41.8309,
+            lng: -87.6340,
         },
         destination: {
             address: "2300 S Throop St, Chicago",
             detail: "Rd. Pilsen, Illinois 60608",
+            lat: 41.8507,
+            lng: -87.6565,
         },
         driver: {
             name: "James Wilson",

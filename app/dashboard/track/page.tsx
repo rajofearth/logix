@@ -30,10 +30,14 @@ export default async function TrackPage() {
             origin: {
                 address: job.pickupAddress,
                 detail: `Lat: ${Number(job.pickupLat).toFixed(4)}, Lng: ${Number(job.pickupLng).toFixed(4)}`, // Fallback detail
+                lat: Number(job.pickupLat),
+                lng: Number(job.pickupLng),
             },
             destination: {
                 address: job.dropAddress,
                 detail: `Lat: ${Number(job.dropLat).toFixed(4)}, Lng: ${Number(job.dropLng).toFixed(4)}`,
+                lat: Number(job.dropLat),
+                lng: Number(job.dropLng),
             },
             driver: {
                 name: job.driver?.name || "Unknown Driver",
