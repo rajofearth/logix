@@ -41,7 +41,7 @@ export function TrackingMap({ deliveries, selectedDeliveryId }: TrackingMapProps
 
             const map = new mapboxgl.default.Map({
                 container: containerRef.current!,
-                style: "mapbox://styles/mapbox/light-v11",
+                style: "mapbox://styles/mapbox/outdoors-v12",
                 center: defaultCenter,
                 zoom: 12,
             });

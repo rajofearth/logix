@@ -79,7 +79,7 @@ export function JobRouteMap({
 
       const map = new mapboxgl.default.Map({
         container: containerRef.current!,
-        style: "mapbox://styles/mapbox/streets-v12",
+        style: "mapbox://styles/mapbox/outdoors-v12",
         center,
         zoom: 9,
       })
