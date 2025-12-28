@@ -1,6 +1,6 @@
 "use client"
 
-import { IconPhone, IconBriefcase, IconMapPin, IconCircleDot } from "@tabler/icons-react"
+import { IconPhone, IconBriefcase, IconMapPin } from "@tabler/icons-react"
 
 import type { DriverDTO } from "../_types"
 import { cn } from "@/lib/utils"
@@ -15,18 +15,21 @@ const statusConfig = {
         ringColor: "ring-emerald-500",
         badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
         dotColor: "bg-emerald-500",
+        nameHoverColor: "group-hover:text-emerald-600 dark:group-hover:text-emerald-400",
     },
     "on-route": {
         label: "On Route",
         ringColor: "ring-primary",
         badgeClass: "bg-primary/10 text-primary",
         dotColor: "bg-primary",
+        nameHoverColor: "group-hover:text-primary",
     },
     "off-duty": {
         label: "Off Duty",
         ringColor: "ring-muted-foreground/50",
         badgeClass: "bg-muted text-muted-foreground",
         dotColor: "bg-muted-foreground/50",
+        nameHoverColor: "group-hover:text-muted-foreground",
     },
 }
 
@@ -82,7 +85,10 @@ export function DriverCard({ driver }: DriverCardProps) {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm truncate text-foreground group-hover:text-primary transition-colors">
+                        <h3 className={cn(
+                            "font-semibold text-sm truncate text-foreground transition-colors",
+                            status.nameHoverColor
+                        )}>
                             {driver.name}
                         </h3>
                         <Badge
@@ -100,49 +106,55 @@ export function DriverCard({ driver }: DriverCardProps) {
                     <span className="text-xs">{driver.phone}</span>
                 </div>
 
-                {/* Job Section */}
+                {/* Job Section - always same height */}
                 <div
                     className={cn(
                         "rounded-lg p-3 transition-colors",
-                        hasActiveJob ? "bg-primary/5 border border-primary/10" : "bg-muted/50"
+                        hasActiveJob ? "bg-primary/5 border border-primary/10" : "bg-muted/30 border border-transparent"
                     )}
                 >
-                    {hasActiveJob ? (
-                        <div className="space-y-2">
-                            {/* Current Job */}
-                            <div className="flex items-start gap-2">
-                                <IconBriefcase className="size-3.5 shrink-0 text-primary mt-0.5" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-                                        Current Job
-                                    </p>
-                                    <p className="text-xs font-medium text-foreground truncate">
-                                        {driver.currentJob}
-                                    </p>
-                                </div>
+                    <div className="space-y-2">
+                        {/* Current Job */}
+                        <div className="flex items-start gap-2">
+                            <IconBriefcase className={cn(
+                                "size-3.5 shrink-0 mt-0.5",
+                                hasActiveJob ? "text-primary" : "text-muted-foreground/40"
+                            )} />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                                    Current Job
+                                </p>
+                                <p className={cn(
+                                    "text-xs truncate",
+                                    hasActiveJob ? "font-medium text-foreground" : "text-muted-foreground/60 italic"
+                                )}>
+                                    {driver.currentJob || "No job assigned"}
+                                </p>
                             </div>
+                        </div>
 
-                            {/* Route */}
-                            <div className="flex items-start gap-2">
-                                <IconMapPin className="size-3.5 shrink-0 text-primary mt-0.5" />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
-                                        Route
-                                    </p>
+                        {/* Route */}
+                        <div className="flex items-start gap-2">
+                            <IconMapPin className={cn(
+                                "size-3.5 shrink-0 mt-0.5",
+                                hasActiveJob ? "text-primary" : "text-muted-foreground/40"
+                            )} />
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                                    Route
+                                </p>
+                                {hasActiveJob && driver.route ? (
                                     <div className="flex items-center gap-1 text-xs text-foreground">
-                                        <span className="truncate">{driver.route!.origin}</span>
+                                        <span className="truncate">{driver.route.origin}</span>
                                         <span className="text-primary font-medium shrink-0">→</span>
-                                        <span className="truncate">{driver.route!.destination}</span>
+                                        <span className="truncate">{driver.route.destination}</span>
                                     </div>
-                                </div>
+                                ) : (
+                                    <p className="text-xs text-muted-foreground/60 italic">—</p>
+                                )}
                             </div>
                         </div>
-                    ) : (
-                        <div className="flex items-center gap-2 text-muted-foreground/70">
-                            <IconCircleDot className="size-3.5" />
-                            <span className="text-xs italic">No active job assigned</span>
-                        </div>
-                    )}
+                    </div>
                 </div>
             </CardContent>
         </Card>
