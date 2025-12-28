@@ -25,11 +25,17 @@ type DriverJobDto = {
 };
 
 function decimalToNumber(val: unknown): number {
+  if (val === null || val === undefined) return 0;
   if (typeof val === "number") return val;
   if (typeof val === "string") return Number(val);
-  if (typeof val === "object" && val !== null && "toNumber" in val) {
-    const fn = (val as { toNumber?: unknown }).toNumber;
-    if (typeof fn === "function") return (fn as () => number)();
+  // Safe handling for Prisma Decimal or other objects
+  if (typeof val === "object") {
+    // Try .toNumber() if available
+    if ("toNumber" in val && typeof (val as any).toNumber === "function") {
+      return (val as any).toNumber();
+    }
+    // Fallback to string conversion
+    return Number(String(val));
   }
   return Number(val);
 }
@@ -56,6 +62,15 @@ export async function GET(req: Request) {
         distanceMeters: true,
       },
     });
+
+    console.log('[API] Found jobs:', jobs.length);
+    if (jobs.length > 0) {
+      console.log('[API] First job raw lat/lng:', {
+        lat: jobs[0].pickupLat,
+        type: typeof jobs[0].pickupLat,
+        converted: decimalToNumber(jobs[0].pickupLat)
+      });
+    }
 
     const dto: DriverJobDto[] = jobs.map((j) => ({
       id: j.id,
