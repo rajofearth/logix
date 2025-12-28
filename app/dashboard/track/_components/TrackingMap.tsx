@@ -52,16 +52,19 @@ export function TrackingMap({
             if (!isMounted) return
             mapboxgl.default.accessToken = token
 
-            // Default center (USA or Delhi, doesn't matter much as we fit bounds)
-            const center: [number, number] = [-98.5795, 39.8283]
-
             const map = new mapboxgl.default.Map({
                 container: containerRef.current!,
-                style: "mapbox://styles/mapbox/outdoors-v12",
-                center,
-                zoom: 3,
+                style: "mapbox://styles/mapbox/standard",
+                config: {
+                    basemap: {
+                        lightPreset: "dusk",
+                        fuelingStationModePointOfInterestLabels: "fuel",
+                        show3dFacades: true,
+                        showLandmarkIcons: true
+                    }
+                },
                 attributionControl: false,
-            })
+            } as any)
 
             map.addControl(new mapboxgl.default.AttributionControl({ compact: true }), 'bottom-right')
             map.addControl(new mapboxgl.default.NavigationControl(), "top-right")

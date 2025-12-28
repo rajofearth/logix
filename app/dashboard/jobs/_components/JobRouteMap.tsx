@@ -79,10 +79,18 @@ export function JobRouteMap({
 
       const map = new mapboxgl.default.Map({
         container: containerRef.current!,
-        style: "mapbox://styles/mapbox/outdoors-v12",
+        style: "mapbox://styles/mapbox/standard",
+        config: {
+          basemap: {
+            lightPreset: "dusk",
+            fuelingStationModePointOfInterestLabels: "fuel",
+            show3dFacades: true,
+            showLandmarkIcons: true
+          }
+        },
         center,
         zoom: 9,
-      })
+      } as any)
 
       map.addControl(new mapboxgl.default.NavigationControl(), "top-right")
 
@@ -104,7 +112,7 @@ export function JobRouteMap({
               data: currentRoute,
             })
           } else {
-            ;(existingSource as import("mapbox-gl").GeoJSONSource).setData(
+            ; (existingSource as import("mapbox-gl").GeoJSONSource).setData(
               currentRoute
             )
           }
@@ -262,7 +270,7 @@ export function JobRouteMap({
             })
           }
         } else {
-          ;(existingSource as import("mapbox-gl").GeoJSONSource).setData(
+          ; (existingSource as import("mapbox-gl").GeoJSONSource).setData(
             routeGeoJson
           )
         }
