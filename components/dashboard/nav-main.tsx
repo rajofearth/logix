@@ -1,6 +1,7 @@
 "use client"
 
 import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { Button } from '@/components/ui/button'
@@ -48,18 +49,19 @@ export function NavMain({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton
-                tooltip={item.title}
-                isActive={
-                  item.url !== "#" &&
-                  (pathname === item.url ||
-                    (item.url !== "/" && pathname.startsWith(`${item.url}/`)))
-                }
-                render={<a href={item.url} />}
-              >
-                {item.icon && <item.icon />}
-                <span>{item.title}</span>
-              </SidebarMenuButton>
+              <Link href={item.url}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  isActive={
+                    item.url !== "#" &&
+                    (pathname === item.url ||
+                      (item.url !== "/" && pathname.startsWith(`${item.url}/`)))
+                  }
+                >
+                  {item.icon && <item.icon />}
+                  <span>{item.title}</span>
+                </SidebarMenuButton>
+              </Link>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
