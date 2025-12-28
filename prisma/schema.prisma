@@ -14,6 +14,12 @@ enum VehicleOwnerType {
   rented
 }
 
+enum DriverStatus {
+  available
+  on_route
+  off_duty
+}
+
 model Driver {
   id                      String          @id @default(uuid()) @db.Uuid
   name                    String
@@ -55,6 +61,8 @@ model Driver {
   phoneNumberVerified Boolean   @default(false) @map("phone_number_verified")
   sessions            Session[]
   accounts            Account[]
+  status              DriverStatus  @default(available)
+  jobs                Job[]
 
   @@map("users")
   @@unique([email])
@@ -201,6 +209,9 @@ model Job {
   dropWindowEndAt   DateTime @map("drop_window_end_at")
 
   distanceMeters    Int      @map("distance_meters")
+
+  driverId          String?  @map("driver_id") @db.Uuid
+  driver            Driver?  @relation(fields: [driverId], references: [id])
 
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")

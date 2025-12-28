@@ -70,7 +70,7 @@ export function DriverCard({ driver }: DriverCardProps) {
                                 status.ringColor
                             )}
                         >
-                            <AvatarImage src={driver.avatar} alt={driver.name} />
+                            <AvatarImage src={driver.avatar ?? undefined} alt={driver.name} />
                             <AvatarFallback className="text-sm font-medium">
                                 {getInitials(driver.name)}
                             </AvatarFallback>
@@ -101,10 +101,12 @@ export function DriverCard({ driver }: DriverCardProps) {
                 </div>
 
                 {/* Phone */}
-                <div className="flex items-center gap-2 text-muted-foreground mb-3">
-                    <IconPhone className="size-3.5 shrink-0" />
-                    <span className="text-xs">{driver.phone}</span>
-                </div>
+                {driver.phone && (
+                    <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                        <IconPhone className="size-3.5 shrink-0" />
+                        <span className="text-xs">{driver.phone}</span>
+                    </div>
+                )}
 
                 {/* Job Section - always same height */}
                 <div
