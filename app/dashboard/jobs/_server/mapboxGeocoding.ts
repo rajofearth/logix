@@ -63,7 +63,7 @@ export async function searchNearbyPlaces(
   url.searchParams.set("limit", limit.toString())
   url.searchParams.set("language", "en")
 
-  const res = await fetch(url.toString(), { cache: "no-store", next: { revalidate: 3600 } }) // Cache for 1h
+  const res = await fetch(url.toString(), { next: { revalidate: 3600 } }) // Cache for 1h
   if (!res.ok) {
     console.error(`Mapbox Places search failed: ${res.status} ${res.statusText}`)
     return []
