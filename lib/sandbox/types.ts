@@ -32,7 +32,10 @@ export type AadhaarGenerateOtpResponseData = {
 };
 
 export type AadhaarVerifyOtpRequest = {
-  "@entity": string;
+  "@entity": "in.co.sandbox.kyc.aadhaar.okyc.request";
+  /**
+   * Sandbox docs specify reference_id as string for verify OTP.
+   */
   reference_id: string;
   otp: string;
 };

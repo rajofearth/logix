@@ -32,16 +32,16 @@ export const driverAuth = betterAuth({
   },
   session: {
     modelName: "Session",
+    // Make driver sessions long-lived (max allowed by cookie spec: 400 days) and auto-refreshed.
+    // Values are in seconds.
+    expiresIn: 60 * 60 * 24 * 400, // 400 days (max cookie Max-Age allowed)
+    updateAge: 60 * 60 * 24, // refresh expiry after 1 day of use
   },
   account: {
     modelName: "Account",
   },
   verification: {
     modelName: "Verification",
-  },
-  emailAndPassword: {
-    enabled: true,
-    requireEmailVerification: false,
   },
   plugins: [
     expo(),

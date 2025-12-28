@@ -33,9 +33,10 @@ export async function sandboxAadhaarVerifyOtp(params: {
   otp: string;
 }): Promise<SandboxResponse<AadhaarVerifyOtpResponseData>> {
   const cfg = getSandboxConfig();
+  const referenceIdTrimmed = params.referenceId.trim();
   const body: AadhaarVerifyOtpRequest = {
-    "@entity": "",
-    reference_id: params.referenceId,
+    "@entity": "in.co.sandbox.kyc.aadhaar.okyc.request",
+    reference_id: referenceIdTrimmed,
     otp: params.otp,
   };
   return sandboxPost<AadhaarVerifyOtpRequest, AadhaarVerifyOtpResponseData>(

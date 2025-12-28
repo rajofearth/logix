@@ -182,3 +182,29 @@ model Verification {
   @@index([identifier])
   @@map("verification")
 }
+
+model Job {
+  id                String   @id @default(uuid()) @db.Uuid
+  title             String
+  weightKg          Int      @map("weight_kg")
+
+  pickupAddress     String   @map("pickup_address")
+  pickupLat         Decimal  @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng         Decimal  @map("pickup_lng") @db.Decimal(9, 6)
+
+  dropAddress       String   @map("drop_address")
+  dropLat           Decimal  @map("drop_lat") @db.Decimal(9, 6)
+  dropLng           Decimal  @map("drop_lng") @db.Decimal(9, 6)
+
+  pickupAt          DateTime @map("pickup_at")
+  dropWindowStartAt DateTime @map("drop_window_start_at")
+  dropWindowEndAt   DateTime @map("drop_window_end_at")
+
+  distanceMeters    Int      @map("distance_meters")
+
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@index([pickupAt])
+  @@map("jobs")
+}
