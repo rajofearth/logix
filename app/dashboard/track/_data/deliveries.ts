@@ -28,11 +28,6 @@ export interface Delivery {
         address: string;
         detail: string;
     };
-    client: {
-        name: string;
-        company: string;
-        avatar: string;
-    };
     driver: Driver;
     status: DeliveryStatus;
     isActive: boolean;
@@ -50,11 +45,6 @@ export const deliveries: Delivery[] = [
         destination: {
             address: "225 E Chicago Ave, Chicago",
             detail: "Rd. Inglewood, Maine 98380",
-        },
-        client: {
-            name: "Nesko din",
-            company: "Horizon Medical Group",
-            avatar: "/avatar1.jpg",
         },
         driver: {
             name: "Philip Osborne",
@@ -86,11 +76,6 @@ export const deliveries: Delivery[] = [
             address: "1200 N North Branch St, Chicago",
             detail: "Rd. Inglewood, Maine 98380",
         },
-        client: {
-            name: "Mark Chen",
-            company: "Innovate Tech, LLC",
-            avatar: "/avatar2.jpg",
-        },
         driver: {
             name: "Sarah Mitchell",
             role: "Driver",
@@ -121,11 +106,6 @@ export const deliveries: Delivery[] = [
             address: "800 S Michigan Ave, Chicago",
             detail: "Rd. Loop District, Illinois 60605",
         },
-        client: {
-            name: "Sarah Johnson",
-            company: "Fresh Foods Inc.",
-            avatar: "/avatar3.jpg",
-        },
         driver: {
             name: "Mike Thompson",
             role: "Driver",
@@ -155,11 +135,6 @@ export const deliveries: Delivery[] = [
         destination: {
             address: "2300 S Throop St, Chicago",
             detail: "Rd. Pilsen, Illinois 60608",
-        },
-        client: {
-            name: "Robert Wilson",
-            company: "Heavy Build Co.",
-            avatar: "/avatar4.jpg",
         },
         driver: {
             name: "James Wilson",

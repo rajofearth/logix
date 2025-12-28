@@ -77,20 +77,20 @@ export function DeliveryCard({
                     </div>
                 </div>
 
-                {/* Client Section - Compact */}
+                {/* Driver Section - Compact */}
                 <div className="flex items-center justify-between px-3 py-2 border-t border-border/50">
                     <div className="flex items-center gap-2">
                         <Avatar className="size-8 ring-2 ring-background shadow-sm transition-transform duration-200 hover:scale-110">
-                            <AvatarImage src={delivery.client.avatar} alt={delivery.client.name} />
-                            <AvatarFallback className="text-xs">{delivery.client.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={delivery.driver.avatar} alt={delivery.driver.name} />
+                            <AvatarFallback className="text-xs">{delivery.driver.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="min-w-0">
-                            <p className="text-[10px] text-muted-foreground">Client</p>
+                            <p className="text-[10px] text-muted-foreground">Driver Details</p>
                             <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.client.name}
+                                {delivery.driver.name}
                             </p>
                             <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.client.company}
+                                {delivery.driver.role}
                             </p>
                         </div>
                     </div>
