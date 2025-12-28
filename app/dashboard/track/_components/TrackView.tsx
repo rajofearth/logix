@@ -8,7 +8,7 @@ import { DeliveryCard } from "./DeliveryCard";
 import { SearchBar } from "./SearchBar";
 import { TrackingMap } from "./TrackingMap";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
-import type { GeoJsonFeature, LineStringGeometry } from "@/app/dashboard/jobs/_types";
+import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
@@ -23,27 +23,44 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
     const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
+    const [fuelStations, setFuelStations] = useState<Array<{ name: string; coord: LngLat }>>([]);
 
     useEffect(() => {
         if (!selectedDelivery) {
             setRouteGeoJson(null);
+            setFuelStations([]);
             return;
         }
 
-        const fetchRoute = async () => {
+        const fetchData = async () => {
             try {
-                const result = await getDirections(
+                // Fetch Route
+                const routePromise = getDirections(
                     { lat: selectedDelivery.origin.lat, lng: selectedDelivery.origin.lng },
                     { lat: selectedDelivery.destination.lat, lng: selectedDelivery.destination.lng }
                 );
-                setRouteGeoJson(result.routeGeoJson);
+
+                // Fetch Gas Stations near Pickup (can be improved to search along route or midpoint later)
+                // We dynamically import the server action to avoid client-side bundling issues if any
+                const { searchNearbyPlaces } = await import("@/app/dashboard/jobs/_server/mapboxGeocoding");
+                const stationsPromise = searchNearbyPlaces(
+                    { lat: selectedDelivery.origin.lat, lng: selectedDelivery.origin.lng },
+                    "gas_station"
+                );
+
+                const [routeResult, stationsResult] = await Promise.all([routePromise, stationsPromise]);
+
+                setRouteGeoJson(routeResult.routeGeoJson);
+                setFuelStations(stationsResult);
+
             } catch (error) {
-                console.error("Failed to fetch directions:", error);
-                setRouteGeoJson(null);
+                console.error("Failed to fetch data:", error);
+                // Keep partial data if possible, or reset
+                if (!routeGeoJson) setRouteGeoJson(null);
             }
         };
 
-        fetchRoute();
+        fetchData();
     }, [selectedDelivery]);
 
     const filteredDeliveries = initialDeliveries.filter(
@@ -116,6 +133,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                     lng: selectedDelivery.destination.lng,
                                 }}
                                 routeGeoJson={routeGeoJson}
+                                fuelStations={fuelStations}
                             />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full bg-muted/10 text-muted-foreground p-6 text-center">

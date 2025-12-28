@@ -45,4 +45,40 @@ export async function reverseGeocode(coord: LngLat): Promise<string> {
   return name
 }
 
+export async function searchNearbyPlaces(
+  coord: LngLat,
+  category: string = "gas_station",
+  limit: number = 25
+): Promise<Array<{ name: string; coord: LngLat }>> {
+  const parsed = lngLatSchema.parse(coord)
+  const token = getMapboxAccessToken()
+
+  // Use Mapbox Search Box API for category search
+  // https://api.mapbox.com/search/searchbox/v1/category/{category}
+  const url = new URL(
+    `https://api.mapbox.com/search/searchbox/v1/category/${category}`
+  )
+  url.searchParams.set("access_token", token)
+  url.searchParams.set("proximity", `${parsed.lng},${parsed.lat}`)
+  url.searchParams.set("limit", limit.toString())
+  url.searchParams.set("language", "en")
+
+  const res = await fetch(url.toString(), { cache: "no-store", next: { revalidate: 3600 } }) // Cache for 1h
+  if (!res.ok) {
+    console.error(`Mapbox Places search failed: ${res.status} ${res.statusText}`)
+    return []
+  }
+
+  const data = await res.json()
+
+  // Response has "features" where each feature has "geometry.coordinates" [lng, lat] and "properties.name"
+  return (data.features || []).map((f: any) => ({
+    name: f.properties.name,
+    coord: {
+      lng: f.geometry.coordinates[0],
+      lat: f.geometry.coordinates[1],
+    },
+  }))
+}
+
 

@@ -7,37 +7,48 @@ export function TrackingMap({
     pickup,
     drop,
     routeGeoJson,
+    fuelStations = [],
 }: {
     pickup?: LngLat
     drop?: LngLat
     routeGeoJson?: GeoJsonFeature<LineStringGeometry> | null
+    fuelStations?: Array<{ name: string; coord: LngLat }>
 }) {
     const containerRef = React.useRef<HTMLDivElement | null>(null)
     const mapRef = React.useRef<import("mapbox-gl").Map | null>(null)
     const pickupMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
     const dropMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
+    const fuelMarkersRef = React.useRef<import("mapbox-gl").Marker[]>([])
+
+    const [isMapLoaded, setIsMapLoaded] = React.useState(false)
 
     const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
     const routeRef = React.useRef<typeof routeGeoJson>(routeGeoJson)
     routeRef.current = routeGeoJson
 
-    function buildMarkerEl(kind: "pickup" | "drop"): HTMLDivElement {
+    function buildMarkerEl(kind: "pickup" | "drop" | "fuel"): HTMLDivElement {
         const el = document.createElement("div")
-        el.style.width = "28px"
-        el.style.height = "28px"
+        el.style.width = kind === "fuel" ? "24px" : "28px"
+        el.style.height = kind === "fuel" ? "24px" : "28px"
         el.style.borderRadius = "999px"
         el.style.display = "flex"
         el.style.alignItems = "center"
         el.style.justifyContent = "center"
-        el.style.fontSize = "12px"
+        el.style.fontSize = kind === "fuel" ? "10px" : "12px"
         el.style.fontWeight = "700"
-        el.style.color = "white"
+        el.style.color = kind === "fuel" ? "black" : "white"
         el.style.border = "2px solid rgba(255,255,255,0.95)"
-        el.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"
+        el.style.boxShadow = "0 4px 12px rgba(0,0,0,0.25)"
         el.style.userSelect = "none"
-        el.style.transform = "translateY(-2px)"
-        el.textContent = kind === "pickup" ? "P" : "D"
-        el.style.background = kind === "pickup" ? "#16a34a" : "#dc2626"
+
+        if (kind === "fuel") {
+            el.style.background = "#fbbf24"
+            el.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 22v-8a2 2 0 0 1 2-2h2.5"/><path d="M7.5 12h3a2 2 0 0 1 2 2v+8"/><path d="M16 13.5V6a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v6"/><path d="M14 6h.5a2.5 2.5 0 0 1 2.5 2.5v3.5"/></svg>`
+        } else {
+            el.textContent = kind === "pickup" ? "P" : "D"
+            el.style.background = kind === "pickup" ? "#16a34a" : "#dc2626"
+            el.style.transform = "translateY(-2px)"
+        }
         return el
     }
 
@@ -81,14 +92,9 @@ export function TrackingMap({
 
                 if (currentRoute) {
                     if (!existingSource) {
-                        map.addSource(sourceId, {
-                            type: "geojson",
-                            data: currentRoute,
-                        })
+                        map.addSource(sourceId, { type: "geojson", data: currentRoute })
                     } else {
-                        ; (existingSource as import("mapbox-gl").GeoJSONSource).setData(
-                            currentRoute
-                        )
+                        (existingSource as import("mapbox-gl").GeoJSONSource).setData(currentRoute)
                     }
 
                     if (!map.getLayer(casingLayerId)) {
@@ -97,11 +103,7 @@ export function TrackingMap({
                             type: "line",
                             source: sourceId,
                             layout: { "line-join": "round", "line-cap": "round" },
-                            paint: {
-                                "line-color": "#0b1220",
-                                "line-width": 7,
-                                "line-opacity": 0.35,
-                            },
+                            paint: { "line-color": "#0b1220", "line-width": 7, "line-opacity": 0.35 },
                         })
                     }
                     if (!map.getLayer(lineLayerId)) {
@@ -123,6 +125,7 @@ export function TrackingMap({
             map.on("load", () => {
                 map.resize()
                 ensureRouteLayers()
+                setIsMapLoaded(true)
             })
             map.on("style.load", () => {
                 ensureRouteLayers()
@@ -144,8 +147,7 @@ export function TrackingMap({
 
     React.useEffect(() => {
         const map = mapRef.current
-        if (!map) return
-        if (!token) return
+        if (!map || !token) return
 
         void (async () => {
             const mapboxgl = await import("mapbox-gl")
@@ -237,6 +239,33 @@ export function TrackingMap({
             }
         })()
     }, [pickup, drop, routeGeoJson, token])
+
+    React.useEffect(() => {
+        const map = mapRef.current
+        if (!map || !token || !isMapLoaded) return
+
+        // Clear existing
+        fuelMarkersRef.current.forEach(m => m.remove())
+        fuelMarkersRef.current = []
+
+        if (!fuelStations?.length) return
+
+        void (async () => {
+            const mapboxgl = await import("mapbox-gl")
+
+            fuelStations.forEach(station => {
+                const marker = new mapboxgl.default.Marker({
+                    element: buildMarkerEl("fuel")
+                })
+                    .setLngLat([station.coord.lng, station.coord.lat])
+                    .setPopup(new mapboxgl.default.Popup({ offset: 25, closeButton: false }).setText(station.name))
+                    .addTo(map)
+
+                fuelMarkersRef.current.push(marker)
+            })
+        })()
+
+    }, [fuelStations, token, isMapLoaded])
 
     if (!token) {
         return (
