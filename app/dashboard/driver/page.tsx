@@ -9,6 +9,7 @@ import { listDrivers, getDriverStats } from "./_server/driverActions"
 import { DriverFilters } from "./_components/DriverFilters"
 import { DriversGrid } from "./_components/DriversGrid"
 import { Pagination } from "./_components/Pagination"
+import { DriverDetailsSheet } from "./_components/DriverDetailsSheet"
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
@@ -28,6 +29,10 @@ export default function DriversPage() {
   const [page, setPage] = React.useState(1)
   const [totalPages, setTotalPages] = React.useState(1)
   const [totalItems, setTotalItems] = React.useState(0)
+
+  // Sheet state
+  const [selectedDriver, setSelectedDriver] = React.useState<DriverDTO | null>(null)
+  const [isSheetOpen, setIsSheetOpen] = React.useState(false)
 
   // Debounce search
   const [debouncedSearch, setDebouncedSearch] = React.useState("")
@@ -58,6 +63,12 @@ export default function DriversPage() {
     setPage(1)
   }, [filter, debouncedSearch])
 
+  // Handle driver card click
+  const handleDriverClick = (driver: DriverDTO) => {
+    setSelectedDriver(driver)
+    setIsSheetOpen(true)
+  }
+
   return (
     <SidebarProvider
       style={
@@ -83,7 +94,11 @@ export default function DriversPage() {
               />
 
               {/* Drivers Grid */}
-              <DriversGrid drivers={drivers} isLoading={isLoading} />
+              <DriversGrid
+                drivers={drivers}
+                isLoading={isLoading}
+                onDriverClick={handleDriverClick}
+              />
 
               {/* Pagination - always visible when there are items */}
               {totalItems > 0 && (
@@ -98,6 +113,13 @@ export default function DriversPage() {
           </div>
         </div>
       </SidebarInset>
+
+      {/* Driver Details Sheet */}
+      <DriverDetailsSheet
+        driver={selectedDriver}
+        open={isSheetOpen}
+        onOpenChange={setIsSheetOpen}
+      />
     </SidebarProvider>
   )
 }

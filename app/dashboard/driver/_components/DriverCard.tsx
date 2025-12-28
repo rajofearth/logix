@@ -35,14 +35,16 @@ const statusConfig = {
 
 interface DriverCardProps {
     driver: DriverDTO
+    onClick?: () => void
 }
 
-export function DriverCard({ driver }: DriverCardProps) {
+export function DriverCard({ driver, onClick }: DriverCardProps) {
     const status = statusConfig[driver.status]
     const hasActiveJob = driver.currentJob && driver.route
 
     return (
         <Card
+            onClick={onClick}
             className={cn(
                 "group relative overflow-hidden transition-all duration-300",
                 "hover:shadow-lg hover:-translate-y-1 hover:border-primary/20",

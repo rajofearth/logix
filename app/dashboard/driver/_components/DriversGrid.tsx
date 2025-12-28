@@ -10,9 +10,10 @@ import { DriverCard } from "./DriverCard"
 interface DriversGridProps {
     drivers: DriverDTO[]
     isLoading?: boolean
+    onDriverClick?: (driver: DriverDTO) => void
 }
 
-export function DriversGrid({ drivers, isLoading }: DriversGridProps) {
+export function DriversGrid({ drivers, isLoading, onDriverClick }: DriversGridProps) {
     // Track if this is the initial load (no drivers yet)
     const isInitialLoad = isLoading && drivers.length === 0
 
@@ -57,7 +58,10 @@ export function DriversGrid({ drivers, isLoading }: DriversGridProps) {
                     className="animate-in fade-in-0 slide-in-from-bottom-2 duration-300 fill-mode-both"
                     style={{ animationDelay: `${index * 50}ms` }}
                 >
-                    <DriverCard driver={driver} />
+                    <DriverCard
+                        driver={driver}
+                        onClick={() => onDriverClick?.(driver)}
+                    />
                 </div>
             ))}
         </div>
