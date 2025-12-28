@@ -30,34 +30,9 @@ export function DriverFilters({
     onSearchChange,
 }: DriverFiltersProps) {
     return (
-        <div className="flex flex-col gap-4">
-            {/* Header with title and search */}
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-2">
-                    <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <IconUsers className="size-4 text-primary" />
-                    </div>
-                    <div>
-                        <h2 className="font-semibold text-foreground">Driver Management</h2>
-                        <p className="text-xs text-muted-foreground">{stats.all} total drivers</p>
-                    </div>
-                </div>
-
-                {/* Search */}
-                <div className="relative w-full sm:w-72">
-                    <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-                    <Input
-                        type="search"
-                        placeholder="Search by name, phone, or job..."
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="pl-9 h-9"
-                    />
-                </div>
-            </div>
-
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Filter Tabs */}
-            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl w-fit">
+            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl w-fit order-2 sm:order-1">
                 {filters.map((filter) => (
                     <button
                         key={filter.key}
@@ -83,6 +58,18 @@ export function DriverFilters({
                         </span>
                     </button>
                 ))}
+            </div>
+
+            {/* Search */}
+            <div className="relative w-full sm:w-72 order-1 sm:order-2">
+                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                <Input
+                    type="search"
+                    placeholder="Search by name, phone, or job..."
+                    value={search}
+                    onChange={(e) => onSearchChange(e.target.value)}
+                    className="pl-9 h-9"
+                />
             </div>
         </div>
     )

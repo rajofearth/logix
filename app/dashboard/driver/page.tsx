@@ -85,8 +85,8 @@ export default function DriversPage() {
               {/* Drivers Grid */}
               <DriversGrid drivers={drivers} isLoading={isLoading} />
 
-              {/* Pagination */}
-              {!isLoading && totalItems > 0 && (
+              {/* Pagination - always visible when there are items */}
+              {totalItems > 0 && (
                 <Pagination
                   currentPage={page}
                   totalPages={totalPages}
