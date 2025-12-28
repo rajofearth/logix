@@ -53,8 +53,8 @@ const data = {
       icon: IconUsers,
     },
     {
-      title: "Analytics",
-      url: "#",
+      title: "Tracking",
+      url: "/dashboard/track",
       icon: IconChartBar,
     },
     {
