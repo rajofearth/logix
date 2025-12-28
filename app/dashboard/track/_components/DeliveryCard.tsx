@@ -31,9 +31,7 @@ export function DeliveryCard({
                 "transition-all duration-300 cursor-pointer",
                 isSelected
                     ? "ring-2 ring-primary bg-primary/10 dark:bg-primary/15 shadow-md"
-                    : delivery.isActive
-                        ? "ring-2 ring-primary/40 bg-primary/5 dark:bg-primary/10"
-                        : "hover:ring-1 hover:ring-primary/20",
+                    : "hover:ring-1 hover:ring-primary/20",
                 isHovered && !isSelected && "scale-[1.02] shadow-lg"
             )}
         >

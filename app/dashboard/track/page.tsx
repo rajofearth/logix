@@ -6,9 +6,6 @@ import { MapPin } from "lucide-react";
 import { deliveries, type Delivery } from "./_data/deliveries";
 import { DeliveryCard } from "./_components/DeliveryCard";
 import { SearchBar } from "./_components/SearchBar";
-import { TrackingMap } from "./_components/TrackingMap";
-import { DeliveryStatusBar } from "./_components/DeliveryStatusBar";
-import { DriverInfoPanel } from "./_components/DriverInfoPanel";
 
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import { SiteHeader } from "@/components/dashboard/site-header";
@@ -32,6 +29,7 @@ export default function TrackPage() {
 
     return (
         <SidebarProvider
+            className="h-svh w-full overflow-hidden"
             style={
                 {
                     "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -40,11 +38,11 @@ export default function TrackPage() {
             }
         >
             <AppSidebar variant="inset" />
-            <SidebarInset>
+            <SidebarInset className="h-svh overflow-hidden flex flex-col">
                 <SiteHeader title="Tracking" />
 
                 {/* Main Content - Split Layout */}
-                <div className="flex flex-1 h-[calc(100vh-var(--header-height))] overflow-hidden">
+                <div className="flex flex-1 overflow-hidden">
 
                     {/* Left Panel - Cards */}
                     <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 flex flex-col border-r border-border bg-background">
@@ -53,15 +51,8 @@ export default function TrackPage() {
                             <SearchBar value={searchQuery} onChange={setSearchQuery} />
                         </div>
 
-                        {/* Title */}
-                        <div className="px-4 py-2">
-                            <h2 className="text-base font-semibold text-foreground">
-                                Ongoing Delivery Panel
-                            </h2>
-                        </div>
-
                         {/* Scrollable Cards */}
-                        <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-3">
+                        <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2 space-y-3">
                             {filteredDeliveries.map((delivery) => (
                                 <DeliveryCard
                                     key={delivery.id}
@@ -83,32 +74,6 @@ export default function TrackPage() {
                         </div>
                     </div>
 
-                    {/* Right Panel - Map with floating components */}
-                    <div className="hidden md:flex flex-1 min-w-0 relative">
-                        <TrackingMap
-                            deliveries={filteredDeliveries}
-                            selectedDeliveryId={selectedDelivery?.id || hoveredCard}
-                        />
-
-                        {/* Floating Status Bar - Top Center */}
-                        {selectedDelivery && (
-                            <div className="absolute top-4 left-0 right-0 z-10 flex justify-center animate-in fade-in slide-in-from-top-2 duration-300">
-                                <DeliveryStatusBar
-                                    currentLocation={selectedDelivery.status.currentLocation}
-                                    lastStop={selectedDelivery.status.lastStop}
-                                    distance={selectedDelivery.status.distance}
-                                    currentSpeed={selectedDelivery.status.currentSpeed}
-                                />
-                            </div>
-                        )}
-
-                        {/* Floating Driver Info - Bottom Center */}
-                        {selectedDelivery && (
-                            <div className="absolute bottom-4 left-0 right-0 z-10 flex justify-center animate-in fade-in slide-in-from-bottom-2 duration-300">
-                                <DriverInfoPanel driver={selectedDelivery.driver} />
-                            </div>
-                        )}
-                    </div>
                 </div>
             </SidebarInset>
         </SidebarProvider>

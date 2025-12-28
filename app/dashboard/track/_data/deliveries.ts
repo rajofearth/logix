@@ -144,4 +144,39 @@ export const deliveries: Delivery[] = [
         },
         isActive: false,
     },
+    {
+        id: "ST-202500461",
+        type: "Industrial Equipment",
+        image: "/truck.png",
+        origin: {
+            address: "333 W 35th St, Chicago",
+            detail: "Rd. South Side, Illinois 60616",
+        },
+        destination: {
+            address: "2300 S Throop St, Chicago",
+            detail: "Rd. Pilsen, Illinois 60608",
+        },
+        client: {
+            name: "Robert Wilson",
+            company: "Heavy Build Co.",
+            avatar: "/avatar4.jpg",
+        },
+        driver: {
+            name: "James Wilson",
+            role: "Driver",
+            avatar: "/driver4.jpg",
+            experience: "20 years",
+            license: "CDL",
+            idNumber: "4455-22-1188",
+            licenseClass: "A",
+            insuranceNumber: "112-23-3445",
+        },
+        status: {
+            currentLocation: "Route 55",
+            lastStop: "30m ago",
+            distance: "15/40 mi",
+            currentSpeed: "55 mph",
+        },
+        isActive: false,
+    },
 ];
