@@ -83,9 +83,6 @@ export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
                                     <p className="text-sm font-semibold">{delivery.driver.name}</p>
                                     <p className="text-xs text-muted-foreground">{delivery.driver.role}</p>
                                 </div>
-                                <div className="ml-2 flex items-center justify-center size-6 rounded-full bg-muted">
-                                    <User className="size-3 text-muted-foreground" />
-                                </div>
                             </div>
 
                             {/* Action Buttons */}
