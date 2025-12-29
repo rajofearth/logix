@@ -58,6 +58,9 @@ interface BlockDetailSheetProps {
     block: Block | null;
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    warehouseId?: string;
+    floorId?: string;
+    onRefresh?: () => void;
 }
 
 // Add Product Dialog State
@@ -85,7 +88,7 @@ interface PicklistItem {
     selected: boolean;
 }
 
-export function BlockDetailSheet({ block, open, onOpenChange }: BlockDetailSheetProps) {
+export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floorId, onRefresh }: BlockDetailSheetProps) {
     // Dialog states
     const [addProductOpen, setAddProductOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);

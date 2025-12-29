@@ -219,3 +219,91 @@ model Job {
   @@index([pickupAt])
   @@map("jobs")
 }
+
+// ============================================
+// Warehouse Management Models
+// ============================================
+
+enum ProductCategory {
+  electronics
+  food
+  apparel
+  pharmaceuticals
+  machinery
+  raw_materials
+  packaging
+  other
+}
+
+enum BlockStatus {
+  normal
+  warning
+  critical
+  empty
+}
+
+model Warehouse {
+  id        String   @id @default(uuid()) @db.Uuid
+  name      String
+  code      String   @unique
+  address   String
+  city      String
+  workers   Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  floors    Floor[]
+
+  @@map("warehouses")
+}
+
+model Floor {
+  id          String    @id @default(uuid()) @db.Uuid
+  name        String
+  level       Int
+  warehouseId String    @map("warehouse_id") @db.Uuid
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  blocks      Block[]
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([warehouseId])
+  @@map("floors")
+}
+
+model Block {
+  id          String          @id @default(uuid()) @db.Uuid
+  name        String
+  row         String
+  column      Int
+  capacity    Int
+  floorId     String          @map("floor_id") @db.Uuid
+  floor       Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  category    ProductCategory
+  temperature Decimal?        @db.Decimal(4, 1)
+  humidity    Int?
+  products    Product[]
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@index([floorId])
+  @@map("blocks")
+}
+
+model Product {
+  id           String          @id @default(uuid()) @db.Uuid
+  sku          String          @unique
+  name         String
+  quantity     Int
+  category     ProductCategory
+  boughtAt     Decimal         @map("bought_at") @db.Decimal(10, 2)
+  currentPrice Decimal         @map("current_price") @db.Decimal(10, 2)
+  expiryDate   DateTime?       @map("expiry_date")
+  blockId      String          @map("block_id") @db.Uuid
+  block        Block           @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  @@index([blockId])
+  @@index([sku])
+  @@map("products")
+}

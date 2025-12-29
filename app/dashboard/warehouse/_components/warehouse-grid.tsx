@@ -8,9 +8,11 @@ import { BlockDetailSheet } from "./block-detail-sheet";
 interface WarehouseGridProps {
     floor: Floor;
     highlightedBlockId?: string | null;
+    warehouseId?: string;
+    onRefresh?: () => void;
 }
 
-export function WarehouseVisualGrid({ floor, highlightedBlockId }: WarehouseGridProps) {
+export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, onRefresh }: WarehouseGridProps) {
     const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -76,6 +78,9 @@ export function WarehouseVisualGrid({ floor, highlightedBlockId }: WarehouseGrid
                 block={selectedBlock}
                 open={sheetOpen}
                 onOpenChange={setSheetOpen}
+                warehouseId={warehouseId}
+                floorId={floor.id}
+                onRefresh={onRefresh}
             />
         </div>
     );
