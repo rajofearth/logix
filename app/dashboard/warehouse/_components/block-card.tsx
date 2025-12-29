@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Block, formatCapacityPercentage, getCategoryIcon } from "./types";
 import { Users } from "lucide-react";
@@ -7,6 +8,7 @@ import { Users } from "lucide-react";
 interface BlockCardProps {
     block: Block;
     onClick: (block: Block) => void;
+    isHighlighted?: boolean;
 }
 
 // Generate slot visualization similar to reference image
@@ -50,17 +52,34 @@ function SlotGrid({ block }: { block: Block }) {
     return <div className="space-y-1">{rows}</div>;
 }
 
-export function BlockCard({ block, onClick }: BlockCardProps) {
+export function BlockCard({ block, onClick, isHighlighted }: BlockCardProps) {
+    const cardRef = useRef<HTMLButtonElement>(null);
     const usagePercent = formatCapacityPercentage(block.used, block.capacity);
     const CategoryIcon = getCategoryIcon(block.category);
 
     // Mock worker count based on block usage
     const workers = Math.max(1, Math.floor(block.used / 50));
 
+    // Scroll into view when highlighted
+    useEffect(() => {
+        if (isHighlighted && cardRef.current) {
+            cardRef.current.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        }
+    }, [isHighlighted]);
+
     return (
         <button
+            ref={cardRef}
             onClick={() => onClick(block)}
-            className="flex flex-col p-3 rounded-lg bg-zinc-900/60 border border-zinc-800 hover:border-zinc-600 transition-colors text-left w-full"
+            className={cn(
+                "flex flex-col p-3 rounded-lg bg-zinc-900/60 border transition-all text-left w-full",
+                isHighlighted
+                    ? "border-primary ring-2 ring-primary/50 animate-pulse"
+                    : "border-zinc-800 hover:border-zinc-600"
+            )}
         >
             {/* Header */}
             <div className="flex items-center justify-between mb-3">

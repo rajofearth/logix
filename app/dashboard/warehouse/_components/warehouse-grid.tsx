@@ -7,9 +7,10 @@ import { BlockDetailSheet } from "./block-detail-sheet";
 
 interface WarehouseGridProps {
     floor: Floor;
+    highlightedBlockId?: string | null;
 }
 
-export function WarehouseVisualGrid({ floor }: WarehouseGridProps) {
+export function WarehouseVisualGrid({ floor, highlightedBlockId }: WarehouseGridProps) {
     const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -56,6 +57,7 @@ export function WarehouseVisualGrid({ floor }: WarehouseGridProps) {
                                             key={block.id}
                                             block={block}
                                             onClick={handleBlockClick}
+                                            isHighlighted={block.id === highlightedBlockId}
                                         />
                                     ))}
                             </div>

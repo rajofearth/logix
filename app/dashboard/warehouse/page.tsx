@@ -14,6 +14,7 @@ export default function WarehousePage() {
   // State for selected warehouse and floor
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(MOCK_WAREHOUSES[0].id);
   const [selectedFloorId, setSelectedFloorId] = useState(MOCK_WAREHOUSES[0].floors[0].id);
+  const [highlightedBlockId, setHighlightedBlockId] = useState<string | null>(null);
 
   // Get current warehouse and floor
   const selectedWarehouse = MOCK_WAREHOUSES.find((w) => w.id === selectedWarehouseId)!;
@@ -35,6 +36,14 @@ export default function WarehousePage() {
     setSelectedFloorId(floorId);
   };
 
+  // Handle search result click - navigate to the floor and highlight block
+  const handleSearchResultClick = (floorId: string, blockId: string) => {
+    setSelectedFloorId(floorId);
+    setHighlightedBlockId(blockId);
+    // Auto-clear highlight after 3 seconds
+    setTimeout(() => setHighlightedBlockId(null), 3000);
+  };
+
   return (
     <SidebarProvider
       style={
@@ -53,6 +62,7 @@ export default function WarehousePage() {
             warehouses={MOCK_WAREHOUSES}
             selectedWarehouseId={selectedWarehouseId}
             onWarehouseChange={handleWarehouseChange}
+            onSearchResultClick={handleSearchResultClick}
           />
 
           {/* Floor Navigator */}
@@ -64,7 +74,7 @@ export default function WarehousePage() {
 
           {/* Main Content - Block Grid */}
           <div className="flex-1 rounded-lg p-4 min-h-0 overflow-hidden">
-            <WarehouseVisualGrid floor={selectedFloor} />
+            <WarehouseVisualGrid floor={selectedFloor} highlightedBlockId={highlightedBlockId} />
           </div>
 
           {/* Footer Stats */}
