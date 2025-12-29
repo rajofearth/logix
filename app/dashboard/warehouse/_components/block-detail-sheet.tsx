@@ -22,17 +22,17 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from "@/components/ui/drawer";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import {
     Block,
     ProductCategory,
+    CATEGORIES,
     formatCapacityPercentage,
     getCategoryIcon,
     getCategoryLabel,
@@ -511,16 +511,16 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                 </SheetContent>
             </Sheet>
 
-            {/* Add Product Drawer */}
-            <Drawer open={addProductOpen} onOpenChange={setAddProductOpen}>
-                <DrawerContent>
-                    <DrawerHeader>
-                        <DrawerTitle>Add New Product</DrawerTitle>
-                        <DrawerDescription>
+            {/* Add Product Dialog */}
+            <Dialog open={addProductOpen} onOpenChange={setAddProductOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Add New Product</DialogTitle>
+                        <DialogDescription>
                             Add a new product to Block {block.name}
-                        </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="px-4 space-y-4">
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label htmlFor="product-name">Product Name</Label>
@@ -599,7 +599,7 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <Label>Category</Label>
+                            <Label htmlFor="category">Category</Label>
                             <Select
                                 value={addProductForm.category}
                                 onValueChange={(value) =>
@@ -609,41 +609,39 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                                     }))
                                 }
                             >
-                                <SelectTrigger>
+                                <SelectTrigger id="category">
                                     <SelectValue placeholder="Select category" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="electronics">Electronics</SelectItem>
-                                    <SelectItem value="food">Food & Beverages</SelectItem>
-                                    <SelectItem value="apparel">Apparel</SelectItem>
-                                    <SelectItem value="pharmaceuticals">Pharmaceuticals</SelectItem>
-                                    <SelectItem value="machinery">Machinery</SelectItem>
-                                    <SelectItem value="raw-materials">Raw Materials</SelectItem>
-                                    <SelectItem value="packaging">Packaging</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
+                                    {CATEGORIES.map((category) => (
+                                        <SelectItem key={category} value={category}>
+                                            {getCategoryLabel(category)}
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
                     </div>
-                    <DrawerFooter>
-                        <Button onClick={handleAddProduct}>Add Product</Button>
-                        <DrawerClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DrawerClose>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setAddProductOpen(false)}>Cancel</Button>
+                        <Button onClick={handleAddProduct} disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Add Product
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-            {/* Transfer Drawer */}
-            <Drawer open={transferOpen} onOpenChange={setTransferOpen}>
-                <DrawerContent>
-                    <DrawerHeader>
-                        <DrawerTitle>Transfer Product</DrawerTitle>
-                        <DrawerDescription>
+            {/* Transfer Dialog */}
+            <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+                <DialogContent className="sm:max-w-[500px]">
+                    <DialogHeader>
+                        <DialogTitle>Transfer Product</DialogTitle>
+                        <DialogDescription>
                             Move products from Block {block.name} to another location
-                        </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="px-4 space-y-4">
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
                         <div className="space-y-2">
                             <Label>Select Product</Label>
                             <Select
@@ -669,7 +667,7 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="transfer-quantity">Quantity to Transfer</Label>
+                                <Label htmlFor="transfer-quantity">Quantity</Label>
                                 <Input
                                     id="transfer-quantity"
                                     type="number"
@@ -699,28 +697,26 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                             </div>
                         </div>
                     </div>
-                    <DrawerFooter>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setTransferOpen(false)}>Cancel</Button>
                         <Button onClick={handleTransfer}>
                             <ArrowRightLeft className="h-4 w-4 mr-2" />
                             Transfer
                         </Button>
-                        <DrawerClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DrawerClose>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-            {/* Picklist Drawer */}
-            <Drawer open={picklistOpen} onOpenChange={setPicklistOpen}>
-                <DrawerContent>
-                    <DrawerHeader>
-                        <DrawerTitle>Generate Picklist</DrawerTitle>
-                        <DrawerDescription>
+            {/* Picklist Dialog */}
+            <Dialog open={picklistOpen} onOpenChange={setPicklistOpen}>
+                <DialogContent className="sm:max-w-[600px]">
+                    <DialogHeader>
+                        <DialogTitle>Generate Picklist</DialogTitle>
+                        <DialogDescription>
                             Select products and quantities for the picklist
-                        </DrawerDescription>
-                    </DrawerHeader>
-                    <div className="px-4 max-h-[300px] overflow-y-auto">
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="max-h-[300px] overflow-y-auto pr-2">
                         <div className="space-y-2">
                             {picklistItems.map((item) => {
                                 const product = block.products.find(
@@ -778,7 +774,8 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                             })}
                         </div>
                     </div>
-                    <DrawerFooter>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPicklistOpen(false)}>Cancel</Button>
                         <Button
                             onClick={handleGeneratePicklist}
                             disabled={!picklistItems.some((item) => item.selected && item.quantity > 0)}
@@ -786,12 +783,9 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                             <ClipboardList className="h-4 w-4 mr-2" />
                             Generate Picklist
                         </Button>
-                        <DrawerClose asChild>
-                            <Button variant="outline">Cancel</Button>
-                        </DrawerClose>
-                    </DrawerFooter>
-                </DrawerContent>
-            </Drawer>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

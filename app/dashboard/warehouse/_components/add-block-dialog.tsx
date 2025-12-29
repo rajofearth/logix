@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from "@/components/ui/drawer";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import {
     Select,
     SelectContent,
@@ -23,7 +22,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createBlock } from "../_lib/api";
-import { getCategoryLabel, ProductCategory } from "./types";
+import { getCategoryLabel, ProductCategory, CATEGORIES } from "./types";
 
 interface AddBlockDialogProps {
     open: boolean;
@@ -32,18 +31,6 @@ interface AddBlockDialogProps {
     floorId: string;
     onSuccess?: () => void;
 }
-
-// Ensure these match the ProductCategory type in types.ts
-const CATEGORIES: ProductCategory[] = [
-    "electronics",
-    "food",
-    "apparel",
-    "pharmaceuticals",
-    "machinery",
-    "raw-materials",
-    "packaging",
-    "other",
-];
 
 export function AddBlockDialog({
     open,
@@ -97,15 +84,15 @@ export function AddBlockDialog({
     };
 
     return (
-        <Drawer open={open} onOpenChange={onOpenChange}>
-            <DrawerContent>
-                <DrawerHeader>
-                    <DrawerTitle>Add New Block</DrawerTitle>
-                    <DrawerDescription>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                    <DialogTitle>Add New Block</DialogTitle>
+                    <DialogDescription>
                         Create a storage block in this floor.
-                    </DrawerDescription>
-                </DrawerHeader>
-                <div className="px-4 space-y-4">
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="block-name">Block Name/Code</Label>
                         <Input
@@ -194,16 +181,16 @@ export function AddBlockDialog({
                         </div>
                     </div>
                 </div>
-                <DrawerFooter>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                        Cancel
+                    </Button>
                     <Button onClick={handleSubmit} disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Create Block
                     </Button>
-                    <DrawerClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                    </DrawerClose>
-                </DrawerFooter>
-            </DrawerContent>
-        </Drawer>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }

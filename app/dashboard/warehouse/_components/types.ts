@@ -36,6 +36,17 @@ export type ProductCategory =
     | "packaging"
     | "other";
 
+export const CATEGORIES: ProductCategory[] = [
+    "electronics",
+    "food",
+    "apparel",
+    "pharmaceuticals",
+    "machinery",
+    "raw-materials",
+    "packaging",
+    "other",
+];
+
 export type BlockStatus = "normal" | "warning" | "critical" | "empty";
 
 export interface Block {

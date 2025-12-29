@@ -5,14 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-    Drawer,
-    DrawerClose,
-    DrawerContent,
-    DrawerDescription,
-    DrawerFooter,
-    DrawerHeader,
-    DrawerTitle,
-} from "@/components/ui/drawer";
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createFloor } from "../_lib/api";
@@ -58,15 +57,15 @@ export function AddFloorDialog({ open, onOpenChange, warehouseId, onSuccess }: A
     };
 
     return (
-        <Drawer open={open} onOpenChange={onOpenChange}>
-            <DrawerContent>
-                <DrawerHeader>
-                    <DrawerTitle>Add New Floor</DrawerTitle>
-                    <DrawerDescription>
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Add New Floor</DialogTitle>
+                    <DialogDescription>
                         Add a new floor level to the warehouse.
-                    </DrawerDescription>
-                </DrawerHeader>
-                <div className="px-4 space-y-4">
+                    </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="floor-name">Floor Name</Label>
                         <Input
@@ -95,21 +94,21 @@ export function AddFloorDialog({ open, onOpenChange, warehouseId, onSuccess }: A
                                 }))
                             }
                         />
-                        <p className="text-xs text-zinc-500">
+                        <p className="text-[0.8rem] text-muted-foreground">
                             Use 0 for Ground, 1 for First Floor, etc.
                         </p>
                     </div>
                 </div>
-                <DrawerFooter>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                        Cancel
+                    </Button>
                     <Button onClick={handleSubmit} disabled={isSubmitting}>
                         {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                         Create Floor
                     </Button>
-                    <DrawerClose asChild>
-                        <Button variant="outline">Cancel</Button>
-                    </DrawerClose>
-                </DrawerFooter>
-            </DrawerContent>
-        </Drawer>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     );
 }
