@@ -165,87 +165,77 @@ export function DriverDetailsSheet({
                     </div>
                 </SheetHeader>
 
-                <div className="space-y-4 px-6 pb-6">
+                <div className="space-y-3 px-4 pb-4 h-full overflow-hidden flex flex-col">
                     {/* Active Job Card */}
                     {driver.currentJob && (
-                        <Card className="overflow-hidden">
+                        <Card className="overflow-hidden shrink-0">
                             {/* Card Header with job title and status */}
-                            <CardHeader className="pb-3 border-b border-border/50">
+                            <CardHeader className="p-3 border-b border-border/50">
                                 <div className="flex items-start justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                                    <div className="flex items-center gap-2">
+                                        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
                                             <IconTruck className="size-4 text-primary" />
                                         </div>
                                         <div>
                                             <CardTitle className="text-sm">{driver.currentJob}</CardTitle>
-                                            <p className="text-[0.65rem] text-muted-foreground mt-0.5">Active Delivery</p>
+                                            <p className="text-[0.65rem] text-muted-foreground">Active Delivery</p>
                                         </div>
                                     </div>
                                     <Badge
                                         variant="secondary"
-                                        className={cn("text-[0.6rem]", status.badgeClass)}
+                                        className={cn("text-[0.6rem] px-1.5 h-5", status.badgeClass)}
                                     >
                                         {status.label}
                                     </Badge>
                                 </div>
                             </CardHeader>
 
-                            <CardContent className="pt-4">
+                            <CardContent className="p-3">
                                 {/* Route Progress Section */}
-                                <div className="space-y-4">
+                                <div className="space-y-2">
                                     {/* Progress indicator */}
-                                    <div className="flex items-center justify-between text-xs">
+                                    <div className="flex items-center justify-between text-[0.65rem]">
                                         <span className="text-muted-foreground">Route Progress</span>
                                         <span className="font-semibold text-primary">{stats.progress}%</span>
                                     </div>
 
                                     {/* Progress bar with truck */}
-                                    <div className="relative py-3">
+                                    <div className="relative py-2">
                                         {/* Base line */}
                                         <div className="h-1 w-full bg-muted rounded-full" />
 
                                         {/* Filled progress line */}
                                         <div
-                                            className="absolute top-3 left-0 h-1 rounded-full bg-primary transition-all duration-500"
+                                            className="absolute top-2 left-0 h-1 rounded-full bg-primary transition-all duration-500"
                                             style={{ width: `${stats.progress}%` }}
                                         />
-
-                                        {/* Origin dot */}
-                                        <div className="absolute top-2 left-0 -translate-x-1/2">
-                                            <div className="size-3 rounded-full bg-primary border-2 border-background shadow-sm" />
-                                        </div>
 
                                         {/* Truck icon at progress position */}
                                         <div
                                             className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-500"
                                             style={{ left: `${stats.progress}%` }}
                                         >
-                                            <div className="size-7 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg ring-2 ring-background">
-                                                <IconTruck className="size-4" />
+                                            <div className="size-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow-lg ring-2 ring-background">
+                                                <IconTruck className="size-3" />
                                             </div>
-                                        </div>
-
-                                        {/* Destination dot */}
-                                        <div className="absolute top-2 right-0 translate-x-1/2">
-                                            <div className="size-3 rounded-full bg-muted-foreground/30 border-2 border-background" />
                                         </div>
                                     </div>
 
                                     {/* Origin and Destination */}
-                                    <div className="grid grid-cols-2 gap-4 pt-1">
-                                        <div className="space-y-1">
-                                            <div className="flex items-center gap-1.5">
-                                                <div className="size-1.5 rounded-full bg-primary" />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <div className="space-y-0.5">
+                                            <div className="flex items-center gap-1">
+                                                <div className="size-1 rounded-full bg-primary" />
                                                 <span className="text-[0.6rem] text-muted-foreground uppercase tracking-wider">Pickup</span>
                                             </div>
-                                            <p className="text-xs font-medium leading-tight">{driver.route?.origin || "Los Angeles, CA"}</p>
+                                            <p className="text-[0.7rem] font-medium leading-tight truncate">{driver.route?.origin || "Los Angeles, CA"}</p>
                                         </div>
-                                        <div className="space-y-1 text-right">
-                                            <div className="flex items-center gap-1.5 justify-end">
+                                        <div className="space-y-0.5 text-right">
+                                            <div className="flex items-center gap-1 justify-end">
                                                 <span className="text-[0.6rem] text-muted-foreground uppercase tracking-wider">Drop-off</span>
-                                                <div className="size-1.5 rounded-full bg-muted-foreground/50" />
+                                                <div className="size-1 rounded-full bg-muted-foreground/50" />
                                             </div>
-                                            <p className="text-xs font-medium leading-tight">{driver.route?.destination || "Chicago, IL"}</p>
+                                            <p className="text-[0.7rem] font-medium leading-tight truncate">{driver.route?.destination || "Chicago, IL"}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -253,148 +243,124 @@ export function DriverDetailsSheet({
                         </Card>
                     )}
 
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-2 gap-3">
-                        <Card size="sm">
-                            <CardContent className="pt-3">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <IconPackage className="size-3.5" />
-                                    <span className="text-[0.65rem] uppercase tracking-wide">This Week</span>
-                                </div>
-                                <p className="text-2xl font-bold">{stats.totalDeliveries}</p>
-                                <p className="text-[0.65rem] text-muted-foreground">Completed Deliveries</p>
-                            </CardContent>
+                    {/* Stats Grid */}
+                    <div className="grid grid-cols-3 gap-2 shrink-0">
+                        <Card className="p-3 bg-muted/20 border-0">
+                            <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                                <IconPackage className="size-3" />
+                                <span className="text-[0.6rem] uppercase tracking-wide">Weekly</span>
+                            </div>
+                            <p className="text-xl font-bold">{stats.totalDeliveries}</p>
+                            <p className="text-[0.6rem] text-muted-foreground">Deliveries</p>
                         </Card>
-                        <Card size="sm">
-                            <CardContent className="pt-3">
-                                <div className="flex items-center gap-2 text-muted-foreground mb-1">
-                                    <IconTruck className="size-3.5" />
-                                    <span className="text-[0.65rem] uppercase tracking-wide">Reviews</span>
-                                </div>
-                                <p className="text-2xl font-bold">52</p>
-                                <p className="text-[0.65rem] text-muted-foreground">5-Star Ratings</p>
-                            </CardContent>
+                        <Card className="p-3 bg-muted/20 border-0">
+                            <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                                <IconClock className="size-3" />
+                                <span className="text-[0.6rem] uppercase tracking-wide">On-Time</span>
+                            </div>
+                            <p className="text-xl font-bold text-emerald-600">{stats.onTimeRate}%</p>
+                            <p className="text-[0.6rem] text-muted-foreground">Rate</p>
+                        </Card>
+                        <Card className="p-3 bg-muted/20 border-0">
+                            <div className="flex items-center gap-1.5 text-muted-foreground mb-1">
+                                <IconTruck className="size-3" />
+                                <span className="text-[0.6rem] uppercase tracking-wide">Rating</span>
+                            </div>
+                            <p className="text-xl font-bold">5.0</p>
+                            <p className="text-[0.6rem] text-muted-foreground">56 Reviews</p>
                         </Card>
                     </div>
 
-                    {/* Shipment Statistics Chart */}
-                    <Card size="sm">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-sm">
-                                <IconChartLine className="size-4 text-primary" />
-                                Shipment Statistic
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ChartContainer config={shipmentChartConfig} className="h-[160px] w-full">
-                                <AreaChart data={shipmentData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                                    <XAxis
-                                        dataKey="month"
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tick={{ fontSize: 10 }}
-                                    />
-                                    <YAxis
-                                        tickLine={false}
-                                        axisLine={false}
-                                        tick={{ fontSize: 10 }}
-                                    />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="target"
-                                        stroke="var(--color-target)"
-                                        fill="var(--color-target)"
-                                        fillOpacity={0.1}
-                                        strokeWidth={1}
-                                        strokeDasharray="4 4"
-                                    />
-                                    <Area
-                                        type="monotone"
-                                        dataKey="deliveries"
-                                        stroke="var(--color-deliveries)"
-                                        fill="var(--color-deliveries)"
-                                        fillOpacity={0.3}
-                                        strokeWidth={2}
-                                    />
-                                </AreaChart>
-                            </ChartContainer>
-                        </CardContent>
-                    </Card>
+                    <div className="grid gap-3 min-h-0 flex-1 overflow-hidden">
+                        {/* Shipment Statistics Chart */}
+                        <Card className="flex flex-col min-h-0 shadow-sm">
+                            <CardHeader className="p-3 pb-0 shrink-0">
+                                <CardTitle className="flex items-center gap-2 text-xs font-medium">
+                                    <IconChartLine className="size-3.5 text-primary" />
+                                    Shipment Trends
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-3 pt-0 flex-1 min-h-0">
+                                <ChartContainer config={shipmentChartConfig} className="h-full w-full max-h-[140px]">
+                                    <AreaChart data={shipmentData} margin={{ top: 5, right: 0, left: -20, bottom: 0 }}>
+                                        <defs>
+                                            <linearGradient id="fillDeliveries" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="5%" stopColor="var(--color-deliveries)" stopOpacity={0.8} />
+                                                <stop offset="95%" stopColor="var(--color-deliveries)" stopOpacity={0.1} />
+                                            </linearGradient>
+                                        </defs>
+                                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+                                        <XAxis
+                                            dataKey="month"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                            tickMargin={5}
+                                        />
+                                        <YAxis
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                            tickCount={4}
+                                        />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <Area
+                                            type="monotone"
+                                            dataKey="deliveries"
+                                            stroke="var(--color-deliveries)"
+                                            fill="url(#fillDeliveries)"
+                                            strokeWidth={2}
+                                            animationDuration={1000}
+                                        />
+                                    </AreaChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
 
-                    {/* Performance Metrics */}
-                    <Card size="sm">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="flex items-center gap-2 text-sm">
-                                <IconClock className="size-4 text-primary" />
-                                Performance Metrics
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-[0.65rem] text-muted-foreground uppercase tracking-wide mb-2">
-                                On-Time Delivery Rate
-                            </p>
-                            <div className="flex items-center gap-3">
-                                <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full bg-primary transition-all duration-700"
-                                        style={{ width: `${stats.onTimeRate}%` }}
-                                    />
+                        {/* Delay Reasons - Horizontal Layout */}
+                        <Card className="flex flex-col shadow-sm">
+                            <CardHeader className="p-3 pb-2 shrink-0 flex flex-row items-center justify-between space-y-0">
+                                <CardTitle className="text-xs font-medium">Delay Analysis</CardTitle>
+                                <div className="text-[0.65rem] text-muted-foreground font-medium bg-muted/50 px-2 py-0.5 rounded-full">
+                                    {stats.totalDelays} Cases
                                 </div>
-                                <span className="text-lg font-bold text-primary">{stats.onTimeRate}%</span>
-                            </div>
-                            <p className="text-xs text-muted-foreground mt-2">
-                                <span className="font-medium">{912}</span> total deliveries
-                            </p>
-                        </CardContent>
-                    </Card>
-
-                    {/* Delay Reasons Breakdown */}
-                    <Card size="sm">
-                        <CardHeader className="pb-2">
-                            <CardTitle className="text-sm">Delay Reasons Breakdown</CardTitle>
-                            <p className="text-muted-foreground">
-                                <span className="text-2xl font-bold text-foreground">{stats.totalDelays}</span>
-                                <span className="text-xs ml-1">Delay Cases</span>
-                            </p>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex items-center gap-4">
-                                <ChartContainer config={delayChartConfig} className="h-[120px] w-[120px]">
+                            </CardHeader>
+                            <CardContent className="p-3 pt-0 flex items-center justify-between gap-4">
+                                <ChartContainer config={delayChartConfig} className="h-[90px] w-[90px] shrink-0">
                                     <PieChart>
                                         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
                                         <Pie
                                             data={delayReasonsData}
                                             dataKey="count"
                                             nameKey="reason"
-                                            cx="50%"
-                                            cy="50%"
-                                            innerRadius={30}
-                                            outerRadius={50}
+                                            innerRadius={25}
+                                            outerRadius={40}
                                             strokeWidth={2}
+                                            paddingAngle={2}
                                         >
                                             {delayReasonsData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                                <Cell key={`cell-${index}`} fill={entry.fill} stroke="hsl(var(--background))" />
                                             ))}
                                         </Pie>
                                     </PieChart>
                                 </ChartContainer>
-                                <div className="flex-1 space-y-2">
+                                <div className="flex-1 grid grid-cols-2 gap-x-4 gap-y-1.5">
                                     {delayReasonsData.map((item, index) => (
-                                        <div key={index} className="flex items-center gap-2 text-xs">
+                                        <div key={index} className="flex items-center gap-1.5 min-w-0">
                                             <span
                                                 className="size-2 rounded-full shrink-0"
                                                 style={{ backgroundColor: item.fill.replace("var(--color-", "").replace(")", "") === item.fill ? item.fill : undefined }}
                                             />
-                                            <span className="flex-1 text-muted-foreground truncate">{item.reason}</span>
-                                            <span className="font-medium">{Math.round(item.count / stats.totalDelays * 100)}%</span>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="text-[0.6rem] text-muted-foreground truncate leading-tight">{item.reason}</span>
+                                                <span className="text-[0.65rem] font-medium leading-none">{Math.round(item.count / stats.totalDelays * 100)}%</span>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            </CardContent>
+                        </Card>
+                    </div>
                 </div>
             </SheetContent>
         </Sheet >
