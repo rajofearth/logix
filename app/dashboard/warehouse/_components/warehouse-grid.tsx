@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Floor, Block } from "./types";
+import { Floor, Block, getCategoryLabel } from "./types";
 import { BlockCard, BlockLegend } from "./block-card";
 import { BlockDetailSheet } from "./block-detail-sheet";
 
@@ -13,17 +13,17 @@ export function WarehouseVisualGrid({ floor }: WarehouseGridProps) {
     const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
 
-    // Group blocks by row for grid layout
-    const blocksByRow = floor.blocks.reduce<Record<string, Block[]>>((acc, block) => {
-        if (!acc[block.row]) {
-            acc[block.row] = [];
+    // Group blocks by category for section display
+    const blocksByCategory = floor.blocks.reduce<Record<string, Block[]>>((acc, block) => {
+        const category = block.category;
+        if (!acc[category]) {
+            acc[category] = [];
         }
-        acc[block.row].push(block);
+        acc[category].push(block);
         return acc;
     }, {});
 
-    // Sort rows alphabetically
-    const sortedRows = Object.keys(blocksByRow).sort();
+    const categories = Object.keys(blocksByCategory);
 
     const handleBlockClick = (block: Block) => {
         setSelectedBlock(block);
@@ -32,20 +32,24 @@ export function WarehouseVisualGrid({ floor }: WarehouseGridProps) {
 
     return (
         <div className="flex flex-col gap-4 h-full">
-            {/* Block Grid */}
+            {/* Category Sections */}
             <div className="flex-1 overflow-auto">
-                <div className="space-y-3">
-                    {sortedRows.map((row) => (
-                        <div key={row} className="flex gap-3 items-stretch">
-                            {/* Row Label */}
-                            <div className="w-8 shrink-0 flex items-center justify-center">
-                                <span className="text-sm font-bold text-muted-foreground bg-muted/50 rounded-md px-2 py-1">
-                                    {row}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {categories.map((category) => (
+                        <div
+                            key={category}
+                            className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800"
+                        >
+                            {/* Section Header */}
+                            <div className="mb-4">
+                                <span className="text-xs font-medium text-zinc-300 bg-zinc-800 px-2 py-1 rounded">
+                                    {floor.name} - {getCategoryLabel(category as any)}
                                 </span>
                             </div>
-                            {/* Blocks in this row */}
-                            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                                {blocksByRow[row]
+
+                            {/* Blocks Grid */}
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                {blocksByCategory[category]
                                     .sort((a, b) => a.column - b.column)
                                     .map((block) => (
                                         <BlockCard
@@ -61,7 +65,7 @@ export function WarehouseVisualGrid({ floor }: WarehouseGridProps) {
             </div>
 
             {/* Legend */}
-            <div className="shrink-0">
+            <div className="shrink-0 flex justify-end">
                 <BlockLegend />
             </div>
 

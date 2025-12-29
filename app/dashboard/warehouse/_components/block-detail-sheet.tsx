@@ -40,7 +40,7 @@ export function BlockDetailSheet({ block, open, onOpenChange }: BlockDetailSheet
     if (!block) return null;
 
     const usagePercent = formatCapacityPercentage(block.used, block.capacity);
-    const categoryIcon = getCategoryIcon(block.category);
+    const CategoryIcon = getCategoryIcon(block.category);
     const categoryLabel = getCategoryLabel(block.category);
 
     return (
@@ -49,7 +49,7 @@ export function BlockDetailSheet({ block, open, onOpenChange }: BlockDetailSheet
                 <SheetHeader className="pb-4 border-b">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <span className="text-2xl">{categoryIcon}</span>
+                            <CategoryIcon className="h-6 w-6 text-muted-foreground" />
                             <div>
                                 <SheetTitle className="text-xl">Block {block.name}</SheetTitle>
                                 <SheetDescription>

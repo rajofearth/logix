@@ -47,7 +47,7 @@ export default function WarehousePage() {
       <AppSidebar variant="inset" />
       <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
         <SiteHeader title="Warehouse Management" />
-        <div className="flex flex-1 flex-col gap-3 p-4 overflow-hidden">
+        <div className="flex flex-1 flex-col gap-3 p-4 overflow-hidden bg-zinc-950">
           {/* Header with Warehouse Selector */}
           <WarehouseHeader
             warehouses={MOCK_WAREHOUSES}
@@ -63,25 +63,12 @@ export default function WarehousePage() {
           />
 
           {/* Main Content - Block Grid */}
-          <div className="flex-1 rounded-xl border bg-background/50 p-4 shadow-sm relative min-h-0 overflow-hidden">
-            {/* Background Pattern */}
-            <div
-              className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
-              style={{
-                backgroundImage: "radial-gradient(#000 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-              }}
-            />
-            <div className="relative z-10 h-full">
-              <WarehouseVisualGrid floor={selectedFloor} />
-            </div>
+          <div className="flex-1 rounded-lg p-4 min-h-0 overflow-hidden">
+            <WarehouseVisualGrid floor={selectedFloor} />
           </div>
 
           {/* Footer Stats */}
-          <WarehouseFooterStats
-            warehouse={selectedWarehouse}
-            floor={selectedFloor}
-          />
+          <WarehouseFooterStats floor={selectedFloor} />
         </div>
       </SidebarInset>
     </SidebarProvider>

@@ -1,5 +1,17 @@
 "use client";
 
+import {
+    Monitor,
+    UtensilsCrossed,
+    Shirt,
+    Pill,
+    Cog,
+    Package,
+    Box,
+    ClipboardList,
+    LucideIcon,
+} from "lucide-react";
+
 // Warehouse Management Types
 
 export interface Product {
@@ -93,24 +105,24 @@ export function getStatusColor(status: BlockStatus): string {
     }
 }
 
-export function getCategoryIcon(category: ProductCategory): string {
+export function getCategoryIcon(category: ProductCategory): LucideIcon {
     switch (category) {
         case "electronics":
-            return "💻";
+            return Monitor;
         case "food":
-            return "🥫";
+            return UtensilsCrossed;
         case "apparel":
-            return "👕";
+            return Shirt;
         case "pharmaceuticals":
-            return "💊";
+            return Pill;
         case "machinery":
-            return "⚙️";
+            return Cog;
         case "raw-materials":
-            return "📦";
+            return Package;
         case "packaging":
-            return "🗃️";
+            return Box;
         default:
-            return "📋";
+            return ClipboardList;
     }
 }
 

@@ -1,142 +1,109 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { Floor } from "./types";
 import {
     Archive,
+    Package,
     Users,
-    Truck,
-    PackageCheck,
-    AlertTriangle,
-    TrendingUp,
-    TrendingDown,
+    ShoppingCart,
+    BarChart3,
 } from "lucide-react";
-import { Warehouse, Floor, Block } from "./types";
 
 interface WarehouseFooterStatsProps {
-    warehouse: Warehouse;
     floor: Floor;
 }
 
-export function WarehouseFooterStats({ warehouse, floor }: WarehouseFooterStatsProps) {
-    // Calculate stats
+export function WarehouseFooterStats({ floor }: WarehouseFooterStatsProps) {
     const capacityPercent = Math.round(
         (floor.stats.usedCapacity / floor.stats.totalCapacity) * 100
     );
     const freePercent = 100 - capacityPercent;
 
-    // Count blocks at different statuses
-    const criticalBlocks = floor.blocks.filter((b) => b.status === "critical").length;
-    const warningBlocks = floor.blocks.filter((b) => b.status === "warning").length;
+    // Mock order count
+    const orders = 23000;
+    const ordersChange = 40;
 
-    // Count products expiring soon
-    const expiringProducts = floor.blocks.reduce((count, block) => {
-        return (
-            count +
-            block.products.filter(
-                (p) =>
-                    p.expiryDate &&
-                    new Date(p.expiryDate) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-            ).length
-        );
-    }, 0);
+    // Stock utilization
+    const stockUtilization = 78.74;
+    const utilizationChange = 10;
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 shrink-0">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 shrink-0">
             {/* Storage Available */}
-            <Card className="p-3 flex flex-col justify-between shadow-sm bg-card/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3">
-                    <Archive className="h-3.5 w-3.5 text-primary" />
-                    <span>Floor Capacity</span>
+            <div className="p-4 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-3">
+                    <Archive className="h-3.5 w-3.5 text-indigo-400" />
+                    <span>Storage Available</span>
                 </div>
-                <div className="space-y-1">
-                    <div className="flex items-end gap-2">
-                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden flex relative">
-                            <div
-                                className={`h-full rounded-full ${capacityPercent >= 90
-                                    ? "bg-red-500"
-                                    : capacityPercent >= 70
-                                        ? "bg-amber-500"
-                                        : "bg-indigo-500"
-                                    }`}
-                                style={{ width: `${capacityPercent}%` }}
-                            />
+                <div className="flex items-center gap-2">
+                    <div className="flex-1 h-6 bg-zinc-800 rounded-md overflow-hidden flex">
+                        <div
+                            className="h-full bg-indigo-500 flex items-center justify-center text-[10px] text-white font-medium"
+                            style={{ width: `${capacityPercent}%` }}
+                        >
+                            {capacityPercent}%
+                        </div>
+                        <div className="flex-1 flex items-center justify-center text-[10px] text-zinc-400">
+                            {freePercent}%
                         </div>
                     </div>
-                    <div className="flex justify-between text-xs">
-                        <span className="font-bold">{capacityPercent}%</span>
-                        <span className="text-muted-foreground">Free: {freePercent}%</span>
-                    </div>
                 </div>
-            </Card>
+            </div>
 
             {/* Total Items */}
-            <Card className="p-3 shadow-sm bg-card/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <div className="p-1 bg-blue-100 dark:bg-blue-900/30 rounded">
-                        <PackageCheck className="h-3 w-3 text-blue-600 dark:text-blue-400" />
-                    </div>
+            <div className="p-4 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
+                    <Package className="h-3.5 w-3.5 text-blue-400" />
                     <span>Total Items</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-bold">
+                    <span className="text-xl font-bold text-white">
                         {floor.stats.totalItems.toLocaleString()}
                     </span>
-                    <span className="text-[10px] font-medium text-emerald-600 flex items-center bg-emerald-100/50 dark:bg-emerald-900/20 px-1 rounded">
-                        <TrendingUp className="h-3 w-3 mr-0.5" />
-                        +12%
-                    </span>
+                    <span className="text-[10px] text-emerald-400">↑ 43%</span>
                 </div>
-            </Card>
+            </div>
 
             {/* Active Workers */}
-            <Card className="p-3 shadow-sm bg-card/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <div className="p-1 bg-indigo-100 dark:bg-indigo-900/30 rounded">
-                        <Users className="h-3 w-3 text-indigo-600 dark:text-indigo-400" />
-                    </div>
-                    <span>Active Workers</span>
+            <div className="p-4 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
+                    <Users className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Active workers</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-bold">{floor.stats.activeWorkers}</span>
-                    <span className="text-[10px] text-muted-foreground">on this floor</span>
+                    <span className="text-xl font-bold text-white">
+                        {floor.stats.activeWorkers}
+                    </span>
                 </div>
-            </Card>
+            </div>
 
-            {/* Blocks at Capacity */}
-            <Card className="p-3 shadow-sm bg-card/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <div className="p-1 bg-amber-100 dark:bg-amber-900/30 rounded">
-                        <AlertTriangle className="h-3 w-3 text-amber-600 dark:text-amber-400" />
-                    </div>
-                    <span>Alerts</span>
+            {/* Orders */}
+            <div className="p-4 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
+                    <ShoppingCart className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Orders</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-bold text-red-600">{criticalBlocks}</span>
-                    <span className="text-[10px] text-muted-foreground">critical</span>
-                    <span className="text-xl font-bold text-amber-600 ml-2">{warningBlocks}</span>
-                    <span className="text-[10px] text-muted-foreground">warning</span>
+                    <span className="text-xl font-bold text-white">
+                        {orders.toLocaleString()}
+                    </span>
+                    <span className="text-[10px] text-emerald-400">↑ {ordersChange}%</span>
                 </div>
-            </Card>
+            </div>
 
-            {/* Expiring Soon */}
-            <Card className="p-3 shadow-sm bg-card/80 backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-2">
-                    <div className="p-1 bg-rose-100 dark:bg-rose-900/30 rounded">
-                        <Truck className="h-3 w-3 text-rose-600 dark:text-rose-400" />
-                    </div>
-                    <span>Expiring (30d)</span>
+            {/* Stock Utilization */}
+            <div className="p-4 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                <div className="flex items-center gap-2 text-xs text-zinc-400 mb-2">
+                    <BarChart3 className="h-3.5 w-3.5 text-rose-400" />
+                    <span>Stock utilization</span>
                 </div>
                 <div className="flex items-baseline gap-2">
-                    <span className="text-xl font-bold">{expiringProducts}</span>
-                    <span className="text-[10px] text-muted-foreground">products</span>
-                    {expiringProducts > 0 && (
-                        <span className="text-[10px] font-medium text-rose-600 flex items-center bg-rose-100/50 dark:bg-rose-900/20 px-1 rounded">
-                            <TrendingDown className="h-3 w-3 mr-0.5" />
-                            Action needed
-                        </span>
-                    )}
+                    <span className="text-xl font-bold text-white">
+                        {stockUtilization}%
+                    </span>
+                    <span className="text-[10px] text-emerald-400">↑ {utilizationChange}%</span>
                 </div>
-            </Card>
+            </div>
         </div>
     );
 }
