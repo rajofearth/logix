@@ -51,8 +51,11 @@ import {
     TrendingDown,
     IndianRupee,
     Check,
+    Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import { createProduct } from "../_lib/api";
 
 interface BlockDetailSheetProps {
     block: Block | null;
@@ -111,15 +114,16 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
     });
 
     const [picklistItems, setPicklistItems] = useState<PicklistItem[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Stable reference for expiry check (30 days from now)
+    const expiryThreshold = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), []);
 
     if (!block) return null;
 
     const usagePercent = formatCapacityPercentage(block.used, block.capacity);
     const CategoryIcon = getCategoryIcon(block.category);
     const categoryLabel = getCategoryLabel(block.category);
-
-    // Stable reference for expiry check (30 days from now)
-    const expiryThreshold = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), []);
 
     // Calculate total inventory value
     const totalBoughtValue = block.products.reduce(
@@ -146,18 +150,45 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
     };
 
     // Handle Add Product
-    const handleAddProduct = () => {
-        // In a real app, this would make an API call
-        console.log("Adding product:", addProductForm);
-        setAddProductForm({
-            name: "",
-            sku: "",
-            quantity: "",
-            boughtAt: "",
-            currentPrice: "",
-            category: "other",
-        });
-        setAddProductOpen(false);
+    const handleAddProduct = async () => {
+        if (!warehouseId || !floorId || !block) {
+            toast.error("Missing warehouse or floor information");
+            return;
+        }
+
+        if (!addProductForm.name || !addProductForm.sku || !addProductForm.quantity ||
+            !addProductForm.boughtAt || !addProductForm.currentPrice) {
+            toast.error("Please fill in all required fields");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            await createProduct(warehouseId, floorId, block.id, {
+                sku: addProductForm.sku,
+                name: addProductForm.name,
+                quantity: parseInt(addProductForm.quantity),
+                category: addProductForm.category,
+                boughtAt: parseFloat(addProductForm.boughtAt),
+                currentPrice: parseFloat(addProductForm.currentPrice),
+            });
+
+            toast.success("Product added successfully!");
+            setAddProductForm({
+                name: "",
+                sku: "",
+                quantity: "",
+                boughtAt: "",
+                currentPrice: "",
+                category: "other",
+            });
+            setAddProductOpen(false);
+            onRefresh?.(); // Refresh warehouse data
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Failed to add product");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     // Handle Transfer

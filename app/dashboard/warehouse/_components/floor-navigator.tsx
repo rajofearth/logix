@@ -2,14 +2,16 @@
 
 import { cn } from "@/lib/utils";
 import { Floor, formatCapacityPercentage } from "./types";
+import { Plus } from "lucide-react";
 
 interface FloorNavigatorProps {
     floors: Floor[];
     selectedFloorId: string;
     onFloorSelect: (floorId: string) => void;
+    onAddFloor?: () => void;
 }
 
-export function FloorNavigator({ floors, selectedFloorId, onFloorSelect }: FloorNavigatorProps) {
+export function FloorNavigator({ floors, selectedFloorId, onFloorSelect, onAddFloor }: FloorNavigatorProps) {
     return (
         <div className="flex items-center gap-1 p-1 rounded-lg bg-zinc-900/60 border border-zinc-800 shrink-0 w-fit">
             {floors.map((floor) => {
@@ -40,6 +42,16 @@ export function FloorNavigator({ floors, selectedFloorId, onFloorSelect }: Floor
                     </button>
                 );
             })}
+
+            {onAddFloor && (
+                <button
+                    onClick={onAddFloor}
+                    className="flex items-center justify-center w-8 h-8 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 transition-colors ml-1"
+                    title="Add Floor"
+                >
+                    <Plus className="h-4 w-4" />
+                </button>
+            )}
         </div>
     );
 }

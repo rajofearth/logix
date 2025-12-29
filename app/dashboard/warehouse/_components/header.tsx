@@ -18,6 +18,7 @@ import {
     Package,
     MapPin,
     X,
+    Plus,
 } from "lucide-react";
 import { Warehouse, Block, Product, getCategoryIcon } from "./types";
 
@@ -34,6 +35,7 @@ interface WarehouseHeaderProps {
     selectedWarehouseId: string;
     onWarehouseChange: (warehouseId: string) => void;
     onSearchResultClick?: (floorId: string, blockId: string) => void;
+    onAddWarehouse?: () => void;
 }
 
 export function WarehouseHeader({
@@ -41,6 +43,7 @@ export function WarehouseHeader({
     selectedWarehouseId,
     onWarehouseChange,
     onSearchResultClick,
+    onAddWarehouse,
 }: WarehouseHeaderProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -229,6 +232,15 @@ export function WarehouseHeader({
                     </span>
                     <span className="text-xs text-zinc-300">Live Data</span>
                 </div>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 text-xs gap-1.5 bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                    onClick={onAddWarehouse}
+                >
+                    <Plus className="h-3.5 w-3.5" />
+                    Add Warehouse
+                </Button>
                 <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white">
                     <Settings className="h-4 w-4" />
                 </Button>
