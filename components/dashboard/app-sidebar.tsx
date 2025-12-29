@@ -2,24 +2,25 @@
 
 import * as React from "react"
 import {
+  IconBell,
+  IconBuildingWarehouse,
   IconCamera,
   IconCurrentLocation,
   IconDashboard,
-  IconDatabase,
   IconFileAi,
   IconFileDescription,
-  IconFileWord,
   IconFolder,
   IconHelp,
   IconInnerShadowTop,
   IconListDetails,
-  IconReport,
+  IconMessage,
+  IconReceipt,
   IconSearch,
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react"
 
-import { NavDocuments } from '@/components/dashboard/nav-documents'
+import { NavGeneral } from '@/components/dashboard/nav-general'
 import { NavMain } from '@/components/dashboard/nav-main'
 import { NavSecondary } from '@/components/dashboard/nav-secondary'
 import { NavUser } from '@/components/dashboard/nav-user'
@@ -58,6 +59,16 @@ const data = {
       icon: IconCurrentLocation,
     },
     {
+      title: "Warehouse",
+      url: "/dashboard/warehouse",
+      icon: IconBuildingWarehouse,
+    },
+    {
+      title: "Invoices & Billing",
+      url: "/dashboard/billing",
+      icon: IconReceipt,
+    },
+    {
       title: "Projects",
       url: "#",
       icon: IconFolder,
@@ -66,6 +77,23 @@ const data = {
       title: "Team",
       url: "#",
       icon: IconUsers,
+    },
+  ],
+  navGeneral: [
+    {
+      title: "Messages",
+      url: "/dashboard/messages",
+      icon: IconMessage,
+    },
+    {
+      title: "Notifications",
+      url: "/dashboard/notifications",
+      icon: IconBell,
+    },
+    {
+      title: "Settings",
+      url: "/dashboard/settings",
+      icon: IconSettings,
     },
   ],
   navClouds: [
@@ -118,11 +146,6 @@ const data = {
   ],
   navSecondary: [
     {
-      title: "Settings",
-      url: "#",
-      icon: IconSettings,
-    },
-    {
       title: "Get Help",
       url: "#",
       icon: IconHelp,
@@ -133,23 +156,7 @@ const data = {
       icon: IconSearch,
     },
   ],
-  documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: IconDatabase,
-    },
-    {
-      name: "Reports",
-      url: "#",
-      icon: IconReport,
-    },
-    {
-      name: "Word Assistant",
-      url: "#",
-      icon: IconFileWord,
-    },
-  ],
+
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -166,8 +173,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavDocuments items={data.documents} />
+        <NavGeneral items={data.navGeneral} label="General" />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
+
       </SidebarContent>
       <SidebarFooter>
         {isPending ? (
