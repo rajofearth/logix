@@ -1,43 +1,76 @@
 "use client";
 
-import { StorageZoneCard, StorageZone } from "./storage-zone-card";
+import { useState } from "react";
+import { Floor, Block } from "./types";
+import { BlockCard, BlockLegend } from "./block-card";
+import { BlockDetailSheet } from "./block-detail-sheet";
 
-const MOCK_ZONES: StorageZone[] = [
-    {
-        id: "SZ 01",
-        name: "Dairy Products",
-        sections: [
-            { id: "1", name: "01", workers: 123, items: 24, capacity: 40, type: "list", items_list: ["S01", "S01", "S01", "S01"] },
-            { id: "2", name: "02", workers: 13, items: 5, capacity: 10, type: "grid", items_list: ["S01", "S01", "S01"] },
-            { id: "3", name: "03", workers: 1, items: 9, capacity: 10, type: "grid", items_list: ["S01", "S01", "S01"] },
-            { id: "4", name: "04", workers: 13, items: 25, capacity: 40, type: "grid", items_list: ["S01", "S01", "S01", "S01"] },
-            { id: "5", name: "05", workers: 13, items: 24, capacity: 20, type: "grid", items_list: ["S01", "S01"] },
-        ]
-    },
-    {
-        id: "SZ 01",
-        name: "Vegetable Products",
-        sections: [
-            { id: "1-v", name: "01", workers: 123, items: 24, capacity: 40, type: "list", items_list: ["S01", "S01", "S01", "S01"] },
-            { id: "2-v", name: "02", workers: 5, items: 5, capacity: 10, type: "grid", items_list: ["S01", "S01", "S01"] },
-            { id: "3-v", name: "03", workers: 2, items: 9, capacity: 10, type: "grid", items_list: ["S01", "S01", "S01"] },
-            { id: "4-v", name: "04", workers: 7, items: 25, capacity: 40, type: "grid", items_list: ["S01", "S01", "S01", "S01"] },
-            { id: "5-v", name: "05", workers: 10, items: 15, capacity: 20, type: "grid", items_list: ["S01", "S01"] },
-        ]
-    }
-];
+interface WarehouseGridProps {
+    floor: Floor;
+}
 
-export function WarehouseVisualGrid() {
+export function WarehouseVisualGrid({ floor }: WarehouseGridProps) {
+    const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
+    const [sheetOpen, setSheetOpen] = useState(false);
+
+    // Group blocks by row for grid layout
+    const blocksByRow = floor.blocks.reduce<Record<string, Block[]>>((acc, block) => {
+        if (!acc[block.row]) {
+            acc[block.row] = [];
+        }
+        acc[block.row].push(block);
+        return acc;
+    }, {});
+
+    // Sort rows alphabetically
+    const sortedRows = Object.keys(blocksByRow).sort();
+
+    const handleBlockClick = (block: Block) => {
+        setSelectedBlock(block);
+        setSheetOpen(true);
+    };
+
     return (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 relative h-full">
-            {/* Background grid dots simulation if needed, but clean white is fine.
-           To verify aesthetics, we can add a subtle pattern class if tailwind-patterns exists, or just custom css.
-       */}
-            {MOCK_ZONES.map((zone, idx) => (
-                <StorageZoneCard key={idx} zone={zone} />
-            ))}
+        <div className="flex flex-col gap-4 h-full">
+            {/* Block Grid */}
+            <div className="flex-1 overflow-auto">
+                <div className="space-y-3">
+                    {sortedRows.map((row) => (
+                        <div key={row} className="flex gap-3 items-stretch">
+                            {/* Row Label */}
+                            <div className="w-8 shrink-0 flex items-center justify-center">
+                                <span className="text-sm font-bold text-muted-foreground bg-muted/50 rounded-md px-2 py-1">
+                                    {row}
+                                </span>
+                            </div>
+                            {/* Blocks in this row */}
+                            <div className="flex-1 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                                {blocksByRow[row]
+                                    .sort((a, b) => a.column - b.column)
+                                    .map((block) => (
+                                        <BlockCard
+                                            key={block.id}
+                                            block={block}
+                                            onClick={handleBlockClick}
+                                        />
+                                    ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
 
+            {/* Legend */}
+            <div className="shrink-0">
+                <BlockLegend />
+            </div>
 
+            {/* Block Detail Sheet */}
+            <BlockDetailSheet
+                block={selectedBlock}
+                open={sheetOpen}
+                onOpenChange={setSheetOpen}
+            />
         </div>
     );
 }
