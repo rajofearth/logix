@@ -46,6 +46,7 @@ export interface DriverDTO {
     avatar: string | null
     status: DriverStatus
     currentJob: string | null
+    currentJobId: string | null
     route: {
         origin: string
         destination: string

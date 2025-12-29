@@ -36,6 +36,7 @@ function driverToDto(driver: {
     photoUrl: string | null
     status: "available" | "on_route" | "off_duty"
     jobs: Array<{
+        id: string
         title: string
         pickupAddress: string
         dropAddress: string
@@ -50,6 +51,7 @@ function driverToDto(driver: {
         avatar: driver.photoUrl,
         status: toFrontendStatus(driver.status),
         currentJob: currentJob?.title ?? null,
+        currentJobId: currentJob?.id ?? null,
         route: currentJob
             ? {
                 origin: currentJob.pickupAddress,

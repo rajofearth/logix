@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import {
     Area,
     AreaChart,
@@ -17,7 +18,10 @@ import {
     IconClock,
     IconPackage,
     IconChartLine,
+    IconLocation,
 } from "@tabler/icons-react"
+
+import { Button } from "@/components/ui/button"
 
 import type { DriverDTO } from "../_types"
 import { cn } from "@/lib/utils"
@@ -125,6 +129,8 @@ export function DriverDetailsSheet({
     open,
     onOpenChange,
 }: DriverDetailsSheetProps) {
+    const router = useRouter()
+
     if (!driver) return null
 
     const status = statusConfig[driver.status]
@@ -135,6 +141,13 @@ export function DriverDetailsSheet({
         onTimeRate: 93,
         totalDelays: 40,
         progress: 63,
+    }
+
+    const handleTrackClick = () => {
+        if (driver.currentJobId) {
+            onOpenChange(false) // Close the sheet
+            router.push(`/dashboard/track?jobId=${driver.currentJobId}`)
+        }
     }
 
     return (
@@ -237,6 +250,19 @@ export function DriverDetailsSheet({
                                             </div>
                                             <p className="text-[0.7rem] font-medium leading-tight truncate">{driver.route?.destination || "Chicago, IL"}</p>
                                         </div>
+                                    </div>
+
+                                    {/* Track Button */}
+                                    <div className="pt-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="w-full h-7 text-[0.65rem] gap-1.5 border-primary/30 text-primary hover:bg-primary/10 hover:text-primary"
+                                            onClick={handleTrackClick}
+                                        >
+                                            <IconLocation className="size-3.5" />
+                                            Track Shipment
+                                        </Button>
                                     </div>
                                 </div>
                             </CardContent>

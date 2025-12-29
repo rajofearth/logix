@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { MapPin } from "lucide-react";
 import { type Delivery } from "../_data/deliveries";
 import { DeliveryCard } from "./DeliveryCard";
@@ -21,11 +22,23 @@ interface TrackViewProps {
 }
 
 export function TrackView({ initialDeliveries }: TrackViewProps) {
+    const searchParams = useSearchParams();
     const [searchQuery, setSearchQuery] = useState("");
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
     const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
     const [fuelStations, setFuelStations] = useState<Array<{ name: string; address?: string; distance?: number; coord: LngLat }>>([]);
+
+    // Auto-select delivery based on URL jobId param (e.g., from driver sheet Track button)
+    useEffect(() => {
+        const jobId = searchParams.get("jobId");
+        if (jobId && initialDeliveries.length > 0) {
+            const delivery = initialDeliveries.find(d => d.id === jobId);
+            if (delivery) {
+                setSelectedDelivery(delivery);
+            }
+        }
+    }, [searchParams, initialDeliveries]);
 
     useEffect(() => {
         if (!selectedDelivery) {
