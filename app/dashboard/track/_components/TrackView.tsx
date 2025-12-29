@@ -7,6 +7,8 @@ import { type Delivery } from "../_data/deliveries";
 import { DeliveryCard } from "./DeliveryCard";
 import { SearchBar } from "./SearchBar";
 import { TrackingMap } from "./TrackingMap";
+import { MapStatusBar } from "./MapStatusBar";
+import { DriverInfoPanel } from "./DriverInfoPanel";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
 
@@ -123,18 +125,23 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                     {/* Right Panel - Map */}
                     <div className="flex-1 overflow-hidden relative">
                         {selectedDelivery ? (
-                            <TrackingMap
-                                pickup={{
-                                    lat: selectedDelivery.origin.lat,
-                                    lng: selectedDelivery.origin.lng,
-                                }}
-                                drop={{
-                                    lat: selectedDelivery.destination.lat,
-                                    lng: selectedDelivery.destination.lng,
-                                }}
-                                routeGeoJson={routeGeoJson}
-                                fuelStations={fuelStations}
-                            />
+                            <>
+                                <TrackingMap
+                                    pickup={{
+                                        lat: selectedDelivery.origin.lat,
+                                        lng: selectedDelivery.origin.lng,
+                                    }}
+                                    drop={{
+                                        lat: selectedDelivery.destination.lat,
+                                        lng: selectedDelivery.destination.lng,
+                                    }}
+                                    routeGeoJson={routeGeoJson}
+                                    fuelStations={fuelStations}
+                                />
+                                {/* Map Overlays */}
+                                <MapStatusBar status={selectedDelivery.status} />
+                                <DriverInfoPanel delivery={selectedDelivery} />
+                            </>
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full bg-muted/10 text-muted-foreground p-6 text-center">
                                 <div className="bg-muted/20 p-4 rounded-full mb-4">
