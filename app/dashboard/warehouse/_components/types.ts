@@ -20,6 +20,8 @@ export interface Product {
     name: string;
     quantity: number;
     category: ProductCategory;
+    boughtAt: number; // Purchase price per unit
+    currentPrice: number; // Current market price per unit
     expiryDate?: Date;
     lastUpdated: Date;
 }

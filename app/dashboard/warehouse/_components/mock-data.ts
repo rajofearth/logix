@@ -156,12 +156,32 @@ function generateProducts(category: ProductCategory, count: number, blockSeed: n
         // Generate unique SKU with more entropy
         const skuNum = Math.floor(productRandom() * 9000) + 1000;
 
+        // Generate prices based on category
+        const priceRanges: Record<ProductCategory, [number, number]> = {
+            electronics: [50, 2500],
+            food: [2, 50],
+            apparel: [15, 250],
+            pharmaceuticals: [5, 150],
+            machinery: [100, 5000],
+            "raw-materials": [10, 500],
+            packaging: [1, 25],
+            other: [5, 100],
+        };
+
+        const [minPrice, maxPrice] = priceRanges[category];
+        const boughtAt = Math.round((minPrice + productRandom() * (maxPrice - minPrice)) * 100) / 100;
+        // Current price fluctuates +/- 20% from bought price
+        const priceFluctuation = 0.8 + productRandom() * 0.4;
+        const currentPrice = Math.round(boughtAt * priceFluctuation * 100) / 100;
+
         products.push({
             id: `prod-${category}-${blockSeed}-${i}-${skuNum}`,
             sku: `${skuPrefixes[category]}-${skuNum}`,
             name: names[nameIndex],
             quantity: qty,
             category,
+            boughtAt,
+            currentPrice,
             expiryDate: category === "food" || category === "pharmaceuticals"
                 ? new Date(BASE_DATE + expiryOffset)
                 : undefined,
