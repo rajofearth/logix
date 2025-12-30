@@ -10,10 +10,10 @@ export async function POST(req: Request) {
     let body: { drivingLicenseNo?: string; phoneNumber?: string } = {};
     try {
       body = (await req.json()) as { drivingLicenseNo?: string; phoneNumber?: string };
-    } catch (e) {
+    } catch (_e) {
       return jsonError("Invalid JSON body", 400);
     }
-    
+
     // Use lenient auth - allows phone verification fallback for onboarding
     const { driverId } = await requireDriverSessionOrPhoneVerified(
       req.headers,
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.error("[DL fake-verify] Error:", e);
-    
+
     // Check for unauthorized errors (including nested error messages)
     const errorStr = String(e);
     if (

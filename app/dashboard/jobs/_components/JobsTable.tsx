@@ -22,6 +22,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import Link from "next/link"
 
 function formatKm(distanceMeters: number): string {
   return `${(distanceMeters / 1000).toFixed(2)} km`
@@ -47,10 +48,10 @@ export function JobsTable({
       <div className="flex items-center justify-between gap-2 px-4 lg:px-6">
         <div className="text-base font-medium">Jobs</div>
         <Button asChild size="sm">
-          <a href="/dashboard/jobs/new">
+          <Link href="/dashboard/jobs/new">
             <IconPlus className="size-4" />
             Create Job
-          </a>
+          </Link>
         </Button>
       </div>
 

@@ -69,10 +69,15 @@ export async function searchNearbyPlaces(
     return []
   }
 
-  const data = await res.json()
+  const data = await res.json() as {
+    features?: Array<{
+      properties: { name: string };
+      geometry: { coordinates: [number, number] };
+    }>;
+  }
 
   // Response has "features" where each feature has "geometry.coordinates" [lng, lat] and "properties.name"
-  return (data.features || []).map((f: any) => ({
+  return (data.features || []).map((f) => ({
     name: f.properties.name,
     coord: {
       lng: f.geometry.coordinates[0],

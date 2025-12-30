@@ -1,7 +1,5 @@
 "use client";
 
-import { Phone } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
@@ -49,7 +47,7 @@ export function DeliveryCard({
                     <div className="flex items-start gap-2 group/origin">
                         <div className="relative flex flex-col items-center pt-0.5">
                             <div className="size-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 transition-all duration-200 group-hover/origin:ring-emerald-500/40" />
-                            <div className="w-0.5 h-5 bg-gradient-to-b from-emerald-500/50 to-destructive/50" />
+                            <div className="w-0.5 h-5 bg-linear-to-b from-emerald-500/50 to-destructive/50" />
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-xs font-medium text-foreground truncate">

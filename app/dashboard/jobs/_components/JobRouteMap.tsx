@@ -90,7 +90,7 @@ export function JobRouteMap({
         },
         center,
         zoom: 9,
-      } as any)
+      } as ConstructorParameters<typeof mapboxgl.default.Map>[0])
 
       map.addControl(new mapboxgl.default.NavigationControl(), "top-right")
 

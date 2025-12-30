@@ -216,7 +216,7 @@ export function WarehouseHeader({
                             </div>
                         ) : (
                             <div className="px-4 py-6 text-center text-zinc-500 text-sm">
-                                No results found for "{searchQuery}"
+                                No results found for &quot;{searchQuery}&quot;
                             </div>
                         )}
                     </div>

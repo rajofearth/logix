@@ -1,6 +1,6 @@
 "use client"
 
-import { IconSearch, IconUsers } from "@tabler/icons-react"
+import { IconSearch } from "@tabler/icons-react"
 
 import type { DriverStatus } from "../_types"
 import type { DriverStats } from "../_server/driverActions"

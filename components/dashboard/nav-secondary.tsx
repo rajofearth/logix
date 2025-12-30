@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { type Icon } from "@tabler/icons-react"
-
+import Link from "next/link"
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -27,7 +27,7 @@ export function NavSecondary({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton render={<a href={item.url} />}><item.icon /><span>{item.title}</span></SidebarMenuButton>
+              <SidebarMenuButton render={<Link href={item.url} aria-label={item.title} />}><item.icon /><span>{item.title}</span></SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>

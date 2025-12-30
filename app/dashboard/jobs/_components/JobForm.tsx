@@ -4,6 +4,7 @@ import * as React from "react"
 import { IconArrowLeft, IconLoader2, IconMapPin, IconRoute } from "@tabler/icons-react"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 
 import type { DirectionsResult, JobDTO, JobUpsertInput, LngLat } from "../_types"
 import { dateTimeLocalToIso, isoToDateTimeLocalValue } from "../_utils/datetime"
@@ -152,11 +153,11 @@ export function JobForm({
 
   const canSave = Boolean(
     form.title.trim() &&
-      form.weightKg > 0 &&
-      form.pickupAddress.trim() &&
-      form.dropAddress.trim() &&
-      form.pickup &&
-      form.drop
+    form.weightKg > 0 &&
+    form.pickupAddress.trim() &&
+    form.dropAddress.trim() &&
+    form.pickup &&
+    form.drop
   )
 
   function buildInput(): JobUpsertInput {
@@ -184,7 +185,7 @@ export function JobForm({
     startSaving(async () => {
       try {
         const input = buildInput()
-        const saved =
+        const _saved =
           mode === "create"
             ? await createJob(input)
             : await updateJob(initialJob!.id, input)
@@ -203,10 +204,10 @@ export function JobForm({
     <div className="flex flex-col gap-4 px-4 lg:px-6">
       <div className="flex items-center justify-between gap-3">
         <Button asChild variant="outline" size="sm">
-          <a href="/dashboard/jobs">
+          <Link href="/dashboard/jobs">
             <IconArrowLeft className="size-4" />
             Back to Jobs
-          </a>
+          </Link>
         </Button>
         <Button onClick={handleSubmit} disabled={!canSave || isSaving}>
           {isSaving ? <IconLoader2 className="size-4 animate-spin" /> : null}

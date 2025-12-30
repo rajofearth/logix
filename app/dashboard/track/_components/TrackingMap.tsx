@@ -102,7 +102,7 @@ export function TrackingMap({
                     }
                 },
                 attributionControl: false,
-            } as any)
+            } as ConstructorParameters<typeof mapboxgl.default.Map>[0])
 
             map.addControl(new mapboxgl.default.AttributionControl({ compact: true }), 'bottom-right')
             map.addControl(new mapboxgl.default.NavigationControl(), "top-right")

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireDriverSessionOrPhoneVerified } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
-import { requireFormFile, utapi } from "../_utils";
+import { utapi } from "../_utils";
 
 export const runtime = "nodejs";
 
@@ -12,11 +12,11 @@ export async function POST(req: Request) {
     const form = await req.formData();
     const phoneNumber = form.get("phoneNumber")?.toString();
     const file = form.get("file");
-    
+
     if (!file) {
       return jsonError("file is required", 422);
     }
-    
+
     // Handle File (browser) format
     let fileObj: File;
     if (file instanceof File) {
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
     } else {
       return jsonError("file must be a File or Blob", 422);
     }
-    
+
     // Use lenient auth - allows phone verification fallback for onboarding
     const { driverId } = await requireDriverSessionOrPhoneVerified(
       req.headers,

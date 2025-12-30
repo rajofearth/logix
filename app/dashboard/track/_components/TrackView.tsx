@@ -71,7 +71,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
             } catch (error) {
                 console.error("Failed to fetch data:", error);
                 // Keep partial data if possible, or reset
-                if (!routeGeoJson) setRouteGeoJson(null);
+                setRouteGeoJson(current => current ?? null);
             }
         };
 

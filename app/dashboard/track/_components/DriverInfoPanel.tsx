@@ -1,6 +1,6 @@
 "use client";
 
-import { Phone, MessageSquare, FileText, Truck, User, Package } from "lucide-react";
+import { Phone, MessageSquare, FileText, Truck, Package } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";

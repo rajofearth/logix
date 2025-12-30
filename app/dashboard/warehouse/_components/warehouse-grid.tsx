@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Floor, Block, getCategoryLabel } from "./types";
+import { Floor, Block, getCategoryLabel, ProductCategory } from "./types";
 import { BlockCard, BlockLegend } from "./block-card";
 import { BlockDetailSheet } from "./block-detail-sheet";
 
@@ -46,7 +46,7 @@ export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, on
                             {/* Section Header */}
                             <div className="mb-4">
                                 <span className="text-xs font-medium text-zinc-300 bg-zinc-800 px-2 py-1 rounded">
-                                    {floor.name} - {getCategoryLabel(category as any)}
+                                    {floor.name} - {getCategoryLabel(category as ProductCategory)}
                                 </span>
                             </div>
 

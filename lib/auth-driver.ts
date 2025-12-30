@@ -46,13 +46,13 @@ export const driverAuth = betterAuth({
   plugins: [
     expo(),
     phoneNumber({
-      async sendOTP({ phoneNumber, code }, request) {
+      async sendOTP({ phoneNumber, code }, _request) {
         console.log(`[Better Auth] sendOTP called:`, {
           phoneNumber,
           codeLength: code.length,
           timestamp: new Date().toISOString(),
         });
-        
+
         try {
           if (client && accountSid) {
             const message = await client.messages.create({

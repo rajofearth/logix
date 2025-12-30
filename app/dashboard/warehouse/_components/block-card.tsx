@@ -54,7 +54,7 @@ function SlotGrid({ block }: { block: Block }) {
 
 export function BlockCard({ block, onClick, isHighlighted }: BlockCardProps) {
     const cardRef = useRef<HTMLButtonElement>(null);
-    const usagePercent = formatCapacityPercentage(block.used, block.capacity);
+    const _usagePercent = formatCapacityPercentage(block.used, block.capacity);
     const CategoryIcon = getCategoryIcon(block.category);
 
     // Mock worker count based on block usage

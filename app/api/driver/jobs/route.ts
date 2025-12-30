@@ -31,8 +31,9 @@ function decimalToNumber(val: unknown): number {
   // Safe handling for Prisma Decimal or other objects
   if (typeof val === "object") {
     // Try .toNumber() if available
-    if ("toNumber" in val && typeof (val as any).toNumber === "function") {
-      return (val as any).toNumber();
+    const objWithToNumber = val as { toNumber?: () => number };
+    if ("toNumber" in val && typeof objWithToNumber.toNumber === "function") {
+      return objWithToNumber.toNumber();
     }
     // Fallback to string conversion
     return Number(String(val));
