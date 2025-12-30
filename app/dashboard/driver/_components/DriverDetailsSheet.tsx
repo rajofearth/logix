@@ -13,7 +13,6 @@ import {
     YAxis,
 } from "recharts"
 import {
-    IconMapPin,
     IconTruck,
     IconClock,
     IconPackage,

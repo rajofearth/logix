@@ -6,7 +6,8 @@
     "dev": "prisma generate && next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "check": "tsc --noEmit",
+    "lint": "oxlint"
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
@@ -66,8 +67,7 @@
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.0.10",
+    "oxlint": "^1.36.0",
     "prisma": "^7.2.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5"
