@@ -7,6 +7,7 @@ export interface DriverLocationData {
     longitude: number;
     speedMps: number | null;
     heading: number | null;
+    routeGeometry?: any; // GeoJSON
     updatedAt: string;
 }
 
@@ -95,6 +96,7 @@ export function useDriverLocation(jobId: string | null): UseDriverLocationResult
                         longitude: data.longitude,
                         speedMps: data.speedMps,
                         heading: data.heading,
+                        // routeGeometry is not needed in path history usually, but could be
                         timestamp: data.updatedAt,
                     };
 

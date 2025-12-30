@@ -79,6 +79,7 @@ export async function GET(
                             longitude: true,
                             speedMps: true,
                             heading: true,
+                            routeGeometry: true,
                             updatedAt: true,
                         },
                     });
@@ -94,6 +95,7 @@ export async function GET(
                                 ? decimalToNumber(location.speedMps)
                                 : null,
                             heading: location.heading,
+                            routeGeometry: location.routeGeometry,
                             updatedAt: location.updatedAt.toISOString(),
                         };
 

@@ -11,6 +11,7 @@ interface LocationUpdateBody {
     speedMps?: number | null;
     heading?: number | null;
     timestamp?: string; // ISO string
+    routeGeometry?: any; // GeoJSON
 }
 
 export async function POST(req: Request) {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
         const { driverId } = await requireDriverSession(req.headers);
 
         const body = (await req.json()) as LocationUpdateBody;
-        const { jobId, latitude, longitude, speedMps, heading, timestamp } = body;
+        const { jobId, latitude, longitude, speedMps, heading, timestamp, routeGeometry } = body;
 
         // Validate required fields
         if (!jobId || latitude === undefined || longitude === undefined) {
@@ -57,12 +58,15 @@ export async function POST(req: Request) {
                     longitude,
                     speedMps: speedMps ?? null,
                     heading: heading ?? null,
+                    routeGeometry: routeGeometry ?? undefined, // Only set if provided
                 },
                 update: {
                     latitude,
                     longitude,
                     speedMps: speedMps ?? null,
                     heading: heading ?? null,
+                    // Only update route geometry if a new one is provided (it might be sent only once)
+                    ...(routeGeometry ? { routeGeometry } : {}),
                 },
             }),
             // Insert into location history (complete path)

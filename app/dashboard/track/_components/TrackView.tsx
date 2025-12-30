@@ -84,6 +84,13 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
         fetchData();
     }, [selectedDelivery]);
 
+    // Update route from driver location if available
+    useEffect(() => {
+        if (driverLocation?.routeGeometry && isLiveConnected) {
+            setRouteGeoJson(driverLocation.routeGeometry);
+        }
+    }, [driverLocation?.routeGeometry, isLiveConnected]);
+
     const filteredDeliveries = initialDeliveries.filter(
         (delivery) =>
             delivery.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -176,7 +183,6 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                 {/* Map Overlays */}
                                 <MapStatusBar
                                     status={selectedDelivery.status}
-                                    liveSpeed={driverLocation?.speedMps}
                                     lastUpdated={driverLocation?.updatedAt}
                                     isLive={isLiveConnected}
                                 />

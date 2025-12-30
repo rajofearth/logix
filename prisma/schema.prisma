@@ -253,6 +253,7 @@ model DriverLocation {
   longitude  Decimal  @db.Decimal(9, 6)
   speedMps   Decimal? @map("speed_mps") @db.Decimal(6, 2)
   heading    Int?     // Degrees 0-360
+  routeGeometry Json? @map("route_geometry")
   
   updatedAt  DateTime @updatedAt @map("updated_at")
 
