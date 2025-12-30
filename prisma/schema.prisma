@@ -20,6 +20,13 @@ enum DriverStatus {
   off_duty
 }
 
+enum JobStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
 model Driver {
   id                      String          @id @default(uuid()) @db.Uuid
   name                    String
@@ -63,6 +70,10 @@ model Driver {
   accounts            Account[]
   status              DriverStatus  @default(available)
   jobs                Job[]
+  
+  // Location tracking relations
+  currentLocation     DriverLocation?  @relation("CurrentLocation")
+  locationHistory     LocationPoint[]  @relation("LocationHistory")
 
   @@map("users")
   @@unique([email])
@@ -209,6 +220,7 @@ model Job {
   dropWindowEndAt   DateTime @map("drop_window_end_at")
 
   distanceMeters    Int      @map("distance_meters")
+  status            JobStatus @default(pending)
 
   driverId          String?  @map("driver_id") @db.Uuid
   driver            Driver?  @relation(fields: [driverId], references: [id])
@@ -216,8 +228,57 @@ model Job {
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
 
+  // Location tracking relations
+  driverLocation    DriverLocation?
+  locationPoints    LocationPoint[]
+
   @@index([pickupAt])
+  @@index([status])
   @@map("jobs")
+}
+
+// ============================================
+// Real-Time Location Tracking Models
+// ============================================
+
+// Current driver location (latest position for fast lookups)
+model DriverLocation {
+  id         String   @id @default(uuid()) @db.Uuid
+  jobId      String   @unique @map("job_id") @db.Uuid
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  driverId   String   @unique @map("driver_id") @db.Uuid
+  driver     Driver   @relation("CurrentLocation", fields: [driverId], references: [id], onDelete: Cascade)
+  
+  latitude   Decimal  @db.Decimal(9, 6)
+  longitude  Decimal  @db.Decimal(9, 6)
+  speedMps   Decimal? @map("speed_mps") @db.Decimal(6, 2)
+  heading    Int?     // Degrees 0-360
+  
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@index([jobId])
+  @@index([driverId])
+  @@map("driver_locations")
+}
+
+// Complete path history - stores every location point
+model LocationPoint {
+  id         String   @id @default(uuid()) @db.Uuid
+  jobId      String   @map("job_id") @db.Uuid
+  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  driverId   String   @map("driver_id") @db.Uuid
+  driver     Driver   @relation("LocationHistory", fields: [driverId], references: [id], onDelete: Cascade)
+  
+  latitude   Decimal  @db.Decimal(9, 6)
+  longitude  Decimal  @db.Decimal(9, 6)
+  speedMps   Decimal? @map("speed_mps") @db.Decimal(6, 2)
+  heading    Int?
+  
+  timestamp  DateTime @default(now())
+  
+  @@index([jobId, timestamp])
+  @@index([driverId, timestamp])
+  @@map("location_points")
 }
 
 // ============================================

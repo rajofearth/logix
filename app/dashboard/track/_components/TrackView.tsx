@@ -3,13 +3,14 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { MapPin } from "lucide-react";
+import { MapPin, Radio } from "lucide-react";
 import { type Delivery } from "../_data/deliveries";
 import { DeliveryCard } from "./DeliveryCard";
 import { SearchBar } from "./SearchBar";
 import { TrackingMap } from "./TrackingMap";
 import { MapStatusBar } from "./MapStatusBar";
 import { DriverInfoPanel } from "./DriverInfoPanel";
+import { useDriverLocation } from "../_hooks/useDriverLocation";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
 
@@ -28,6 +29,11 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
     const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
     const [fuelStations, setFuelStations] = useState<Array<{ name: string; address?: string; distance?: number; coord: LngLat }>>([]);
+
+    // Real-time driver location tracking
+    const { current: driverLocation, path: driverPath, isConnected: isLiveConnected } = useDriverLocation(
+        selectedDelivery?.isActive ? selectedDelivery.id : null
+    );
 
     // Auto-select delivery based on URL jobId param (e.g., from driver sheet Track button)
     useEffect(() => {
@@ -150,9 +156,30 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                     }}
                                     routeGeoJson={routeGeoJson}
                                     fuelStations={fuelStations}
+                                    driverLocation={driverLocation ? {
+                                        lat: driverLocation.latitude,
+                                        lng: driverLocation.longitude,
+                                        heading: driverLocation.heading,
+                                    } : undefined}
+                                    driverPath={driverPath.map(p => ({
+                                        lat: p.latitude,
+                                        lng: p.longitude,
+                                    }))}
                                 />
+                                {/* Live indicator */}
+                                {isLiveConnected && (
+                                    <div className="absolute top-4 left-4 flex items-center gap-2 bg-emerald-500/90 text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg">
+                                        <Radio className="size-3 animate-pulse" />
+                                        LIVE
+                                    </div>
+                                )}
                                 {/* Map Overlays */}
-                                <MapStatusBar status={selectedDelivery.status} />
+                                <MapStatusBar
+                                    status={selectedDelivery.status}
+                                    liveSpeed={driverLocation?.speedMps}
+                                    lastUpdated={driverLocation?.updatedAt}
+                                    isLive={isLiveConnected}
+                                />
                                 <DriverInfoPanel delivery={selectedDelivery} />
                             </>
                         ) : (

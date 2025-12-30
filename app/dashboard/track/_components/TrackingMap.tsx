@@ -3,22 +3,33 @@
 import * as React from "react"
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types"
 
+interface DriverLocationProp {
+    lat: number;
+    lng: number;
+    heading?: number | null;
+}
+
 export function TrackingMap({
     pickup,
     drop,
     routeGeoJson,
     fuelStations = [],
+    driverLocation,
+    driverPath = [],
 }: {
     pickup?: LngLat
     drop?: LngLat
     routeGeoJson?: GeoJsonFeature<LineStringGeometry> | null
     fuelStations?: Array<{ name: string; address?: string; distance?: number; coord: LngLat }>
+    driverLocation?: DriverLocationProp
+    driverPath?: Array<{ lat: number; lng: number }>
 }) {
     const containerRef = React.useRef<HTMLDivElement | null>(null)
     const mapRef = React.useRef<import("mapbox-gl").Map | null>(null)
     const pickupMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
     const dropMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
     const fuelMarkersRef = React.useRef<import("mapbox-gl").Marker[]>([])
+    const driverMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
 
     const [isMapLoaded, setIsMapLoaded] = React.useState(false)
 
@@ -294,6 +305,101 @@ export function TrackingMap({
 
     }, [fuelStations, token, isMapLoaded])
 
+    // Effect for driver location marker
+    React.useEffect(() => {
+        const map = mapRef.current
+        if (!map || !token || !isMapLoaded) return
+
+        void (async () => {
+            const mapboxgl = await import("mapbox-gl")
+
+            if (driverLocation) {
+                // Create or update driver marker
+                if (!driverMarkerRef.current) {
+                    // Create driver marker element
+                    const el = document.createElement("div")
+                    el.style.width = "20px"
+                    el.style.height = "20px"
+                    el.style.borderRadius = "50%"
+                    el.style.background = "#10b981" // emerald-500
+                    el.style.border = "3px solid white"
+                    el.style.boxShadow = "0 0 0 3px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3)"
+                    el.style.animation = "pulse 2s ease-in-out infinite"
+
+                    // Add pulse animation
+                    const style = document.createElement("style")
+                    style.textContent = `
+                        @keyframes pulse {
+                            0%, 100% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3); }
+                            50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0.2), 0 4px 12px rgba(0, 0, 0, 0.3); }
+                        }
+                    `
+                    document.head.appendChild(style)
+
+                    driverMarkerRef.current = new mapboxgl.default.Marker({
+                        element: el,
+                        anchor: "center",
+                    })
+                        .setLngLat([driverLocation.lng, driverLocation.lat])
+                        .addTo(map)
+                } else {
+                    // Update existing marker position
+                    driverMarkerRef.current.setLngLat([driverLocation.lng, driverLocation.lat])
+                }
+            } else if (driverMarkerRef.current) {
+                driverMarkerRef.current.remove()
+                driverMarkerRef.current = null
+            }
+        })()
+    }, [driverLocation, token, isMapLoaded])
+
+    // Effect for driver path (trail line)
+    React.useEffect(() => {
+        const map = mapRef.current
+        if (!map || !token || !isMapLoaded) return
+
+        const sourceId = "driver-path"
+        const layerId = "driver-path-line"
+
+        if (!map.isStyleLoaded()) return
+
+        const existingSource = map.getSource(sourceId)
+
+        if (driverPath.length >= 2) {
+            const pathGeoJson: GeoJsonFeature<LineStringGeometry> = {
+                type: "Feature",
+                properties: {},
+                geometry: {
+                    type: "LineString",
+                    coordinates: driverPath.map(p => [p.lng, p.lat]),
+                },
+            }
+
+            if (!existingSource) {
+                map.addSource(sourceId, {
+                    type: "geojson",
+                    data: pathGeoJson,
+                })
+                map.addLayer({
+                    id: layerId,
+                    type: "line",
+                    source: sourceId,
+                    layout: { "line-join": "round", "line-cap": "round" },
+                    paint: {
+                        "line-color": "#10b981",
+                        "line-width": 4,
+                        "line-opacity": 0.7,
+                    },
+                })
+            } else {
+                (existingSource as import("mapbox-gl").GeoJSONSource).setData(pathGeoJson)
+            }
+        } else {
+            if (map.getLayer(layerId)) map.removeLayer(layerId)
+            if (existingSource) map.removeSource(sourceId)
+        }
+    }, [driverPath, token, isMapLoaded])
+
     if (!token) {
         return (
             <div className="text-muted-foreground flex h-full items-center justify-center bg-muted/20 text-sm">
@@ -304,3 +410,4 @@ export function TrackingMap({
 
     return <div ref={containerRef} className="h-full w-full" />
 }
+
