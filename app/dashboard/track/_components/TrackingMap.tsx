@@ -141,7 +141,11 @@ export function TrackingMap({
                             type: "line",
                             source: sourceId,
                             layout: { "line-join": "round", "line-cap": "round" },
-                            paint: { "line-color": "#0b1220", "line-width": 7, "line-opacity": 0.35 },
+                            paint: {
+                                "line-color": "#8b5cf6",
+                                "line-width": 5,
+                                "line-opacity": 0.8,
+                            },
                         })
                     }
                     if (!map.getLayer(lineLayerId)) {
@@ -150,7 +154,7 @@ export function TrackingMap({
                             type: "line",
                             source: sourceId,
                             layout: { "line-join": "round", "line-cap": "round" },
-                            paint: { "line-color": "#2563eb", "line-width": 4 },
+                            paint: { "line-color": "#8b5cf6", "line-width": 4 },
                         })
                     }
                 } else {
@@ -242,9 +246,9 @@ export function TrackingMap({
                             source: sourceId,
                             layout: { "line-join": "round", "line-cap": "round" },
                             paint: {
-                                "line-color": "#0b1220",
-                                "line-width": 7,
-                                "line-opacity": 0.35,
+                                "line-color": "#8b5cf6",
+                                "line-width": 5,
+                                "line-opacity": 0.8,
                             },
                         })
                     }
@@ -254,7 +258,7 @@ export function TrackingMap({
                             type: "line",
                             source: sourceId,
                             layout: { "line-join": "round", "line-cap": "round" },
-                            paint: { "line-color": "#2563eb", "line-width": 4 },
+                            paint: { "line-color": "#8b5cf6", "line-width": 4 },
                         })
                     }
                 } else {
