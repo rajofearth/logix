@@ -136,7 +136,7 @@ export function ProjectCard({ project, onClick }: ProjectCardProps) {
                             {displayedMembers.map((member) => (
                                 <Avatar
                                     key={member.id}
-                                    size="xs"
+                                    size="sm"
                                     className="ring-2 ring-background"
                                 >
                                     <AvatarImage src={member.avatar ?? undefined} alt={member.name} />
