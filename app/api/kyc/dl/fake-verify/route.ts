@@ -10,7 +10,7 @@ export async function POST(req: Request) {
     let body: { drivingLicenseNo?: string; phoneNumber?: string } = {};
     try {
       body = (await req.json()) as { drivingLicenseNo?: string; phoneNumber?: string };
-    } catch (_e) {
+    } catch {
       return jsonError("Invalid JSON body", 400);
     }
 

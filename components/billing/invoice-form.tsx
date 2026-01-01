@@ -1,15 +1,32 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Plus, Trash, Calculator, Save } from "lucide-react"
+import { Plus, Trash, Save } from "lucide-react"
 
-export function InvoiceForm({ initialData, onSubmit }: { initialData?: any, onSubmit: (data: any) => void }) {
-    const [formData, setFormData] = useState(initialData || {
+interface LineItem {
+    description: string;
+    hsnCode: string;
+    quantity: number;
+    rate: number;
+    discount: number;
+}
+
+interface FormData {
+    type: string;
+    buyerName: string;
+    buyerGstin: string;
+    buyerAddress: string;
+    placeOfSupply: string;
+    lineItems: LineItem[];
+}
+
+export function InvoiceForm({ initialData, onSubmit }: { initialData?: FormData, onSubmit: (data: FormData) => void }) {
+    const [formData, setFormData] = useState<FormData>(initialData || {
         type: "TAX_INVOICE",
         buyerName: "",
         buyerGstin: "",
@@ -26,11 +43,11 @@ export function InvoiceForm({ initialData, onSubmit }: { initialData?: any, onSu
     }
 
     const removeLineItem = (index: number) => {
-        const newItems = formData.lineItems.filter((_: any, i: number) => i !== index)
+        const newItems = formData.lineItems.filter((_, i: number) => i !== index)
         setFormData({ ...formData, lineItems: newItems })
     }
 
-    const updateLineItem = (index: number, field: string, value: any) => {
+    const updateLineItem = (index: number, field: keyof LineItem, value: string | number) => {
         const newItems = [...formData.lineItems]
         newItems[index] = { ...newItems[index], [field]: value }
         setFormData({ ...formData, lineItems: newItems })
@@ -51,7 +68,7 @@ export function InvoiceForm({ initialData, onSubmit }: { initialData?: any, onSu
                 <CardContent className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
                         <Label>Document Type</Label>
-                        <Select value={formData.type} onValueChange={(v) => setFormData({ ...formData, type: v })}>
+                        <Select value={formData.type || "TAX_INVOICE"} onValueChange={(v) => setFormData({ ...formData, type: v ?? "TAX_INVOICE" })}>
                             <SelectTrigger>
                                 <SelectValue placeholder="Select type" />
                             </SelectTrigger>
@@ -110,7 +127,7 @@ export function InvoiceForm({ initialData, onSubmit }: { initialData?: any, onSu
                 </CardHeader>
                 <CardContent>
                     <div className="space-y-4">
-                        {formData.lineItems.map((item: any, index: number) => (
+                        {formData.lineItems.map((item, index: number) => (
                             <div key={index} className="grid grid-cols-12 gap-2 items-end border-b pb-4 last:border-0 last:pb-0">
                                 <div className="col-span-4 space-y-2">
                                     <Label className="text-xs">Description</Label>

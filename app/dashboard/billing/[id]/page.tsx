@@ -6,11 +6,37 @@ import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SiteHeader } from '@/components/dashboard/site-header'
 import { InvoicePreview } from "@/components/billing/invoice-preview"
 import { Button } from "@/components/ui/button"
-import { Printer, Download, Share2, MoreVertical } from "lucide-react"
+import { Printer, Download, Share2 } from "lucide-react"
+
+interface Invoice {
+    id: string;
+    invoiceNumber: string;
+    status: string;
+    createdAt: string;
+    type: string;
+    supplierGstin?: string | null;
+    supplierName: string;
+    supplierAddress: string;
+    buyerName: string;
+    buyerGstin?: string | null;
+    buyerAddress: string;
+    invoiceDate: string;
+    placeOfSupply: string;
+    subtotal: number;
+    totalTax: number;
+    grandTotal: number;
+    lineItems: Array<{
+        description: string;
+        hsnCode: string;
+        quantity: number;
+        rate: number;
+        taxableValue: number;
+    }>;
+}
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
     const { id } = use(params)
-    const [invoice, setInvoice] = useState<any>(null)
+    const [invoice, setInvoice] = useState<Invoice | null>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
@@ -60,7 +86,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                             <div className="space-y-3">
                                 <div>
                                     <p className="text-[10px] uppercase opacity-60">Status</p>
-                                    <Badge variant="default">{invoice.status}</Badge>
+                                    <Badge>{invoice.status}</Badge>
                                 </div>
                                 <div>
                                     <p className="text-[10px] uppercase opacity-60">Created At</p>
@@ -75,7 +101,7 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     )
 }
 
-function Badge({ children, variant }: { children: React.ReactNode, variant: string }) {
+function Badge({ children }: { children: React.ReactNode }) {
     return (
         <span className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold bg-primary text-primary-foreground">
             {children}

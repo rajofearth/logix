@@ -87,7 +87,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     // Update route from driver location if available
     useEffect(() => {
         if (driverLocation?.routeGeometry && isLiveConnected) {
-            setRouteGeoJson(driverLocation.routeGeometry);
+            setRouteGeoJson(driverLocation.routeGeometry as GeoJsonFeature<LineStringGeometry>);
         }
     }, [driverLocation?.routeGeometry, isLiveConnected]);
 

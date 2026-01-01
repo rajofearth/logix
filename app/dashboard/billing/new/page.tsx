@@ -7,10 +7,25 @@ import { InvoiceForm } from '@/components/billing/invoice-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
+interface InvoiceFormData {
+    type: string;
+    buyerName: string;
+    buyerGstin: string;
+    buyerAddress: string;
+    placeOfSupply: string;
+    lineItems: Array<{
+        description: string;
+        hsnCode: string;
+        quantity: number;
+        rate: number;
+        discount: number;
+    }>;
+}
+
 export default function NewInvoicePage() {
     const router = useRouter()
 
-    const handleSubmit = async (data: any) => {
+    const handleSubmit = async (data: InvoiceFormData) => {
         try {
             const res = await fetch('/api/billing/invoices', {
                 method: 'POST',
@@ -23,8 +38,9 @@ export default function NewInvoicePage() {
             const invoice = await res.json()
             toast.success('Invoice created successfully')
             router.push(`/dashboard/billing/${invoice.id}`)
-        } catch (error: any) {
-            toast.error(error.message)
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'Unknown error'
+            toast.error(message)
         }
     }
 

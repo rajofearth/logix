@@ -25,7 +25,7 @@ export function getFinancialYear(date: Date = new Date()): string {
     return `${startYear}-${endYear.toString().slice(-2)}`;
 }
 
-export function isInterState(supplierGstin: string | null, buyerGstin: string | null, placeOfSupply: string): boolean {
+export function isInterState(supplierGstin: string | null, buyerGstin: string | null, _placeOfSupply: string): boolean {
     if (!supplierGstin || !buyerGstin) return true; // Default to IGST if unsure
     const supplierStateCode = supplierGstin.slice(0, 2);
     const buyerStateCode = buyerGstin.slice(0, 2);

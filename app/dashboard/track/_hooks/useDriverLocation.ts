@@ -7,7 +7,7 @@ export interface DriverLocationData {
     longitude: number;
     speedMps: number | null;
     heading: number | null;
-    routeGeometry?: any; // GeoJSON
+    routeGeometry?: unknown; // GeoJSON
     updatedAt: string;
 }
 

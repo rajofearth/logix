@@ -3,6 +3,7 @@ import { prisma } from "../../../../lib/prisma";
 import { InvoiceSchema } from "../../../../lib/billing/validation-schemas";
 import { generateSequentialNumber, calculateLineItemTaxes, amountToWords } from "../../../../lib/billing/invoice-generator";
 import { isInterState } from "../../../../lib/billing/gst-config";
+import { InvoiceType, InvoiceStatus } from "../../../../generated/prisma/enums";
 
 // Forced Cache Refresh - ID: 999
 
@@ -14,8 +15,8 @@ export async function GET(req: NextRequest) {
 
         const invoices = await prisma.invoice.findMany({
             where: {
-                ...(type && { type: type as any }),
-                ...(status && { status: status as any }),
+                ...(type && { type: type as InvoiceType }),
+                ...(status && { status: status as InvoiceStatus }),
             },
             include: {
                 lineItems: true
@@ -26,8 +27,9 @@ export async function GET(req: NextRequest) {
         });
 
         return NextResponse.json(invoices);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
@@ -39,7 +41,7 @@ export async function POST(req: NextRequest) {
             invoiceDate: body.invoiceDate ? new Date(body.invoiceDate) : new Date()
         });
 
-        const invoiceNumber = await generateSequentialNumber(validated.type as any);
+        const invoiceNumber = await generateSequentialNumber(validated.type as InvoiceType);
         const interState = isInterState(validated.supplierGstin ?? null, validated.buyerGstin ?? null, validated.placeOfSupply);
 
         const lineItemsWithTaxes = validated.lineItems.map(item => {
@@ -74,8 +76,9 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(invoice);
-    } catch (error: any) {
+    } catch (error: unknown) {
         console.error("Invoice creation failed:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

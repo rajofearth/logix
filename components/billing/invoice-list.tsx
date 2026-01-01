@@ -4,11 +4,21 @@ import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, Download, MoreHorizontal } from "lucide-react"
+import { Eye, Download } from "lucide-react"
 import Link from "next/link"
 
+interface Invoice {
+    id: string;
+    invoiceNumber: string;
+    invoiceDate: string;
+    type: string;
+    buyerName: string;
+    grandTotal: number;
+    status: string;
+}
+
 export function InvoiceList() {
-    const [invoices, setInvoices] = useState<any[]>([])
+    const [invoices, setInvoices] = useState<Invoice[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {

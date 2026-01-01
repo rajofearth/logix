@@ -11,7 +11,7 @@ interface LocationUpdateBody {
     speedMps?: number | null;
     heading?: number | null;
     timestamp?: string; // ISO string
-    routeGeometry?: any; // GeoJSON
+    routeGeometry?: unknown; // GeoJSON
 }
 
 export async function POST(req: Request) {

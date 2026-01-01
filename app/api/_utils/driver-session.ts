@@ -36,7 +36,7 @@ export async function requireDriverSessionOrPhoneVerified(
         phoneNumberVerified: (session.user as { phoneNumberVerified?: boolean }).phoneNumberVerified ?? false,
       };
     }
-  } catch (_e) {
+  } catch {
     // Session invalid, try phone verification fallback
     console.log("[Auth] Session invalid, trying phone verification fallback");
   }

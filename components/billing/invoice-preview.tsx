@@ -1,9 +1,31 @@
 "use client"
 
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+interface InvoiceLineItem {
+    description: string;
+    hsnCode: string;
+    quantity: number;
+    rate: number;
+    taxableValue: number;
+}
 
-export function InvoicePreview({ invoice }: { invoice: any }) {
+interface Invoice {
+    type: string;
+    supplierGstin?: string | null;
+    supplierName: string;
+    supplierAddress: string;
+    buyerName: string;
+    buyerGstin?: string | null;
+    buyerAddress: string;
+    invoiceNumber: string;
+    invoiceDate: string;
+    placeOfSupply: string;
+    subtotal: number;
+    totalTax: number;
+    grandTotal: number;
+    lineItems: InvoiceLineItem[];
+}
+
+export function InvoicePreview({ invoice }: { invoice: Invoice }) {
     if (!invoice) return null;
 
     const isInter = invoice.supplierGstin?.slice(0, 2) !== invoice.buyerGstin?.slice(0, 2);
@@ -67,7 +89,7 @@ export function InvoicePreview({ invoice }: { invoice: any }) {
                         </tr>
                     </thead>
                     <tbody className="divide-y border-x border-b">
-                        {invoice.lineItems.map((item: any, i: number) => (
+                        {invoice.lineItems.map((item, i: number) => (
                             <tr key={i}>
                                 <td className="px-2 py-2 text-center">{i + 1}</td>
                                 <td className="px-2 py-2">{item.description}</td>

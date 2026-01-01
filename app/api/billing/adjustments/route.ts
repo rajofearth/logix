@@ -2,6 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { generateSequentialNumber, calculateLineItemTaxes, amountToWords } from "../../../../lib/billing/invoice-generator";
 import { isInterState } from "../../../../lib/billing/gst-config";
+import { InvoiceType } from "../../../../generated/prisma/enums";
+
+interface LineItemInput {
+    description: string;
+    hsnCode: string;
+    quantity: number;
+    rate: number;
+    discount?: number;
+    cgstRate?: number;
+    sgstRate?: number;
+    igstRate?: number;
+    cessRate?: number;
+}
+
+interface LineItemWithTaxes extends LineItemInput {
+    taxableValue: number;
+    cgstAmount: number;
+    sgstAmount: number;
+    igstAmount: number;
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -16,10 +36,10 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Reference invoice not found" }, { status: 404 });
         }
 
-        const invoiceNumber = await generateSequentialNumber(type);
+        const invoiceNumber = await generateSequentialNumber(type as InvoiceType);
         const interState = isInterState(originalInvoice.supplierGstin, originalInvoice.buyerGstin, originalInvoice.placeOfSupply);
 
-        const lineItemsWithTaxes = lineItems.map((item: any) => {
+        const lineItemsWithTaxes: LineItemWithTaxes[] = (lineItems as LineItemInput[]).map((item) => {
             const taxes = calculateLineItemTaxes(item, interState);
             return {
                 ...item,
@@ -28,8 +48,8 @@ export async function POST(req: NextRequest) {
             };
         });
 
-        const subtotal = lineItemsWithTaxes.reduce((sum: number, item: any) => sum + Number(item.taxableValue), 0);
-        const totalTax = lineItemsWithTaxes.reduce((sum: number, item: any) => sum + (Number(item.cgstAmount) + Number(item.sgstAmount) + Number(item.igstAmount)), 0);
+        const subtotal = lineItemsWithTaxes.reduce((sum: number, item) => sum + Number(item.taxableValue), 0);
+        const totalTax = lineItemsWithTaxes.reduce((sum: number, item) => sum + (Number(item.cgstAmount) + Number(item.sgstAmount) + Number(item.igstAmount)), 0);
         const grandTotal = subtotal + totalTax;
 
         const adjustment = await prisma.invoice.create({
@@ -57,7 +77,8 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(adjustment);
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

@@ -2,6 +2,15 @@ import { prisma } from "../prisma";
 import { GST_CONFIG, getFinancialYear } from "./gst-config";
 import { InvoiceType } from "../../generated/prisma/enums";
 
+interface LineItemInput {
+    quantity: number;
+    rate: number;
+    discount?: number;
+    cgstRate?: number;
+    sgstRate?: number;
+    igstRate?: number;
+}
+
 export async function generateSequentialNumber(type: InvoiceType): Promise<string> {
     const fy = getFinancialYear();
     const prefix = "LOGIQ";
@@ -20,7 +29,7 @@ export async function generateSequentialNumber(type: InvoiceType): Promise<strin
     return `${prefix}/${fy}/${type.slice(0, 3)}/${sequence}`;
 }
 
-export function calculateLineItemTaxes(item: any, isInterState: boolean) {
+export function calculateLineItemTaxes(item: LineItemInput, isInterState: boolean) {
     const taxableValue = (item.quantity * item.rate) - (item.discount || 0);
 
     let cgstRate = 0, sgstRate = 0, igstRate = 0;

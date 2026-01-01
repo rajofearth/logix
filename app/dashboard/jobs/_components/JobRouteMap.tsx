@@ -29,10 +29,12 @@ export function JobRouteMap({
   const dropMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
   const activePointRef = React.useRef<ActivePoint>(activePoint)
   const pickupRef = React.useRef<LngLat | undefined>(pickup)
+  const dropRef = React.useRef<LngLat | undefined>(drop)
   const onPickRef = React.useRef<typeof onPick>(onPick)
 
   activePointRef.current = activePoint
   pickupRef.current = pickup
+  dropRef.current = drop
   onPickRef.current = onPick
 
   const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
@@ -59,6 +61,9 @@ export function JobRouteMap({
     return el
   }
 
+  // Map initialization effect - intentionally only depends on token.
+  // pickup/drop are read via refs to avoid re-initializing the map when they change.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useEffect(() => {
     if (!containerRef.current) return
     if (!token) return
@@ -71,10 +76,10 @@ export function JobRouteMap({
       mapboxgl.default.accessToken = token
 
       const center: [number, number] =
-        pickup
-          ? [pickup.lng, pickup.lat]
-          : drop
-            ? [drop.lng, drop.lat]
+        pickupRef.current
+          ? [pickupRef.current.lng, pickupRef.current.lat]
+          : dropRef.current
+            ? [dropRef.current.lng, dropRef.current.lat]
             : [77.209, 28.6139] // Delhi (sane default)
 
       const map = new mapboxgl.default.Map({
