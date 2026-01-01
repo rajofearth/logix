@@ -1,5 +1,7 @@
 export type LngLat = { lng: number; lat: number }
 
+export type JobStatus = "pending" | "in_progress" | "completed" | "cancelled"
+
 export type JobDTO = {
   id: string
   title: string
@@ -14,6 +16,9 @@ export type JobDTO = {
   dropWindowStartAt: string
   dropWindowEndAt: string
   distanceMeters: number
+  status: JobStatus
+  driverId: string | null
+  driverName: string | null
   createdAt: string
   updatedAt: string
 }
@@ -31,6 +36,7 @@ export type JobUpsertInput = {
   dropWindowStartAt: string
   dropWindowEndAt: string
   distanceMeters: number
+  driverId?: string | null
 }
 
 export type LineStringGeometry = {

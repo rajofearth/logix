@@ -1,9 +1,10 @@
 "use server"
 
-import type { JobDTO, JobUpsertInput } from "../_types"
+import type { JobDTO, JobUpsertInput, JobStatus } from "../_types"
 import { prisma } from "@/lib/prisma"
 import { jobIdSchema, jobUpsertSchema } from "./jobSchemas"
 import { Decimal } from "@prisma/client/runtime/index-browser"
+import { z } from "zod"
 
 function decimalToNumber(value: unknown): number {
   if (typeof value === "number") return value
@@ -34,6 +35,9 @@ function jobToDto(job: {
   dropWindowStartAt: Date
   dropWindowEndAt: Date
   distanceMeters: number
+  status: string
+  driverId: string | null
+  driver?: { name: string } | null
   createdAt: Date
   updatedAt: Date
 }): JobDTO {
@@ -51,6 +55,9 @@ function jobToDto(job: {
     dropWindowStartAt: job.dropWindowStartAt.toISOString(),
     dropWindowEndAt: job.dropWindowEndAt.toISOString(),
     distanceMeters: job.distanceMeters,
+    status: job.status as JobStatus,
+    driverId: job.driverId,
+    driverName: job.driver?.name ?? null,
     createdAt: job.createdAt.toISOString(),
     updatedAt: job.updatedAt.toISOString(),
   }
@@ -58,6 +65,7 @@ function jobToDto(job: {
 
 export async function listJobs(): Promise<JobDTO[]> {
   const jobs = await prisma.job.findMany({
+    include: { driver: { select: { name: true } } },
     orderBy: { createdAt: "desc" },
   })
   return jobs.map(jobToDto)
@@ -67,6 +75,7 @@ export async function getJob(id: string): Promise<JobDTO> {
   const parsedId = jobIdSchema.parse(id)
   const job = await prisma.job.findUnique({
     where: { id: parsedId },
+    include: { driver: { select: { name: true } } },
   })
   if (!job) {
     throw new Error("Job not found")
@@ -90,7 +99,9 @@ export async function createJob(input: JobUpsertInput): Promise<JobDTO> {
       dropWindowStartAt: new Date(parsed.dropWindowStartAt),
       dropWindowEndAt: new Date(parsed.dropWindowEndAt),
       distanceMeters: parsed.distanceMeters,
+      driverId: parsed.driverId ?? null,
     },
+    include: { driver: { select: { name: true } } },
   })
   return jobToDto(created)
 }
@@ -116,7 +127,9 @@ export async function updateJob(
       dropWindowStartAt: new Date(parsed.dropWindowStartAt),
       dropWindowEndAt: new Date(parsed.dropWindowEndAt),
       distanceMeters: parsed.distanceMeters,
+      driverId: parsed.driverId ?? null,
     },
+    include: { driver: { select: { name: true } } },
   })
   return jobToDto(updated)
 }
@@ -126,4 +139,36 @@ export async function deleteJob(id: string): Promise<void> {
   await prisma.job.delete({ where: { id: parsedId } })
 }
 
+const assignDriverSchema = z.object({
+  jobId: z.string().uuid(),
+  driverId: z.string().uuid().nullable(),
+})
 
+export async function assignDriver(
+  jobId: string,
+  driverId: string | null
+): Promise<JobDTO> {
+  const parsed = assignDriverSchema.parse({ jobId, driverId })
+
+  // If assigning a driver, verify they are available
+  if (parsed.driverId) {
+    const driver = await prisma.driver.findUnique({
+      where: { id: parsed.driverId },
+      select: { status: true },
+    })
+    if (!driver) {
+      throw new Error("Driver not found")
+    }
+    if (driver.status !== "available") {
+      throw new Error("Driver is not available")
+    }
+  }
+
+  const updated = await prisma.job.update({
+    where: { id: parsed.jobId },
+    data: { driverId: parsed.driverId },
+    include: { driver: { select: { name: true } } },
+  })
+
+  return jobToDto(updated)
+}

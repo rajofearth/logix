@@ -68,6 +68,11 @@ export default function JobsPage() {
                 <JobsTable
                   jobs={jobs}
                   onDelete={handleDelete}
+                  onJobUpdate={(updatedJob) => {
+                    setJobs((prev) =>
+                      prev.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+                    )
+                  }}
                 />
               )}
             </div>

@@ -7,9 +7,10 @@ export const dynamic = "force-dynamic";
 export default async function TrackPage() {
     const jobs = await prisma.job.findMany({
         where: {
-            driverId: {
-                not: null,
-            },
+            AND: [
+                { driverId: { not: null } },
+                { status: { in: ["pending", "in_progress"] } }
+            ]
         },
         include: {
             driver: true,
@@ -26,6 +27,7 @@ export default async function TrackPage() {
         return {
             id: job.id,
             type: job.title || "Standard Delivery",
+            jobStatus: job.status as "pending" | "in_progress" | "completed" | "cancelled",
             image: "/truck.png", // specific truck image or default
             origin: {
                 address: job.pickupAddress,

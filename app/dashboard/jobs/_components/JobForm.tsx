@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 
 import type { DirectionsResult, JobDTO, JobUpsertInput, LngLat } from "../_types"
+import type { AvailableDriverDTO } from "../_server/driverList"
 import { dateTimeLocalToIso, isoToDateTimeLocalValue } from "../_utils/datetime"
 import { createJob, updateJob } from "../_server/jobActions"
 import { getDirections } from "../_server/mapboxDirections"
 import { reverseGeocode } from "../_server/mapboxGeocoding"
+import { listAvailableDrivers } from "../_server/driverList"
 import { JobRouteMap } from "./JobRouteMap"
 
 import { Button } from "@/components/ui/button"
@@ -18,6 +20,13 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 type ActivePoint = "auto" | "pickup" | "drop"
 
@@ -32,6 +41,7 @@ type FormState = {
   distanceMeters: number
   pickup?: LngLat
   drop?: LngLat
+  driverId: string | null
 }
 
 function getInitialCreateState(now = new Date()): FormState {
@@ -50,6 +60,7 @@ function getInitialCreateState(now = new Date()): FormState {
     distanceMeters: 0,
     pickup: undefined,
     drop: undefined,
+    driverId: null,
   }
 }
 
@@ -65,6 +76,7 @@ function jobToFormState(job: JobDTO): FormState {
     distanceMeters: job.distanceMeters,
     pickup: { lng: job.pickupLng, lat: job.pickupLat },
     drop: { lng: job.dropLng, lat: job.dropLat },
+    driverId: job.driverId,
   }
 }
 
@@ -91,6 +103,14 @@ export function JobForm({
   const [route, setRoute] = React.useState<DirectionsResult | null>(null)
   const [isSaving, startSaving] = React.useTransition()
   const [isRouting, startRouting] = React.useTransition()
+  const [availableDrivers, setAvailableDrivers] = React.useState<AvailableDriverDTO[]>([])
+
+  // Fetch available drivers on mount
+  React.useEffect(() => {
+    listAvailableDrivers()
+      .then(setAvailableDrivers)
+      .catch(() => toast.error("Failed to load drivers"))
+  }, [])
 
   React.useEffect(() => {
     setActivePoint("auto")
@@ -178,6 +198,7 @@ export function JobForm({
       dropWindowStartAt: dateTimeLocalToIso(form.dropStartLocal),
       dropWindowEndAt: dateTimeLocalToIso(form.dropEndLocal),
       distanceMeters: form.distanceMeters,
+      driverId: form.driverId,
     }
   }
 
@@ -235,6 +256,29 @@ export function JobForm({
             onChange={(e) => setForm((p) => ({ ...p, weightKg: Number(e.target.value) }))}
           />
         </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="driver-select">Assign Driver (Optional)</Label>
+          <Select
+            value={form.driverId ?? "unassigned"}
+            onValueChange={(v) => setForm((p) => ({ ...p, driverId: v === "unassigned" ? null : v }))}
+          >
+            <SelectTrigger id="driver-select">
+              <SelectValue placeholder="Select a driver" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="unassigned">Unassigned</SelectItem>
+              {availableDrivers.map((driver) => (
+                <SelectItem key={driver.id} value={driver.name}>
+                  {driver.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

@@ -31,6 +31,7 @@ export const jobUpsertSchema = z
     dropWindowStartAt: isoDateTimeSchema,
     dropWindowEndAt: isoDateTimeSchema,
     distanceMeters: z.number().int().nonnegative(),
+    driverId: z.string().uuid().nullish(),
   })
   .superRefine((val, ctx) => {
     const pickupAt = new Date(val.pickupAt).getTime()
