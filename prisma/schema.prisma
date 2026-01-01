@@ -224,6 +224,7 @@ model Job {
 
   driverId          String?  @map("driver_id") @db.Uuid
   driver            Driver?  @relation(fields: [driverId], references: [id])
+  invoices          Invoice[]
 
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
@@ -235,6 +236,131 @@ model Job {
   @@index([pickupAt])
   @@index([status])
   @@map("jobs")
+}
+
+model Invoice {
+  id                String            @id @default(uuid()) @db.Uuid
+  invoiceNumber     String            @unique @map("invoice_number")
+  invoiceDate       DateTime          @map("invoice_date")
+  type              InvoiceType
+  status            InvoiceStatus     @default(DRAFT)
+  supplierName      String            @map("supplier_name")
+  supplierGstin     String?           @map("supplier_gstin")
+  supplierAddress   String            @map("supplier_address")
+  supplierEmail     String?           @map("supplier_email")
+  supplierPhone     String?           @map("supplier_phone")
+  supplierIecCode   String?           @map("supplier_iec_code")
+  buyerName         String            @map("buyer_name")
+  buyerGstin        String?           @map("buyer_gstin")
+  buyerAddress      String            @map("buyer_address")
+  buyerEmail        String?           @map("buyer_email")
+  buyerCountry      String?           @map("buyer_country")
+  buyerEin          String?           @map("buyer_ein")
+  placeOfSupply     String            @map("place_of_supply")
+  subtotal          Decimal           @db.Decimal(12, 2)
+  totalTax          Decimal           @map("total_tax") @db.Decimal(12, 2)
+  grandTotal        Decimal           @map("grand_total") @db.Decimal(12, 2)
+  totalInWords      String            @map("total_in_words")
+  ewayBillNumber    String?           @map("eway_bill_number")
+  lutNumber         String?           @map("lut_number")
+  shippingBillNumber String?          @map("shipping_bill_number")
+  portOfLoading     String?           @map("port_of_loading")
+  terms             String?           @db.Text
+  bankAccount       String?           @map("bank_account")
+  bankIfsc          String?           @map("bank_ifsc")
+  bankName          String?           @map("bank_name")
+  qrCode            String?           @map("qr_code") @db.Text
+  jobId             String?           @map("job_id") @db.Uuid
+  job               Job?              @relation(fields: [jobId], references: [id])
+  lineItems         InvoiceLineItem[]
+  auditLogs         InvoiceAuditLog[]
+  referenceInvoiceId String?         @map("reference_invoice_id") @db.Uuid
+  referenceInvoice   Invoice?        @relation("AdjustmentReferences", fields: [referenceInvoiceId], references: [id])
+  adjustments        Invoice[]       @relation("AdjustmentReferences")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  @@index([invoiceDate])
+  @@index([status])
+  @@map("invoices")
+}
+
+model InvoiceLineItem {
+  id           String  @id @default(uuid()) @db.Uuid
+  description  String
+  hsnCode      String  @map("hsn_code")
+  quantity     Decimal @db.Decimal(10, 3)
+  rate         Decimal @db.Decimal(12, 2)
+  discount     Decimal @default(0) @db.Decimal(12, 2)
+  taxableValue Decimal @map("taxable_value") @db.Decimal(12, 2)
+  cgstRate     Decimal @default(0) @map("cgst_rate") @db.Decimal(5, 2)
+  cgstAmount   Decimal @default(0) @map("cgst_amount") @db.Decimal(12, 2)
+  sgstRate     Decimal @default(0) @map("sgst_rate") @db.Decimal(5, 2)
+  sgstAmount   Decimal @default(0) @map("sgst_amount") @db.Decimal(12, 2)
+  igstRate     Decimal @default(0) @map("igst_rate") @db.Decimal(5, 2)
+  igstAmount   Decimal @default(0) @map("igst_amount") @db.Decimal(12, 2)
+  cessRate     Decimal @default(0) @map("cess_rate") @db.Decimal(5, 2)
+  cessAmount   Decimal @default(0) @map("cess_amount") @db.Decimal(12, 2)
+  invoiceId    String  @map("invoice_id") @db.Uuid
+  invoice      Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@map("invoice_line_items")
+}
+
+model InvoiceAuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  action    String
+  details   Json?
+  invoiceId String   @map("invoice_id") @db.Uuid
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("invoice_audit_logs")
+}
+
+model CompanyGSTConfig {
+  id          String   @id @default(uuid()) @db.Uuid
+  companyName String   @map("company_name")
+  gstin       String   @unique
+  address     String
+  email       String?
+  phone       String?
+  pan         String?
+  iecCode     String?  @map("iec_code")
+  bankName    String?  @map("bank_name")
+  bankAccount String?  @map("bank_account")
+  bankIfsc    String?  @map("bank_ifsc")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("company_gst_configs")
+}
+
+enum InvoiceType {
+  TAX_INVOICE
+  BILL_OF_SUPPLY
+  DELIVERY_CHALLAN
+  EXPORT_INVOICE
+  CREDIT_NOTE
+  DEBIT_NOTE
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  ISSUED
+  PAID
+  VOIDED
+  CANCELLED
+}
+
+enum TaxType {
+  CGST
+  SGST
+  IGST
+  UTGST
+  CESS
 }
 
 // ============================================
