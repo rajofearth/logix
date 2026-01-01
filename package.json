@@ -6,8 +6,14 @@
     "dev": "prisma generate && next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "check": "tsc --noEmit",
-    "lint": "oxlint"
+    "check": "tsc --noEmit --incremental",
+    "lint": "oxlint",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "oxlint"
+    ]
   },
   "dependencies": {
     "@base-ui/react": "^1.0.0",
@@ -67,6 +73,8 @@
     "@types/pg": "^8.16.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "oxlint": "^1.36.0",
     "prisma": "^7.2.0",
     "tailwindcss": "^4.1.18",
