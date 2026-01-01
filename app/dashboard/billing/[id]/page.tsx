@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { use, useEffect, useState } from "react"
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SiteHeader } from '@/components/dashboard/site-header'
@@ -8,18 +8,19 @@ import { InvoicePreview } from "@/components/billing/invoice-preview"
 import { Button } from "@/components/ui/button"
 import { Printer, Download, Share2, MoreVertical } from "lucide-react"
 
-export default function InvoiceDetailPage({ params }: { params: { id: string } }) {
+export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = use(params)
     const [invoice, setInvoice] = useState<any>(null)
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        fetch(`/api/billing/invoices/${params.id}`)
+        fetch(`/api/billing/invoices/${id}`)
             .then(res => res.json())
             .then(data => {
                 setInvoice(data)
                 setLoading(false)
             })
-    }, [params.id])
+    }, [id])
 
     if (loading) return <div>Loading...</div>
     if (!invoice) return <div>Invoice not found</div>

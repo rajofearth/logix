@@ -5,11 +5,12 @@ import { prisma } from "../../../../../lib/prisma";
 
 export async function GET(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const invoice = await prisma.invoice.findUnique({
-            where: { id: params.id },
+            where: { id },
             include: {
                 lineItems: true,
                 auditLogs: true,
@@ -29,12 +30,13 @@ export async function GET(
 
 export async function PATCH(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const body = await req.json();
         const invoice = await prisma.invoice.update({
-            where: { id: params.id },
+            where: { id },
             data: body
         });
         return NextResponse.json(invoice);
@@ -45,11 +47,12 @@ export async function PATCH(
 
 export async function DELETE(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: { params: Promise<{ id: string }> }
 ) {
     try {
+        const { id } = await context.params;
         const invoice = await prisma.invoice.update({
-            where: { id: params.id },
+            where: { id },
             data: { status: "VOIDED" }
         });
         return NextResponse.json(invoice);
