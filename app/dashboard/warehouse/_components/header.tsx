@@ -133,13 +133,13 @@ export function WarehouseHeader({
                 </div>
 
                 <Select value={selectedWarehouseId} onValueChange={(value) => value && onWarehouseChange(value)}>
-                    <SelectTrigger className="w-[120px] h-8 text-xs bg-zinc-800 border-zinc-700 text-zinc-300">
-                        <SelectValue placeholder="Zone" />
+                    <SelectTrigger className="w-[140px] h-8 text-xs bg-zinc-800 border-zinc-700 text-zinc-300">
+                        <SelectValue placeholder="Zone">{selectedWarehouse?.name || "Select"}</SelectValue>
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-900 border-zinc-700">
                         {warehouses.map((warehouse) => (
                             <SelectItem key={warehouse.id} value={warehouse.id} className="text-zinc-300">
-                                {warehouse.code}
+                                {warehouse.name}
                             </SelectItem>
                         ))}
                     </SelectContent>
