@@ -76,7 +76,7 @@ const data = {
     },
     {
       title: "Team",
-      url: "#",
+      url: "/dashboard/teams",
       icon: IconUsers,
     },
   ],
