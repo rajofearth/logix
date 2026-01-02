@@ -49,9 +49,18 @@ export async function POST(req: Request) {
         const now = timestamp ? new Date(timestamp) : new Date();
 
         // Use a transaction to update both tables atomically
-        await prisma.$transaction([
+        await prisma.$transaction(async (tx) => {
+            // First, delete any existing location for this driver from a different job
+            // This handles the case where driver transitions between jobs
+            await tx.driverLocation.deleteMany({
+                where: {
+                    driverId,
+                    jobId: { not: jobId },
+                },
+            });
+
             // Upsert current location (for fast lookups)
-            prisma.driverLocation.upsert({
+            await tx.driverLocation.upsert({
                 where: { jobId },
                 create: {
                     jobId,
@@ -74,9 +83,10 @@ export async function POST(req: Request) {
                     ...(driverPhase ? { driverPhase } : {}),
                     ...(pickupRouteGeometry ? { pickupRouteGeometry } : {}),
                 },
-            }),
+            });
+
             // Insert into location history (complete path)
-            prisma.locationPoint.create({
+            await tx.locationPoint.create({
                 data: {
                     jobId,
                     driverId,
@@ -86,8 +96,8 @@ export async function POST(req: Request) {
                     heading: heading ?? null,
                     timestamp: now,
                 },
-            }),
-        ]);
+            });
+        });
 
         return jsonOk({ success: true });
     } catch (e) {
