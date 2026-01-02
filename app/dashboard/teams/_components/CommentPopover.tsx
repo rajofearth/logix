@@ -118,7 +118,6 @@ export function CommentPopoverStandalone({
                     onChange={(e) => setContent(e.target.value)}
                     rows={3}
                     className="resize-none"
-                    autoFocus
                 />
                 <div className="flex justify-end gap-2">
                     <Button size="sm" variant="outline" onClick={() => onOpenChange(false)}>

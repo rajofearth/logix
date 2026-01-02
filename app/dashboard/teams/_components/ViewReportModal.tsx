@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { IconDownload, IconMessageCircle, IconSend } from "@tabler/icons-react"
+import { IconDownload, IconSend } from "@tabler/icons-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
