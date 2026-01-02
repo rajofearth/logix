@@ -65,7 +65,7 @@ export function TeamsFilterBar({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-                <Select value={departmentFilter} onValueChange={onDepartmentChange}>
+                <Select value={departmentFilter} onValueChange={(value) => value && onDepartmentChange(value)}>
                     <SelectTrigger className="w-[140px]" size="sm">
                         <SelectValue placeholder="All Teams" />
                     </SelectTrigger>
@@ -78,7 +78,7 @@ export function TeamsFilterBar({
                     </SelectContent>
                 </Select>
 
-                <Select value={statusFilter} onValueChange={onStatusChange}>
+                <Select value={statusFilter} onValueChange={(value) => value && onStatusChange(value)}>
                     <SelectTrigger className="w-[120px]" size="sm">
                         <SelectValue placeholder="All Status" />
                     </SelectTrigger>

@@ -78,7 +78,7 @@ export function AddTeamModal({ open, onOpenChange, onSubmit }: AddTeamModalProps
                     </div>
                     <div className="flex flex-col gap-2">
                         <Label htmlFor="team-kpi">Primary KPI</Label>
-                        <Select value={kpi} onValueChange={setKpi} required>
+                        <Select value={kpi} onValueChange={(value) => value && setKpi(value)}>
                             <SelectTrigger id="team-kpi">
                                 <SelectValue placeholder="Select a KPI" />
                             </SelectTrigger>
