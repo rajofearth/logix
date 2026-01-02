@@ -363,6 +363,13 @@ enum TaxType {
   CESS
 }
 
+enum DriverPhase {
+  en_route_to_pickup
+  at_pickup
+  en_route_to_dropoff
+  completed
+}
+
 // ============================================
 // Real-Time Location Tracking Models
 // ============================================
@@ -380,6 +387,8 @@ model DriverLocation {
   speedMps   Decimal? @map("speed_mps") @db.Decimal(6, 2)
   heading    Int?     // Degrees 0-360
   routeGeometry Json? @map("route_geometry")
+  driverPhase   DriverPhase @default(en_route_to_pickup) @map("driver_phase")
+  pickupRouteGeometry Json? @map("pickup_route_geometry")
   
   updatedAt  DateTime @updatedAt @map("updated_at")
 

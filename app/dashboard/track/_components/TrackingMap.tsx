@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types"
+import type { DriverPhase } from "../_hooks/useDriverLocation"
 
 interface DriverLocationProp {
     lat: number;
@@ -13,6 +14,8 @@ export function TrackingMap({
     pickup,
     drop,
     routeGeoJson,
+    pickupRouteGeoJson,
+    driverPhase,
     fuelStations = [],
     driverLocation,
     driverPath = [],
@@ -20,6 +23,8 @@ export function TrackingMap({
     pickup?: LngLat
     drop?: LngLat
     routeGeoJson?: GeoJsonFeature<LineStringGeometry> | null
+    pickupRouteGeoJson?: GeoJsonFeature<LineStringGeometry> | null
+    driverPhase?: DriverPhase
     fuelStations?: Array<{ name: string; address?: string; distance?: number; coord: LngLat }>
     driverLocation?: DriverLocationProp
     driverPath?: Array<{ lat: number; lng: number }>
@@ -36,6 +41,8 @@ export function TrackingMap({
     const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN
     const routeRef = React.useRef<typeof routeGeoJson>(routeGeoJson)
     routeRef.current = routeGeoJson
+    const pickupRouteRef = React.useRef<typeof pickupRouteGeoJson>(pickupRouteGeoJson)
+    pickupRouteRef.current = pickupRouteGeoJson
 
     function buildMarkerEl(kind: "pickup" | "drop" | "fuel", station?: { name: string; address?: string; distance?: number }): HTMLDivElement {
         const wrapper = document.createElement("div")
@@ -281,6 +288,45 @@ export function TrackingMap({
             }
         })()
     }, [pickup, drop, routeGeoJson, token])
+
+    // Effect for pickup route (driver -> pickup) with distinct orange dashed styling
+    React.useEffect(() => {
+        const map = mapRef.current
+        if (!map || !token || !isMapLoaded) return
+
+        const sourceId = "pickup-route"
+        const layerId = "pickup-route-line"
+
+        if (!map.isStyleLoaded()) return
+
+        const existingSource = map.getSource(sourceId)
+
+        if (pickupRouteGeoJson) {
+            if (!existingSource) {
+                map.addSource(sourceId, {
+                    type: "geojson",
+                    data: pickupRouteGeoJson,
+                })
+                map.addLayer({
+                    id: layerId,
+                    type: "line",
+                    source: sourceId,
+                    layout: { "line-join": "round", "line-cap": "round" },
+                    paint: {
+                        "line-color": "#f97316", // orange-500
+                        "line-width": 5,
+                        "line-dasharray": [2, 2], // dashed pattern
+                        "line-opacity": 0.9,
+                    },
+                })
+            } else {
+                (existingSource as import("mapbox-gl").GeoJSONSource).setData(pickupRouteGeoJson)
+            }
+        } else {
+            if (map.getLayer(layerId)) map.removeLayer(layerId)
+            if (existingSource) map.removeSource(sourceId)
+        }
+    }, [pickupRouteGeoJson, token, isMapLoaded])
 
     React.useEffect(() => {
         const map = mapRef.current

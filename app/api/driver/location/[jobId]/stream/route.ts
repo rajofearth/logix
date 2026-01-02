@@ -80,6 +80,8 @@ export async function GET(
                             speedMps: true,
                             heading: true,
                             routeGeometry: true,
+                            driverPhase: true,
+                            pickupRouteGeometry: true,
                             updatedAt: true,
                         },
                     });
@@ -96,6 +98,8 @@ export async function GET(
                                 : null,
                             heading: location.heading,
                             routeGeometry: location.routeGeometry,
+                            driverPhase: location.driverPhase,
+                            pickupRouteGeometry: location.pickupRouteGeometry,
                             updatedAt: location.updatedAt.toISOString(),
                         };
 

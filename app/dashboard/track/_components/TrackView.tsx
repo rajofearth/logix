@@ -28,6 +28,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     const [hoveredCard, setHoveredCard] = useState<string | null>(null);
     const [selectedDelivery, setSelectedDelivery] = useState<Delivery | null>(null);
     const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
+    const [pickupRouteGeoJson, setPickupRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
     const [fuelStations, setFuelStations] = useState<Array<{ name: string; address?: string; distance?: number; coord: LngLat }>>([]);
 
     // Real-time driver location tracking
@@ -84,12 +85,19 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
         fetchData();
     }, [selectedDelivery]);
 
-    // Update route from driver location if available
+    // Update routes from driver location if available
     useEffect(() => {
-        if (driverLocation?.routeGeometry && isLiveConnected) {
-            setRouteGeoJson(driverLocation.routeGeometry as GeoJsonFeature<LineStringGeometry>);
+        if (isLiveConnected) {
+            // Update delivery route
+            if (driverLocation?.routeGeometry) {
+                setRouteGeoJson(driverLocation.routeGeometry as GeoJsonFeature<LineStringGeometry>);
+            }
+            // Update pickup route (driver -> pickup location)
+            if (driverLocation?.pickupRouteGeometry) {
+                setPickupRouteGeoJson(driverLocation.pickupRouteGeometry as GeoJsonFeature<LineStringGeometry>);
+            }
         }
-    }, [driverLocation?.routeGeometry, isLiveConnected]);
+    }, [driverLocation?.routeGeometry, driverLocation?.pickupRouteGeometry, isLiveConnected]);
 
     const filteredDeliveries = initialDeliveries.filter(
         (delivery) =>
@@ -162,6 +170,8 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                         lng: selectedDelivery.destination.lng,
                                     }}
                                     routeGeoJson={routeGeoJson}
+                                    pickupRouteGeoJson={pickupRouteGeoJson}
+                                    driverPhase={driverLocation?.driverPhase}
                                     fuelStations={fuelStations}
                                     driverLocation={driverLocation ? {
                                         lat: driverLocation.latitude,

@@ -2,12 +2,16 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 
+export type DriverPhase = "en_route_to_pickup" | "at_pickup" | "en_route_to_dropoff" | "completed";
+
 export interface DriverLocationData {
     latitude: number;
     longitude: number;
     speedMps: number | null;
     heading: number | null;
     routeGeometry?: unknown; // GeoJSON
+    driverPhase?: DriverPhase;
+    pickupRouteGeometry?: unknown; // GeoJSON for route to pickup
     updatedAt: string;
 }
 
