@@ -20,6 +20,11 @@ export const ROUTE_CONFIG = {
         ttlMs: 5 * 60 * 1000, // 5 minutes
         maxEntries: 100,
     },
+
+    // Gas station route settings
+    gasStation: {
+        maxDetourPercent: 30, // Only include via-gas route if <30% longer than fastest
+    },
 } as const
 
 // Fuel cost calculator

@@ -13,6 +13,7 @@ import {
     calculateFuelCost,
     fetchWithTimeout,
     getDistanceBasedMidpoint,
+    haversineDistance,
     ROUTE_CONFIG,
 } from "./routeConfig"
 
@@ -55,7 +56,8 @@ async function fetchDirections(
     alternatives: boolean = false
 ): Promise<MapboxDirectionsResponse> {
     const token = getMapboxAccessToken()
-    const url = new URL(`https://api.mapbox.com/directions/v5/mapbox/driving/${coords}`)
+    // Use driving-traffic for real-time traffic data (more accurate ETAs)
+    const url = new URL(`https://api.mapbox.com/directions/v5/mapbox/driving-traffic/${coords}`)
     url.searchParams.set("geometries", "geojson")
     url.searchParams.set("overview", "full")
     url.searchParams.set("alternatives", String(alternatives))
@@ -87,14 +89,13 @@ async function fetchDirections(
 function validatePoints(pickup: LngLat, drop: LngLat): void {
     const MIN_DISTANCE_METERS = 50 // Minimum 50m apart
 
-    // Simple distance check using lat/lng difference (approximate)
-    const latDiff = Math.abs(pickup.lat - drop.lat)
-    const lngDiff = Math.abs(pickup.lng - drop.lng)
+    // Use proper haversine formula for accurate distance
+    const distance = haversineDistance(
+        [pickup.lng, pickup.lat],
+        [drop.lng, drop.lat]
+    )
 
-    // Rough conversion: 0.00001 degrees ≈ 1.1 meters at equator
-    const approxDistance = Math.sqrt(latDiff ** 2 + lngDiff ** 2) * 111000
-
-    if (approxDistance < MIN_DISTANCE_METERS) {
+    if (distance < MIN_DISTANCE_METERS) {
         throw new Error("Pickup and drop locations are too close. Please select points at least 50 meters apart.")
     }
 }
@@ -192,18 +193,26 @@ export async function getMultipleRoutes(
 
             if (viaData.routes?.[0]) {
                 const viaRoute = viaData.routes[0]
-                routes.push({
-                    type: "via_gas_station",
-                    distanceMeters: Math.round(viaRoute.distance),
-                    durationSeconds: Math.round(viaRoute.duration),
-                    routeGeoJson: buildRouteGeoJson(viaRoute.geometry.coordinates),
-                    estimatedFuelCost: calculateFuelCost(viaRoute.distance),
-                    viaPoi: {
-                        name: gasStation.name,
-                        lat: gasStation.location.lat,
-                        lng: gasStation.location.lng,
-                    },
-                })
+                const viaDistance = Math.round(viaRoute.distance)
+
+                // Only include if detour is reasonable (<30% longer than fastest)
+                const detourPercent = ((viaDistance - fastestCandidate.distanceMeters) / fastestCandidate.distanceMeters) * 100
+
+                if (detourPercent < ROUTE_CONFIG.gasStation.maxDetourPercent) {
+                    routes.push({
+                        type: "via_gas_station",
+                        distanceMeters: viaDistance,
+                        durationSeconds: Math.round(viaRoute.duration),
+                        routeGeoJson: buildRouteGeoJson(viaRoute.geometry.coordinates),
+                        estimatedFuelCost: calculateFuelCost(viaRoute.distance),
+                        viaPoi: {
+                            name: gasStation.name,
+                            lat: gasStation.location.lat,
+                            lng: gasStation.location.lng,
+                        },
+                    })
+                }
+                // If detour is too large, skip the via-gas-station route
             }
         }
     } catch (e) {
