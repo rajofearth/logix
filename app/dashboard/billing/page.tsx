@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button"
 import { Plus, Download, Filter, Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { InvoiceList } from "@/components/billing/invoice-list"
-import { BillingStats } from "@/components/billing/billing-stats"
+import { InvoiceList } from "@/app/dashboard/billing/_component/invoice-list"
+import { BillingStats } from "@/app/dashboard/billing/_component/billing-stats"
 import Link from 'next/link'
 
 export default function BillingPage() {
