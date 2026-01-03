@@ -1,92 +1,167 @@
 "use client";
 
-import { PaymentPortal } from '@/components/payments/PaymentPortal';
-import { BlockExplorer } from '@/components/payments/BlockExplorer';
-import { SalaryManagement } from '@/components/payments/SalaryManagement';
-import { BillSettlement } from '@/components/payments/BillSettlement';
+import * as React from "react";
+import { PaymentPortal } from '@/app/dashboard/payments/_components/PaymentPortal';
+import { BlockExplorer } from '@/app/dashboard/payments/_components/BlockExplorer';
+import { SalaryManagement } from '@/app/dashboard/payments/_components/SalaryManagement';
+import { BillSettlement } from '@/app/dashboard/payments/_components/BillSettlement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShieldCheck, Zap, History, Users, CreditCard } from 'lucide-react';
 
+import { AppSidebar } from "@/components/dashboard/app-sidebar";
+import { SiteHeader } from "@/components/dashboard/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+
 export default function PaymentsPage() {
+    const [activeTab, setActiveTab] = React.useState("portal");
+
     return (
-        <div className="flex-1 space-y-8 p-8 pt-6">
-            <div className="flex items-center justify-between space-y-2">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                        Payment Platform
-                    </h2>
-                    <p className="text-muted-foreground">
-                        Secure blockchain-powered transactions for buyers and drivers.
-                    </p>
+        <SidebarProvider
+            style={
+                {
+                    "--sidebar-width": "calc(var(--spacing) * 72)",
+                    "--header-height": "calc(var(--spacing) * 12)",
+                } as React.CSSProperties
+            }
+        >
+            <AppSidebar variant="inset" />
+            <SidebarInset>
+                <SiteHeader title="Payments" />
+                <div className="flex flex-1 flex-col overflow-hidden">
+                    <ScrollArea className="flex-1">
+                        <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+                            {/* Header */}
+                            <div className="space-y-1">
+                                <h2 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-orange-500 to-amber-500 bg-clip-text text-transparent">
+                                    Payment Platform
+                                </h2>
+                                <p className="text-muted-foreground text-sm md:text-base">
+                                    Secure blockchain-powered transactions for buyers and drivers.
+                                </p>
+                            </div>
+
+                            {/* Tabs */}
+                            <Tabs 
+                                value={activeTab} 
+                                onValueChange={setActiveTab} 
+                                className="space-y-6"
+                            >
+                                <TabsList className="bg-muted/50 p-1 h-auto flex-wrap gap-1">
+                                    <TabsTrigger 
+                                        value="portal" 
+                                        className={cn(
+                                            "flex items-center gap-2 transition-all duration-200",
+                                            "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                                            "data-[state=active]:shadow-sm"
+                                        )}
+                                    >
+                                        <ShieldCheck className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Wallet & Security</span>
+                                        <span className="sm:hidden">Wallet</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="salary" 
+                                        className={cn(
+                                            "flex items-center gap-2 transition-all duration-200",
+                                            "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                                            "data-[state=active]:shadow-sm"
+                                        )}
+                                    >
+                                        <Users className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Salary Management</span>
+                                        <span className="sm:hidden">Salary</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="bills" 
+                                        className={cn(
+                                            "flex items-center gap-2 transition-all duration-200",
+                                            "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                                            "data-[state=active]:shadow-sm"
+                                        )}
+                                    >
+                                        <CreditCard className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Bill Settlement</span>
+                                        <span className="sm:hidden">Bills</span>
+                                    </TabsTrigger>
+                                    <TabsTrigger 
+                                        value="explorer" 
+                                        className={cn(
+                                            "flex items-center gap-2 transition-all duration-200",
+                                            "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                                            "data-[state=active]:shadow-sm"
+                                        )}
+                                    >
+                                        <Zap className="h-4 w-4" />
+                                        <span className="hidden sm:inline">Live Explorer</span>
+                                        <span className="sm:hidden">Explorer</span>
+                                    </TabsTrigger>
+                                </TabsList>
+
+                                <TabsContent 
+                                    value="portal" 
+                                    className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
+                                >
+                                    <PaymentPortal />
+                                </TabsContent>
+
+                                <TabsContent 
+                                    value="salary" 
+                                    className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
+                                >
+                                    <SalaryManagement />
+                                </TabsContent>
+
+                                <TabsContent 
+                                    value="bills" 
+                                    className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
+                                >
+                                    <BillSettlement />
+                                </TabsContent>
+
+                                <TabsContent 
+                                    value="explorer" 
+                                    className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
+                                >
+                                    <BlockExplorer />
+                                </TabsContent>
+                            </Tabs>
+
+                            {/* Feature Cards */}
+                            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-primary/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default">
+                                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform duration-300">
+                                        <ShieldCheck className="h-5 w-5" />
+                                    </div>
+                                    <h3 className="font-semibold mb-2">Escrow Protected</h3>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Funds are held in high-security smart contracts and released only upon milestone completion or driver pickup.
+                                    </p>
+                                </div>
+                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-orange-500/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default">
+                                    <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center mb-4 text-orange-500 group-hover:scale-110 transition-transform duration-300">
+                                        <Zap className="h-5 w-5" />
+                                    </div>
+                                    <h3 className="font-semibold mb-2">Instant Settlement</h3>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Blockchain tech ensures sub-second processing for driver advances and supplier micro-bill batches.
+                                    </p>
+                                </div>
+                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-amber-500/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default md:col-span-2 lg:col-span-1">
+                                    <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 text-amber-500 group-hover:scale-110 transition-transform duration-300">
+                                        <History className="h-5 w-5" />
+                                    </div>
+                                    <h3 className="font-semibold mb-2">Immutable Audit</h3>
+                                    <p className="text-xs text-muted-foreground leading-relaxed">
+                                        Every payment creates a cryptographic proof tied to your GST invoices for seamless compliance.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </ScrollArea>
                 </div>
-            </div>
-
-            <Tabs defaultValue="portal" className="space-y-4">
-                <TabsList className="bg-muted/50 p-1">
-                    <TabsTrigger value="portal" className="flex items-center gap-2">
-                        <ShieldCheck className="h-4 w-4" />
-                        Wallet & Security
-                    </TabsTrigger>
-                    <TabsTrigger value="salary" className="flex items-center gap-2">
-                        <Users className="h-4 w-4" />
-                        Salary Management
-                    </TabsTrigger>
-                    <TabsTrigger value="bills" className="flex items-center gap-2">
-                        <CreditCard className="h-4 w-4" />
-                        Bill Settlement
-                    </TabsTrigger>
-                    <TabsTrigger value="explorer" className="flex items-center gap-2">
-                        <Zap className="h-4 w-4" />
-                        Live Explorer
-                    </TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="portal" className="space-y-4">
-                    <PaymentPortal />
-                </TabsContent>
-
-                <TabsContent value="salary" className="space-y-4">
-                    <SalaryManagement />
-                </TabsContent>
-
-                <TabsContent value="bills" className="space-y-4">
-                    <BillSettlement />
-                </TabsContent>
-
-                <TabsContent value="explorer" className="space-y-4">
-                    <BlockExplorer />
-                </TabsContent>
-            </Tabs>
-
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                <div className="p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-blue-500/5 to-transparent">
-                    <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 text-blue-500">
-                        <ShieldCheck className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-semibold mb-2">Escrow Protected</h3>
-                    <p className="text-xs text-muted-foreground">
-                        Funds are held in high-security smart contracts and released only upon milestone completion or driver pickup.
-                    </p>
-                </div>
-                <div className="p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-purple-500/5 to-transparent">
-                    <div className="h-10 w-10 rounded-full bg-purple-500/10 flex items-center justify-center mb-4 text-purple-500">
-                        <Zap className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-semibold mb-2">Instant Settlement</h3>
-                    <p className="text-xs text-muted-foreground">
-                        Blockchain tech ensures sub-second processing for driver advances and supplier micro-bill batches.
-                    </p>
-                </div>
-                <div className="p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-emerald-500/5 to-transparent">
-                    <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 text-emerald-500">
-                        <History className="h-5 w-5" />
-                    </div>
-                    <h3 className="font-semibold mb-2">Immutable Audit</h3>
-                    <p className="text-xs text-muted-foreground">
-                        Every payment creates a cryptographic proof tied to your GST invoices for seamless compliance.
-                    </p>
-                </div>
-            </div>
-        </div>
+            </SidebarInset>
+        </SidebarProvider>
     );
 }

@@ -247,100 +247,114 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
     return (
         <>
             <Sheet open={open} onOpenChange={onOpenChange}>
-                <SheetContent className="w-full sm:max-w-xl flex flex-col bg-linear-to-b from-background to-muted/20">
-                    <SheetHeader className="pb-4 border-b border-border/50">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2.5 rounded-lg bg-muted/50 border border-border/50">
-                                    <CategoryIcon className="h-5 w-5 text-muted-foreground" />
+                <SheetContent className="w-full sm:max-w-md flex flex-col p-0">
+                    {/* Sticky Header */}
+                    <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
+                        <SheetHeader className="p-4 pb-3">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="size-10 rounded-lg bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 flex items-center justify-center">
+                                        <CategoryIcon className="size-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <SheetTitle className="text-base font-semibold">
+                                            Block {block.name}
+                                        </SheetTitle>
+                                        <SheetDescription className="text-xs">
+                                            Row {block.row}, Column {block.column}
+                                        </SheetDescription>
+                                    </div>
                                 </div>
-                                <div>
-                                    <SheetTitle className="text-lg font-semibold">
-                                        Block {block.name}
-                                    </SheetTitle>
-                                    <SheetDescription className="text-xs">
-                                        Row {block.row}, Column {block.column}
-                                    </SheetDescription>
-                                </div>
+                                <Badge
+                                    variant="outline"
+                                    className={cn(
+                                        "text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 border",
+                                        block.status === "critical"
+                                            ? "bg-red-500/10 text-red-500 border-red-500/20"
+                                            : block.status === "warning"
+                                                ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                                                : block.status === "empty"
+                                                    ? "bg-zinc-500/10 text-zinc-500 border-zinc-500/20"
+                                                    : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                    )}
+                                >
+                                    <span className={cn(
+                                        "size-1.5 rounded-full mr-1.5",
+                                        block.status === "critical" ? "bg-red-500" :
+                                            block.status === "warning" ? "bg-amber-500" :
+                                                block.status === "empty" ? "bg-zinc-500" : "bg-emerald-500"
+                                    )} />
+                                    {block.status}
+                                </Badge>
                             </div>
-                            <Badge
-                                className={cn(
-                                    "text-[10px] uppercase tracking-wider font-medium px-2.5 py-1",
-                                    block.status === "critical"
-                                        ? "bg-red-500/90 hover:bg-red-600"
-                                        : block.status === "warning"
-                                            ? "bg-amber-500/90 hover:bg-amber-600"
-                                            : block.status === "empty"
-                                                ? "bg-zinc-500/90 hover:bg-zinc-600"
-                                                : "bg-emerald-500/90 hover:bg-emerald-600"
-                                )}
-                            >
-                                {block.status}
-                            </Badge>
-                        </div>
-                    </SheetHeader>
+                        </SheetHeader>
+                    </div>
 
-                    <ScrollArea className="flex-1 -mx-6 px-6">
-                        <div className="space-y-5 py-4">
+                    <ScrollArea className="flex-1">
+                        <div className="space-y-4 p-4">
                             {/* Capacity Overview */}
-                            <div className="space-y-2.5">
-                                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
-                                    <Package className="h-3.5 w-3.5" />
-                                    Capacity
-                                </h4>
-                                <div className="p-4 rounded-xl bg-card border border-border/50 shadow-sm">
-                                    <div className="flex items-baseline justify-between mb-3">
-                                        <span className="text-3xl font-bold tracking-tight">
-                                            {usagePercent}%
-                                        </span>
-                                        <span className="text-xs text-muted-foreground font-medium">
-                                            {block.used.toLocaleString()} / {block.capacity.toLocaleString()} units
-                                        </span>
+                            <div className="p-4 rounded-xl bg-gradient-to-br from-card to-muted/30 border shadow-sm">
+                                <div className="flex items-center gap-2 text-muted-foreground mb-3">
+                                    <Package className="size-4" />
+                                    <span className="text-xs font-semibold uppercase tracking-wide">Storage Capacity</span>
+                                </div>
+                                <div className="flex items-end justify-between mb-3">
+                                    <div>
+                                        <span className="text-4xl font-bold tracking-tight">{usagePercent}</span>
+                                        <span className="text-xl font-bold text-muted-foreground">%</span>
                                     </div>
-                                    <Progress value={usagePercent} className="h-2.5" />
-                                    <div className="flex justify-between mt-3 text-xs text-muted-foreground">
-                                        <span>
-                                            Available:{" "}
-                                            <span className="font-semibold text-foreground">
-                                                {(block.capacity - block.used).toLocaleString()}
-                                            </span>{" "}
-                                            units
-                                        </span>
-                                        <span>
-                                            Category:{" "}
-                                            <span className="font-semibold text-foreground">
-                                                {categoryLabel}
-                                            </span>
-                                        </span>
+                                    <div className="text-right">
+                                        <div className="text-sm font-semibold">{block.used.toLocaleString()} / {block.capacity.toLocaleString()}</div>
+                                        <div className="text-xs text-muted-foreground">units stored</div>
                                     </div>
+                                </div>
+                                <div className="relative h-3 bg-muted rounded-full overflow-hidden">
+                                    <div
+                                        className={cn(
+                                            "absolute inset-y-0 left-0 rounded-full transition-all duration-500",
+                                            usagePercent >= 90 ? "bg-red-500" :
+                                                usagePercent >= 70 ? "bg-amber-500" : "bg-emerald-500"
+                                        )}
+                                        style={{ width: `${usagePercent}%` }}
+                                    />
+                                </div>
+                                <div className="flex justify-between mt-3 text-xs">
+                                    <span className="text-muted-foreground">
+                                        Available: <span className="font-semibold text-emerald-600">{(block.capacity - block.used).toLocaleString()}</span> units
+                                    </span>
+                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                        {categoryLabel}
+                                    </Badge>
                                 </div>
                             </div>
 
                             {/* Value Summary */}
-                            <div className="space-y-2.5">
-                                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
-                                    <IndianRupee className="h-3.5 w-3.5" />
-                                    Inventory Value
-                                </h4>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <div className="p-3 rounded-lg bg-card border border-border/50">
-                                        <div className="text-xs text-muted-foreground mb-1">Bought At</div>
+                            <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-muted-foreground px-1">
+                                    <IndianRupee className="size-3.5" />
+                                    <span className="text-xs font-semibold uppercase tracking-wide">Inventory Value</span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="p-3 rounded-lg bg-card border">
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Bought At</div>
                                         <div className="text-lg font-bold">{formatCurrency(totalBoughtValue)}</div>
                                     </div>
-                                    <div className="p-3 rounded-lg bg-card border border-border/50">
-                                        <div className="text-xs text-muted-foreground mb-1">Current Value</div>
-                                        <div className="flex items-center gap-2">
+                                    <div className="p-3 rounded-lg bg-card border">
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">Current Value</div>
+                                        <div className="flex items-center gap-1.5">
                                             <span className="text-lg font-bold">{formatCurrency(totalCurrentValue)}</span>
                                             <span
                                                 className={cn(
-                                                    "text-xs font-medium flex items-center gap-0.5",
-                                                    valueDifference >= 0 ? "text-emerald-600" : "text-red-600"
+                                                    "text-[10px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
+                                                    valueDifference >= 0
+                                                        ? "text-emerald-600 bg-emerald-500/10"
+                                                        : "text-red-600 bg-red-500/10"
                                                 )}
                                             >
                                                 {valueDifference >= 0 ? (
-                                                    <TrendingUp className="h-3 w-3" />
+                                                    <TrendingUp className="size-2.5" />
                                                 ) : (
-                                                    <TrendingDown className="h-3 w-3" />
+                                                    <TrendingDown className="size-2.5" />
                                                 )}
                                                 {valuePercentChange}%
                                             </span>
@@ -349,144 +363,176 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                                 </div>
                             </div>
 
-                            {/* Environment */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 rounded-lg bg-linear-to-br from-orange-50 to-orange-100/50 dark:from-orange-950/30 dark:to-orange-900/20 border border-orange-200/50 dark:border-orange-800/30">
-                                    <div className="flex items-center gap-2 text-orange-600 dark:text-orange-400 mb-1.5">
-                                        <Thermometer className="h-3.5 w-3.5" />
-                                        <span className="text-[10px] font-semibold uppercase tracking-wide">
+                            {/* Environment Cards */}
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className={cn(
+                                    "p-3 rounded-lg border transition-colors",
+                                    block.temperature != null
+                                        ? "bg-gradient-to-br from-orange-500/10 to-orange-500/5 border-orange-500/20"
+                                        : "bg-muted/30 border-border/50"
+                                )}>
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <Thermometer className={cn(
+                                            "size-4",
+                                            block.temperature != null ? "text-orange-500" : "text-muted-foreground"
+                                        )} />
+                                        <span className={cn(
+                                            "text-[10px] font-semibold uppercase tracking-wide",
+                                            block.temperature != null ? "text-orange-600 dark:text-orange-400" : "text-muted-foreground"
+                                        )}>
                                             Temperature
                                         </span>
                                     </div>
-                                    <span className="text-xl font-bold">
-                                        {block.temperature?.toFixed(1) ?? "--"}C
-                                    </span>
+                                    {block.temperature != null ? (
+                                        <div className="flex items-baseline gap-0.5">
+                                            <span className="text-2xl font-bold">{block.temperature.toFixed(1)}</span>
+                                            <span className="text-sm font-semibold text-muted-foreground">°C</span>
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm text-muted-foreground">Not monitored</div>
+                                    )}
                                 </div>
-                                <div className="p-3 rounded-lg bg-linear-to-br from-cyan-50 to-cyan-100/50 dark:from-cyan-950/30 dark:to-cyan-900/20 border border-cyan-200/50 dark:border-cyan-800/30">
-                                    <div className="flex items-center gap-2 text-cyan-600 dark:text-cyan-400 mb-1.5">
-                                        <Droplets className="h-3.5 w-3.5" />
-                                        <span className="text-[10px] font-semibold uppercase tracking-wide">
+                                <div className={cn(
+                                    "p-3 rounded-lg border transition-colors",
+                                    block.humidity != null
+                                        ? "bg-gradient-to-br from-cyan-500/10 to-cyan-500/5 border-cyan-500/20"
+                                        : "bg-muted/30 border-border/50"
+                                )}>
+                                    <div className="flex items-center gap-1.5 mb-2">
+                                        <Droplets className={cn(
+                                            "size-4",
+                                            block.humidity != null ? "text-cyan-500" : "text-muted-foreground"
+                                        )} />
+                                        <span className={cn(
+                                            "text-[10px] font-semibold uppercase tracking-wide",
+                                            block.humidity != null ? "text-cyan-600 dark:text-cyan-400" : "text-muted-foreground"
+                                        )}>
                                             Humidity
                                         </span>
                                     </div>
-                                    <span className="text-xl font-bold">
-                                        {block.humidity?.toFixed(0) ?? "--"}%
-                                    </span>
+                                    {block.humidity != null ? (
+                                        <div className="flex items-baseline gap-0.5">
+                                            <span className="text-2xl font-bold">{block.humidity.toFixed(0)}</span>
+                                            <span className="text-sm font-semibold text-muted-foreground">%</span>
+                                        </div>
+                                    ) : (
+                                        <div className="text-sm text-muted-foreground">Not monitored</div>
+                                    )}
                                 </div>
                             </div>
 
                             {/* Products List */}
-                            <div className="space-y-2.5">
-                                <div className="flex items-center justify-between">
-                                    <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center gap-2">
-                                        <ClipboardList className="h-3.5 w-3.5" />
-                                        Products ({block.products.length})
-                                    </h4>
+                            <div className="space-y-2">
+                                <div className="flex items-center justify-between px-1">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                        <ClipboardList className="size-3.5" />
+                                        <span className="text-xs font-semibold uppercase tracking-wide">Products</span>
+                                    </div>
+                                    <Badge variant="secondary" className="text-[10px] h-5">
+                                        {block.products.length} items
+                                    </Badge>
                                 </div>
-                                <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
-                                    {block.products.map((product) => {
-                                        const isExpiringSoon =
-                                            product.expiryDate &&
-                                            new Date(product.expiryDate) < expiryThreshold;
 
-                                        const priceChange = product.currentPrice - product.boughtAt;
-                                        const priceChangePercent = ((priceChange / product.boughtAt) * 100).toFixed(1);
+                                {block.products.length === 0 ? (
+                                    <div className="p-6 rounded-lg border border-dashed text-center">
+                                        <Package className="size-8 mx-auto text-muted-foreground/50 mb-2" />
+                                        <p className="text-sm text-muted-foreground">No products stored</p>
+                                        <p className="text-xs text-muted-foreground/70">Add products to this block to start tracking</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        {block.products.map((product) => {
+                                            const isExpiringSoon =
+                                                product.expiryDate &&
+                                                new Date(product.expiryDate) < expiryThreshold;
 
-                                        return (
-                                            <div
-                                                key={product.id}
-                                                className={cn(
-                                                    "p-3 rounded-lg border bg-card transition-colors hover:bg-muted/30",
-                                                    isExpiringSoon &&
-                                                    "border-amber-400/50 bg-amber-50/30 dark:bg-amber-950/10"
-                                                )}
-                                            >
-                                                <div className="flex items-start justify-between gap-3">
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-1">
-                                                            <span className="font-medium text-sm truncate">
-                                                                {product.name}
-                                                            </span>
-                                                            {isExpiringSoon && (
-                                                                <AlertTriangle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
-                                                            )}
-                                                        </div>
-                                                        <div className="flex items-center gap-3 text-[11px] text-muted-foreground">
-                                                            <span className="font-mono bg-muted/50 px-1.5 py-0.5 rounded">
+                                            const priceChange = product.currentPrice - product.boughtAt;
+                                            const priceChangePercent = ((priceChange / product.boughtAt) * 100).toFixed(1);
+
+                                            return (
+                                                <div
+                                                    key={product.id}
+                                                    className={cn(
+                                                        "p-3 rounded-lg border bg-card transition-all hover:shadow-sm",
+                                                        isExpiringSoon &&
+                                                        "border-amber-500/30 bg-amber-500/5"
+                                                    )}
+                                                >
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-1.5 mb-1">
+                                                                <span className="font-medium text-sm truncate">
+                                                                    {product.name}
+                                                                </span>
+                                                                {isExpiringSoon && (
+                                                                    <AlertTriangle className="size-3.5 text-amber-500 shrink-0" />
+                                                                )}
+                                                            </div>
+                                                            <span className="font-mono text-[10px] text-muted-foreground bg-muted/50 px-1.5 py-0.5 rounded">
                                                                 {product.sku}
                                                             </span>
-                                                            {product.expiryDate && (
-                                                                <span className="flex items-center gap-1">
-                                                                    <Calendar className="h-3 w-3" />
-                                                                    {new Date(product.expiryDate).toLocaleDateString()}
-                                                                </span>
-                                                            )}
+                                                        </div>
+                                                        <div className="text-right shrink-0">
+                                                            <div className="text-base font-bold tabular-nums">
+                                                                {product.quantity.toLocaleString()}
+                                                                <span className="text-[10px] text-muted-foreground font-normal ml-0.5">qty</span>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                    <div className="text-right shrink-0">
-                                                        <div className="font-bold text-sm">
-                                                            {product.quantity.toLocaleString()}
-                                                            <span className="text-[10px] text-muted-foreground font-normal ml-1">
-                                                                qty
+                                                    <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/50 text-[11px]">
+                                                        <div className="flex items-center gap-3">
+                                                            <span>
+                                                                <span className="text-muted-foreground">Bought:</span>{" "}
+                                                                <span className="font-medium">{formatCurrency(product.boughtAt)}</span>
+                                                            </span>
+                                                            <span>
+                                                                <span className="text-muted-foreground">Current:</span>{" "}
+                                                                <span className="font-medium">{formatCurrency(product.currentPrice)}</span>
                                                             </span>
                                                         </div>
+                                                        <span
+                                                            className={cn(
+                                                                "text-[10px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
+                                                                priceChange >= 0
+                                                                    ? "text-emerald-600 bg-emerald-500/10"
+                                                                    : "text-red-600 bg-red-500/10"
+                                                            )}
+                                                        >
+                                                            {priceChange >= 0 ? (
+                                                                <TrendingUp className="size-2.5" />
+                                                            ) : (
+                                                                <TrendingDown className="size-2.5" />
+                                                            )}
+                                                            {priceChangePercent}%
+                                                        </span>
                                                     </div>
                                                 </div>
-                                                {/* Price Row */}
-                                                <div className="flex items-center justify-between mt-2 pt-2 border-t border-border/30">
-                                                    <div className="flex items-center gap-4 text-[11px]">
-                                                        <div>
-                                                            <span className="text-muted-foreground">Bought:</span>{" "}
-                                                            <span className="font-medium">{formatCurrency(product.boughtAt)}</span>
-                                                        </div>
-                                                        <div>
-                                                            <span className="text-muted-foreground">Current:</span>{" "}
-                                                            <span className="font-medium">{formatCurrency(product.currentPrice)}</span>
-                                                        </div>
-                                                    </div>
-                                                    <span
-                                                        className={cn(
-                                                            "text-[10px] font-semibold flex items-center gap-0.5",
-                                                            priceChange >= 0 ? "text-emerald-600" : "text-red-600"
-                                                        )}
-                                                    >
-                                                        {priceChange >= 0 ? (
-                                                            <TrendingUp className="h-2.5 w-2.5" />
-                                                        ) : (
-                                                            <TrendingDown className="h-2.5 w-2.5" />
-                                                        )}
-                                                        {priceChangePercent}%
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
 
                             {/* Last Activity */}
                             {block.lastActivity && (
-                                <div className="flex items-center gap-2 text-[11px] text-muted-foreground p-2.5 bg-muted/30 rounded-lg border border-border/30">
-                                    <Clock className="h-3.5 w-3.5" />
-                                    <span>
-                                        Last activity: {new Date(block.lastActivity).toLocaleString()}
-                                    </span>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+                                    <Clock className="size-3.5" />
+                                    <span>Last activity: {new Date(block.lastActivity).toLocaleString()}</span>
                                 </div>
                             )}
                         </div>
                     </ScrollArea>
 
-                    {/* Quick Actions */}
-                    <div className="pt-4 border-t border-border/50 mt-auto">
+                    {/* Quick Actions - Sticky Footer */}
+                    <div className="sticky bottom-0 p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
                         <div className="grid grid-cols-3 gap-2">
                             <Button
-                                variant="outline"
                                 size="sm"
-                                className="gap-1.5 text-xs h-9"
+                                className="gap-1.5 text-xs h-9 bg-primary hover:bg-primary/90"
                                 onClick={() => setAddProductOpen(true)}
                             >
-                                <Plus className="h-3.5 w-3.5" />
-                                Add Product
+                                <Plus className="size-3.5" />
+                                Add
                             </Button>
                             <Button
                                 variant="outline"
@@ -494,7 +540,7 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                                 className="gap-1.5 text-xs h-9"
                                 onClick={() => setTransferOpen(true)}
                             >
-                                <ArrowRightLeft className="h-3.5 w-3.5" />
+                                <ArrowRightLeft className="size-3.5" />
                                 Transfer
                             </Button>
                             <Button

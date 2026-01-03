@@ -4,7 +4,7 @@ import { use, useEffect, useState } from "react"
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SiteHeader } from '@/components/dashboard/site-header'
-import { InvoicePreview } from "@/components/billing/invoice-preview"
+import { InvoicePreview } from "@/app/dashboard/billing/_component/invoice-preview"
 import { Button } from "@/components/ui/button"
 import { Printer, Download, Share2 } from "lucide-react"
 

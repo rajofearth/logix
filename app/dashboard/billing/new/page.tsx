@@ -3,7 +3,7 @@
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SiteHeader } from '@/components/dashboard/site-header'
-import { InvoiceForm } from '@/components/billing/invoice-form'
+import { InvoiceForm } from '@/app/dashboard/billing/_component/invoice-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 
