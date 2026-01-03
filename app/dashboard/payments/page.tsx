@@ -1,10 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { PaymentPortal } from '@/components/payments/PaymentPortal';
-import { BlockExplorer } from '@/components/payments/BlockExplorer';
-import { SalaryManagement } from '@/components/payments/SalaryManagement';
-import { BillSettlement } from '@/components/payments/BillSettlement';
+import { PaymentPortal } from '@/app/dashboard/payments/_components/PaymentPortal';
+import { BlockExplorer } from '@/app/dashboard/payments/_components/BlockExplorer';
+import { SalaryManagement } from '@/app/dashboard/payments/_components/SalaryManagement';
+import { BillSettlement } from '@/app/dashboard/payments/_components/BillSettlement';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShieldCheck, Zap, History, Users, CreditCard } from 'lucide-react';
 
