@@ -1,10 +1,9 @@
 "use client"
 
-import { IconCirclePlusFilled, IconMail, type Icon } from "@tabler/icons-react"
+import { type Icon } from "@tabler/icons-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { Button } from '@/components/ui/button'
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -36,7 +35,9 @@ export function NavMain({
                   isActive={
                     item.url !== "#" &&
                     (pathname === item.url ||
-                      (item.url !== "/" && pathname.startsWith(`${item.url}/`)))
+                      (item.url !== "/dashboard" &&
+                        item.url !== "/" &&
+                        pathname.startsWith(`${item.url}/`)))
                   }
                 >
                   {item.icon && <item.icon />}
