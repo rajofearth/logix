@@ -113,7 +113,7 @@ export function TrackingMap({
                         lightPreset: "dusk",
                         fuelingStationModePointOfInterestLabels: "fuel",
                         show3dFacades: true,
-                        showLandmarkIcons: true
+                        showLandmarkIcons: true,
                     }
                 },
                 attributionControl: false,

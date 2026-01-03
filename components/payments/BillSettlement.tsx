@@ -28,8 +28,8 @@ export function BillSettlement() {
             setBills(bills.map(b => b.id === id ? { ...b, status: 'paid' } : b));
             toast.success(`Bill ${id} settled successfully!`);
 
-        } catch (_error) {
-            toast.error("Payment failed");
+        } catch (error) {
+            toast.error(`Payment failed: ${error}`);
         } finally {
             setSettling(null);
         }

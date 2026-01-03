@@ -41,8 +41,8 @@ export function SalaryManagement() {
             } else {
                 toast.error(data.error || "Failed to process salaries");
             }
-        } catch (_error) {
-            toast.error("Network error");
+        } catch (error) {
+            toast.error(`Network error ${error}`);
         } finally {
             setProcessing(false);
         }

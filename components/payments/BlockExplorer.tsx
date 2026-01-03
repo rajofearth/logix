@@ -38,7 +38,19 @@ export function BlockExplorer() {
                 }
 
                 const blockData = await Promise.all(blockPromises);
-                setBlocks(blockData.filter(b => b !== null) as any);
+                const mappedBlocks: BlockRecord[] = blockData
+                    .filter((b) => b !== null)
+                    .map((block) => ({
+                        number: block.number,
+                        hash: block.hash,
+                        transactions: block.prefetchedTransactions.map((tx) => ({
+                            hash: tx.hash,
+                            from: tx.from,
+                            to: tx.to,
+                            value: tx.value,
+                        })),
+                    }));
+                setBlocks(mappedBlocks);
             } catch (error) {
                 console.error("Explorer fetch error:", error);
             } finally {

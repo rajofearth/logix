@@ -8,7 +8,6 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Wallet, Shield, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
-import { encryptKey } from '@/lib/crypto';
 
 const LOCAL_RPC = "http://127.0.0.1:8545";
 const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
@@ -47,8 +46,8 @@ export function PaymentPortal() {
             setAddress(wallet.address);
             await fetchBalance(wallet.address);
             toast.success("Wallet connected!");
-        } catch (_error) {
-            toast.error("Invalid private key");
+        } catch (error) {
+            toast.error(`Invalid private key: ${error}`);
         } finally {
             setLoading(false);
         }

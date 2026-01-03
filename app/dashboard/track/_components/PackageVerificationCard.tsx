@@ -50,6 +50,7 @@ export function PackageVerificationCard({ verification, className }: PackageVeri
     return (
         <div className={cn(
             "rounded-lg border bg-card p-4 space-y-3",
+            isPickup ? "border-l-4 border-l-blue-500" : "border-l-4 border-l-purple-500",
             className
         )}>
             {/* Header */}

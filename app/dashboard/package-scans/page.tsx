@@ -66,52 +66,91 @@ export default function PackageScansPage() {
     const [passed, setPassed] = React.useState("all");
     const [offset, setOffset] = React.useState(0);
 
-    const fetchData = React.useCallback(async (reset = false) => {
-        const currentOffset = reset ? 0 : offset;
-        if (reset) {
+    // Fetch data on mount and when filters change
+    React.useEffect(() => {
+        const fetchInitialData = async () => {
             setLoading(true);
             setOffset(0);
-        } else {
-            setLoadingMore(true);
-        }
+
+            try {
+                const params = new URLSearchParams();
+                if (phase !== "all") params.set("phase", phase);
+                if (passed !== "all") params.set("passed", passed);
+                params.set("limit", "12");
+                params.set("offset", "0");
+
+                const response = await fetch(`/api/package-verifications?${params}`);
+                if (response.ok) {
+                    const result: ApiResponse = await response.json();
+                    setData(result);
+                }
+            } catch (error) {
+                console.error("Failed to fetch package verifications:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchInitialData();
+    }, [phase, passed]);
+
+    const fetchMoreData = async () => {
+        setLoadingMore(true);
 
         try {
             const params = new URLSearchParams();
             if (phase !== "all") params.set("phase", phase);
             if (passed !== "all") params.set("passed", passed);
             params.set("limit", "12");
-            params.set("offset", String(currentOffset));
+            params.set("offset", String(offset + 12));
 
             const response = await fetch(`/api/package-verifications?${params}`);
             if (response.ok) {
                 const result: ApiResponse = await response.json();
-                if (reset) {
-                    setData(result);
-                } else {
-                    setData((prev) => prev ? {
-                        ...result,
-                        verifications: [...prev.verifications, ...result.verifications],
-                    } : result);
-                }
+                setData((prev) => prev ? {
+                    ...result,
+                    verifications: [...prev.verifications, ...result.verifications],
+                } : result);
+                setOffset((prev) => prev + 12);
             }
         } catch (error) {
-            console.error("Failed to fetch package verifications:", error);
+            console.error("Failed to fetch more verifications:", error);
         } finally {
-            setLoading(false);
             setLoadingMore(false);
         }
-    }, [phase, passed, offset]);
-
-    // Fetch data on mount and when filters change
-    React.useEffect(() => {
-        fetchData(true);
-    }, [phase, passed]);
+    };
 
     const handleLoadMore = () => {
         if (data?.pagination.hasMore) {
-            setOffset((prev) => prev + 12);
-            fetchData(false);
+            fetchMoreData();
         }
+    };
+
+    const handleRefresh = () => {
+        setOffset(0);
+        // Trigger re-fetch by toggling a dummy state or just re-run the effect
+        // Since phase/passed didn't change, we need to force a refresh
+        setLoading(true);
+        const fetchData = async () => {
+            try {
+                const params = new URLSearchParams();
+                if (phase !== "all") params.set("phase", phase);
+                if (passed !== "all") params.set("passed", passed);
+                params.set("limit", "12");
+                params.set("offset", "0");
+
+                const response = await fetch(`/api/package-verifications?${params}`);
+                if (response.ok) {
+                    const result: ApiResponse = await response.json();
+                    setData(result);
+                }
+            } catch (error) {
+                console.error("Failed to refresh verifications:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
     };
 
     const handleClearFilters = () => {
@@ -148,7 +187,7 @@ export default function PackageScansPage() {
                                 <Button
                                     variant="outline"
                                     size="sm"
-                                    onClick={() => fetchData(true)}
+                                    onClick={handleRefresh}
                                     disabled={loading}
                                 >
                                     {loading ? (
