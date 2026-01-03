@@ -6,11 +6,11 @@ import { toast } from "sonner"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 
-import type { DirectionsResult, JobDTO, JobUpsertInput, LngLat } from "../_types"
+import type { JobDTO, JobUpsertInput, LngLat, RouteOption, RouteType } from "../_types"
 import type { AvailableDriverDTO } from "../_server/driverList"
 import { dateTimeLocalToIso, isoToDateTimeLocalValue } from "../_utils/datetime"
 import { createJob, updateJob } from "../_server/jobActions"
-import { getDirections } from "../_server/mapboxDirections"
+import { getMultipleRoutes } from "../_server/getMultipleRoutes"
 import { reverseGeocode } from "../_server/mapboxGeocoding"
 import { listAvailableDrivers } from "../_server/driverList"
 import { JobRouteMap } from "./JobRouteMap"
@@ -100,7 +100,8 @@ export function JobForm({
   const [form, setForm] = React.useState<FormState>(() =>
     initialJob ? jobToFormState(initialJob) : getInitialCreateState()
   )
-  const [route, setRoute] = React.useState<DirectionsResult | null>(null)
+  const [routes, setRoutes] = React.useState<RouteOption[]>([])
+  const [selectedRouteType, setSelectedRouteType] = React.useState<RouteType>("fastest")
   const [isSaving, startSaving] = React.useTransition()
   const [isRouting, startRouting] = React.useTransition()
   const [availableDrivers, setAvailableDrivers] = React.useState<AvailableDriverDTO[]>([])
@@ -114,7 +115,8 @@ export function JobForm({
 
   React.useEffect(() => {
     setActivePoint("auto")
-    setRoute(null)
+    setRoutes([])
+    setSelectedRouteType("fastest")
     setForm(initialJob ? jobToFormState(initialJob) : getInitialCreateState())
   }, [initialJob])
 
@@ -124,15 +126,19 @@ export function JobForm({
     const handle = window.setTimeout(() => {
       startRouting(async () => {
         try {
-          const res = await getDirections(form.pickup!, form.drop!)
-          setRoute(res)
-          setForm((prev) => ({
-            ...prev,
-            distanceMeters: res.distanceMeters,
-          }))
+          const res = await getMultipleRoutes(form.pickup!, form.drop!)
+          setRoutes(res.routes)
+          // Use the selected route's distance, default to fastest
+          const selectedRoute = res.routes.find((r) => r.type === selectedRouteType) ?? res.routes[0]
+          if (selectedRoute) {
+            setForm((prev) => ({
+              ...prev,
+              distanceMeters: selectedRoute.distanceMeters,
+            }))
+          }
         } catch (e) {
-          setRoute(null)
-          const msg = e instanceof Error ? e.message : "Failed to compute route"
+          setRoutes([])
+          const msg = e instanceof Error ? e.message : "Failed to compute routes"
           toast.error(msg)
         }
       })
@@ -141,7 +147,7 @@ export function JobForm({
     return () => {
       window.clearTimeout(handle)
     }
-  }, [form.pickup, form.drop])
+  }, [form.pickup, form.drop, selectedRouteType])
 
   function handlePick(kind: "pickup" | "drop", coord: LngLat) {
     setForm((prev) => {
@@ -390,9 +396,21 @@ export function JobForm({
         <JobRouteMap
           pickup={form.pickup}
           drop={form.drop}
-          routeGeoJson={route?.routeGeoJson ?? undefined}
+          routes={routes}
+          selectedRouteType={selectedRouteType}
+          onSelectRoute={(type) => {
+            setSelectedRouteType(type)
+            const selectedRoute = routes.find((r) => r.type === type)
+            if (selectedRoute) {
+              setForm((prev) => ({
+                ...prev,
+                distanceMeters: selectedRoute.distanceMeters,
+              }))
+            }
+          }}
           activePoint={activePoint}
           onPick={handlePick}
+          isLoadingRoutes={isRouting}
         />
 
         <div className="grid gap-3 md:grid-cols-3">
@@ -409,7 +427,9 @@ export function JobForm({
           <div className="flex flex-col gap-1">
             <div className="text-muted-foreground text-xs">Duration</div>
             <div className="text-sm font-medium">
-              {route ? secondsToMinutes(route.durationSeconds) : "—"}
+              {routes.find((r) => r.type === selectedRouteType)?.durationSeconds
+                ? secondsToMinutes(routes.find((r) => r.type === selectedRouteType)!.durationSeconds)
+                : "—"}
             </div>
           </div>
           <div className="flex flex-col gap-2">

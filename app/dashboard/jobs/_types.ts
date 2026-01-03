@@ -56,4 +56,19 @@ export type DirectionsResult = {
   routeGeoJson: GeoJsonFeature<LineStringGeometry>
 }
 
+export type RouteType = "fastest" | "economy" | "via_gas_station"
+
+export type RouteOption = {
+  type: RouteType
+  distanceMeters: number
+  durationSeconds: number
+  routeGeoJson: GeoJsonFeature<LineStringGeometry>
+  estimatedFuelCost: number
+  viaPoi?: { name: string; lat: number; lng: number }
+}
+
+export type MultiRouteResult = {
+  routes: RouteOption[]
+}
+
 
