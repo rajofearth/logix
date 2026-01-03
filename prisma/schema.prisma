@@ -27,6 +27,12 @@ enum JobStatus {
   cancelled
 }
 
+enum RouteType {
+  fastest
+  economy
+  via_gas_station
+}
+
 model Driver {
   id                      String          @id @default(uuid()) @db.Uuid
   name                    String
@@ -220,6 +226,10 @@ model Job {
   dropWindowEndAt   DateTime @map("drop_window_end_at")
 
   distanceMeters    Int      @map("distance_meters")
+  durationSeconds   Int?     @map("duration_seconds")
+  routeType         RouteType? @map("route_type")
+  routeGeometry     Json?    @map("route_geometry")
+  estimatedFuelCost Int?     @map("estimated_fuel_cost")
   status            JobStatus @default(pending)
 
   driverId          String?  @map("driver_id") @db.Uuid

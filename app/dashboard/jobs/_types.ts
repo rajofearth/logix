@@ -16,6 +16,10 @@ export type JobDTO = {
   dropWindowStartAt: string
   dropWindowEndAt: string
   distanceMeters: number
+  durationSeconds: number | null
+  routeType: RouteType | null
+  routeGeometry: GeoJsonFeature<LineStringGeometry> | null
+  estimatedFuelCost: number | null
   status: JobStatus
   driverId: string | null
   driverName: string | null
@@ -36,6 +40,10 @@ export type JobUpsertInput = {
   dropWindowStartAt: string
   dropWindowEndAt: string
   distanceMeters: number
+  durationSeconds?: number | null
+  routeType?: RouteType | null
+  routeGeometry?: GeoJsonFeature<LineStringGeometry> | null
+  estimatedFuelCost?: number | null
   driverId?: string | null
 }
 

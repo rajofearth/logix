@@ -1,6 +1,6 @@
 "use server"
 
-import type { JobDTO, JobUpsertInput, JobStatus } from "../_types"
+import type { JobDTO, JobUpsertInput, JobStatus, RouteType, GeoJsonFeature, LineStringGeometry } from "../_types"
 import { prisma } from "@/lib/prisma"
 import { jobIdSchema, jobUpsertSchema } from "./jobSchemas"
 import { Decimal } from "@prisma/client/runtime/index-browser"
@@ -35,6 +35,10 @@ function jobToDto(job: {
   dropWindowStartAt: Date
   dropWindowEndAt: Date
   distanceMeters: number
+  durationSeconds: number | null
+  routeType: string | null
+  routeGeometry: unknown
+  estimatedFuelCost: number | null
   status: string
   driverId: string | null
   driver?: { name: string } | null
@@ -55,6 +59,10 @@ function jobToDto(job: {
     dropWindowStartAt: job.dropWindowStartAt.toISOString(),
     dropWindowEndAt: job.dropWindowEndAt.toISOString(),
     distanceMeters: job.distanceMeters,
+    durationSeconds: job.durationSeconds,
+    routeType: job.routeType as RouteType | null,
+    routeGeometry: job.routeGeometry as GeoJsonFeature<LineStringGeometry> | null,
+    estimatedFuelCost: job.estimatedFuelCost,
     status: job.status as JobStatus,
     driverId: job.driverId,
     driverName: job.driver?.name ?? null,
@@ -99,6 +107,10 @@ export async function createJob(input: JobUpsertInput): Promise<JobDTO> {
       dropWindowStartAt: new Date(parsed.dropWindowStartAt),
       dropWindowEndAt: new Date(parsed.dropWindowEndAt),
       distanceMeters: parsed.distanceMeters,
+      durationSeconds: parsed.durationSeconds ?? null,
+      routeType: parsed.routeType ?? null,
+      routeGeometry: parsed.routeGeometry ?? undefined,
+      estimatedFuelCost: parsed.estimatedFuelCost ?? null,
       driverId: parsed.driverId ?? null,
     },
     include: { driver: { select: { name: true } } },
@@ -127,6 +139,10 @@ export async function updateJob(
       dropWindowStartAt: new Date(parsed.dropWindowStartAt),
       dropWindowEndAt: new Date(parsed.dropWindowEndAt),
       distanceMeters: parsed.distanceMeters,
+      durationSeconds: parsed.durationSeconds ?? null,
+      routeType: parsed.routeType ?? null,
+      routeGeometry: parsed.routeGeometry ?? undefined,
+      estimatedFuelCost: parsed.estimatedFuelCost ?? null,
       driverId: parsed.driverId ?? null,
     },
     include: { driver: { select: { name: true } } },

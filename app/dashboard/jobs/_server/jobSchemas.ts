@@ -17,6 +17,19 @@ const isoDateTimeSchema = z
 
 export const jobIdSchema = z.string().uuid()
 
+export const routeTypeSchema = z.enum(["fastest", "economy", "via_gas_station"])
+
+export const lineStringGeometrySchema = z.object({
+  type: z.literal("LineString"),
+  coordinates: z.array(z.tuple([z.number(), z.number()])),
+})
+
+export const routeGeoJsonSchema = z.object({
+  type: z.literal("Feature"),
+  properties: z.object({}).optional(),
+  geometry: lineStringGeometrySchema,
+})
+
 export const jobUpsertSchema = z
   .object({
     title: z.string().min(1).max(200),
@@ -31,6 +44,10 @@ export const jobUpsertSchema = z
     dropWindowStartAt: isoDateTimeSchema,
     dropWindowEndAt: isoDateTimeSchema,
     distanceMeters: z.number().int().nonnegative(),
+    durationSeconds: z.number().int().nonnegative().nullish(),
+    routeType: routeTypeSchema.nullish(),
+    routeGeometry: routeGeoJsonSchema.nullish(),
+    estimatedFuelCost: z.number().int().nonnegative().nullish(),
     driverId: z.string().uuid().nullish(),
   })
   .superRefine((val, ctx) => {

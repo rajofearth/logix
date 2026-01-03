@@ -191,6 +191,9 @@ export function JobForm({
       throw new Error("Pickup and drop points are required")
     }
 
+    // Get the selected route data
+    const selectedRoute = routes.find((r) => r.type === selectedRouteType)
+
     return {
       title: form.title.trim(),
       weightKg: form.weightKg,
@@ -204,6 +207,10 @@ export function JobForm({
       dropWindowStartAt: dateTimeLocalToIso(form.dropStartLocal),
       dropWindowEndAt: dateTimeLocalToIso(form.dropEndLocal),
       distanceMeters: form.distanceMeters,
+      durationSeconds: selectedRoute?.durationSeconds ?? null,
+      routeType: selectedRoute?.type ?? null,
+      routeGeometry: selectedRoute?.routeGeoJson ?? null,
+      estimatedFuelCost: selectedRoute?.estimatedFuelCost ?? null,
       driverId: form.driverId,
     }
   }
