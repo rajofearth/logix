@@ -18,6 +18,7 @@ import {
   IconReceipt,
   IconSearch,
   IconSettings,
+  IconShieldCheck,
   IconUsers,
 } from "@tabler/icons-react"
 
@@ -68,6 +69,11 @@ const data = {
       title: "Invoices & Billing",
       url: "/dashboard/billing",
       icon: IconReceipt,
+    },
+    {
+      title: "Payments",
+      url: "/dashboard/payments",
+      icon: IconShieldCheck,
     },
     {
       title: "Projects",
