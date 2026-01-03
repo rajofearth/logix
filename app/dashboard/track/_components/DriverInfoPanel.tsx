@@ -1,16 +1,55 @@
 "use client";
 
-import { Phone, MessageSquare, FileText, Truck, Package } from "lucide-react";
+import * as React from "react";
+import { Phone, MessageSquare, FileText, Truck, Package, ScanLine } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { PackageVerificationList } from "./PackageVerificationCard";
 import type { Delivery } from "../_data/deliveries";
+
+interface PackageVerification {
+    id: string;
+    phase: "pickup" | "delivery";
+    capturedImageUrl: string;
+    damagePercentage: number;
+    anomalyDetected: boolean;
+    threshold: number;
+    heatmapImageUrl: string | null;
+    passed: boolean;
+    createdAt: string;
+}
 
 interface DriverInfoPanelProps {
     delivery: Delivery;
 }
 
 export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
+    const [verifications, setVerifications] = React.useState<PackageVerification[]>([]);
+    const [loadingVerifications, setLoadingVerifications] = React.useState(false);
+
+    // Fetch package verifications when delivery changes
+    React.useEffect(() => {
+        async function fetchVerifications() {
+            if (!delivery.id) return;
+
+            setLoadingVerifications(true);
+            try {
+                const response = await fetch(`/api/jobs/${delivery.id}/verifications`);
+                if (response.ok) {
+                    const data = await response.json();
+                    setVerifications(data.verifications || []);
+                }
+            } catch (error) {
+                console.error("Failed to fetch verifications:", error);
+            } finally {
+                setLoadingVerifications(false);
+            }
+        }
+
+        fetchVerifications();
+    }, [delivery.id]);
+
     return (
         <div className="absolute bottom-3 left-3 right-3 z-10">
             <div className="bg-background/70 backdrop-blur-xl backdrop-saturate-150 border border-white/10 rounded-lg shadow-xl overflow-hidden">
@@ -27,6 +66,13 @@ export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
                             className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 text-xs font-medium"
                         >
                             Driver information
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="package"
+                            className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent px-4 py-3 text-xs font-medium"
+                        >
+                            <ScanLine className="size-3 mr-1.5" />
+                            Package Scan
                         </TabsTrigger>
                         <TabsTrigger
                             value="vehicle"
@@ -123,6 +169,17 @@ export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
                         </div>
                     </TabsContent>
 
+                    {/* Package Verification Tab */}
+                    <TabsContent value="package" className="p-4 mt-0">
+                        {loadingVerifications ? (
+                            <div className="flex items-center justify-center py-8">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+                            </div>
+                        ) : (
+                            <PackageVerificationList verifications={verifications} />
+                        )}
+                    </TabsContent>
+
                     {/* Vehicle Tab */}
                     <TabsContent value="vehicle" className="p-4 mt-0">
                         <div className="flex items-center gap-4">
@@ -197,3 +254,4 @@ export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
         </div>
     );
 }
+

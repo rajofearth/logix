@@ -232,10 +232,48 @@ model Job {
   // Location tracking relations
   driverLocation    DriverLocation?
   locationPoints    LocationPoint[]
+  
+  // Package verification relations
+  packageVerifications PackageVerification[]
 
   @@index([pickupAt])
   @@index([status])
   @@map("jobs")
+}
+
+// ============================================
+// Package Verification Models
+// ============================================
+
+enum VerificationPhase {
+  pickup
+  delivery
+}
+
+model PackageVerification {
+  id                String            @id @default(uuid()) @db.Uuid
+  jobId             String            @map("job_id") @db.Uuid
+  job               Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  phase             VerificationPhase
+  
+  // Driver-captured image
+  capturedImageUrl  String            @map("captured_image_url")
+  capturedImageKey  String?           @map("captured_image_key")
+  
+  // PatchCore API response data
+  damagePercentage  Decimal           @map("damage_percentage") @db.Decimal(5, 2)
+  anomalyDetected   Boolean           @map("anomaly_detected")
+  threshold         Decimal           @db.Decimal(3, 2)
+  heatmapImageUrl   String?           @map("heatmap_image_url")
+  heatmapImageKey   String?           @map("heatmap_image_key")
+  
+  // Status
+  passed            Boolean
+  
+  createdAt         DateTime          @default(now()) @map("created_at")
+
+  @@index([jobId])
+  @@map("package_verifications")
 }
 
 model Invoice {
