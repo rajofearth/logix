@@ -53,6 +53,9 @@ export async function searchNearbyPlaces(
   const parsed = lngLatSchema.parse(coord)
   const token = getMapboxAccessToken()
 
+  // Mapbox Search Box API has a max limit of 25
+  const cappedLimit = Math.min(limit, 25)
+
   // Use Mapbox Search Box API for category search
   // https://api.mapbox.com/search/searchbox/v1/category/{category}
   const url = new URL(
@@ -60,7 +63,7 @@ export async function searchNearbyPlaces(
   )
   url.searchParams.set("access_token", token)
   url.searchParams.set("proximity", `${parsed.lng},${parsed.lat}`)
-  url.searchParams.set("limit", limit.toString())
+  url.searchParams.set("limit", cappedLimit.toString())
   url.searchParams.set("language", "en")
 
   const res = await fetch(url.toString(), { next: { revalidate: 3600 } }) // Cache for 1h

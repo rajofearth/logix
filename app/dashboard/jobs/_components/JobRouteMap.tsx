@@ -26,6 +26,7 @@ export function JobRouteMap({
   activePoint,
   onPick,
   isLoadingRoutes,
+  fuelStations = [],
 }: {
   pickup?: LngLat
   drop?: LngLat
@@ -35,12 +36,14 @@ export function JobRouteMap({
   activePoint: ActivePoint
   onPick: (kind: "pickup" | "drop", coord: LngLat) => void
   isLoadingRoutes?: boolean
+  fuelStations?: Array<{ name: string; coord: LngLat }>
 }) {
   const containerRef = React.useRef<HTMLDivElement | null>(null)
   const mapRef = React.useRef<import("mapbox-gl").Map | null>(null)
   const pickupMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
   const dropMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
   const gasStationMarkerRef = React.useRef<import("mapbox-gl").Marker | null>(null)
+  const fuelMarkersRef = React.useRef<import("mapbox-gl").Marker[]>([])
   const activePointRef = React.useRef<ActivePoint>(activePoint)
   const pickupRef = React.useRef<LngLat | undefined>(pickup)
   const dropRef = React.useRef<LngLat | undefined>(drop)
@@ -57,34 +60,92 @@ export function JobRouteMap({
   routesRef.current = routes
   selectedRouteTypeRef.current = selectedRouteType
 
-  function buildMarkerEl(kind: "pickup" | "drop" | "gas"): HTMLDivElement {
+  function buildMarkerEl(kind: "pickup" | "drop" | "gas" | "fuel", station?: { name: string }): HTMLDivElement {
+    const wrapper = document.createElement("div")
+    wrapper.style.display = "flex"
+    wrapper.style.flexDirection = "column"
+    wrapper.style.alignItems = "center"
+    wrapper.style.pointerEvents = "auto"
+    wrapper.style.cursor = "pointer"
+
+    // For fuel stations, add a name label that only shows on hover
+    let label: HTMLDivElement | null = null
+    if (kind === "fuel" && station) {
+      label = document.createElement("div")
+      label.style.background = "rgba(15, 23, 42, 0.9)"
+      label.style.color = "white"
+      label.style.padding = "4px 8px"
+      label.style.borderRadius = "6px"
+      label.style.marginBottom = "4px"
+      label.style.fontSize = "11px"
+      label.style.fontWeight = "500"
+      label.style.whiteSpace = "nowrap"
+      label.style.opacity = "0"
+      label.style.transform = "translateY(4px)"
+      label.style.transition = "opacity 0.15s, transform 0.15s"
+      label.style.pointerEvents = "none"
+      label.textContent = station.name
+      wrapper.appendChild(label)
+
+      // Show/hide label on hover
+      wrapper.addEventListener("mouseenter", () => {
+        if (label) {
+          label.style.opacity = "1"
+          label.style.transform = "translateY(0)"
+        }
+      })
+      wrapper.addEventListener("mouseleave", () => {
+        if (label) {
+          label.style.opacity = "0"
+          label.style.transform = "translateY(4px)"
+        }
+      })
+    }
+
     const el = document.createElement("div")
-    el.style.width = "28px"
-    el.style.height = "28px"
+    const isFuel = kind === "fuel"
+    el.style.width = isFuel ? "22px" : "28px"
+    el.style.height = isFuel ? "22px" : "28px"
     el.style.borderRadius = "999px"
     el.style.display = "flex"
     el.style.alignItems = "center"
     el.style.justifyContent = "center"
-    el.style.fontSize = "12px"
+    el.style.fontSize = isFuel ? "11px" : "12px"
     el.style.fontWeight = "700"
     el.style.color = "white"
-    el.style.border = "2px solid rgba(255,255,255,0.95)"
-    el.style.boxShadow = "0 6px 16px rgba(0,0,0,0.25)"
+    el.style.border = isFuel ? "2px solid white" : "2px solid rgba(255,255,255,0.95)"
+    el.style.boxShadow = isFuel ? "0 2px 6px rgba(0,0,0,0.3)" : "0 6px 16px rgba(0,0,0,0.25)"
     el.style.userSelect = "none"
-    el.style.transform = "translateY(-2px)"
+    el.style.transition = "transform 0.15s"
 
     if (kind === "pickup") {
       el.textContent = "P"
       el.style.background = "#16a34a"
+      el.style.transform = "translateY(-2px)"
     } else if (kind === "drop") {
       el.textContent = "D"
       el.style.background = "#dc2626"
-    } else {
+      el.style.transform = "translateY(-2px)"
+    } else if (kind === "gas") {
       el.textContent = "⛽"
       el.style.background = "#ea580c"
       el.style.fontSize = "14px"
+    } else {
+      // fuel station - smaller yellow marker
+      el.textContent = "⛽"
+      el.style.background = "#f59e0b"
+
+      // Scale up on hover
+      wrapper.addEventListener("mouseenter", () => {
+        el.style.transform = "scale(1.2)"
+      })
+      wrapper.addEventListener("mouseleave", () => {
+        el.style.transform = "scale(1)"
+      })
     }
-    return el
+
+    wrapper.appendChild(el)
+    return wrapper
   }
 
   // Map initialization effect
@@ -294,6 +355,32 @@ export function JobRouteMap({
       }
     })()
   }, [pickup, drop, routes, selectedRouteType, token])
+
+  // Fuel station markers effect
+  React.useEffect(() => {
+    const map = mapRef.current
+    if (!map || !token) return
+
+    // Clear existing fuel markers
+    fuelMarkersRef.current.forEach(m => m.remove())
+    fuelMarkersRef.current = []
+
+    if (!fuelStations?.length) return
+
+    void (async () => {
+      const mapboxgl = await import("mapbox-gl")
+
+      fuelStations.forEach(station => {
+        const marker = new mapboxgl.default.Marker({
+          element: buildMarkerEl("fuel", station),
+        })
+          .setLngLat([station.coord.lng, station.coord.lat])
+          .addTo(map)
+
+        fuelMarkersRef.current.push(marker)
+      })
+    })()
+  }, [fuelStations, token])
 
   if (!token) {
     return (

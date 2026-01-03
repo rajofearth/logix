@@ -11,7 +11,7 @@ import type { AvailableDriverDTO } from "../_server/driverList"
 import { dateTimeLocalToIso, isoToDateTimeLocalValue } from "../_utils/datetime"
 import { createJob, updateJob } from "../_server/jobActions"
 import { getMultipleRoutes } from "../_server/getMultipleRoutes"
-import { reverseGeocode } from "../_server/mapboxGeocoding"
+import { reverseGeocode, searchNearbyPlaces } from "../_server/mapboxGeocoding"
 import { listAvailableDrivers } from "../_server/driverList"
 import { JobRouteMap } from "./JobRouteMap"
 
@@ -102,6 +102,7 @@ export function JobForm({
   )
   const [routes, setRoutes] = React.useState<RouteOption[]>([])
   const [selectedRouteType, setSelectedRouteType] = React.useState<RouteType>("fastest")
+  const [fuelStations, setFuelStations] = React.useState<Array<{ name: string; coord: LngLat }>>([])
   const [isSaving, startSaving] = React.useTransition()
   const [isRouting, startRouting] = React.useTransition()
   const [availableDrivers, setAvailableDrivers] = React.useState<AvailableDriverDTO[]>([])
@@ -116,6 +117,7 @@ export function JobForm({
   React.useEffect(() => {
     setActivePoint("auto")
     setRoutes([])
+    setFuelStations([])
     setSelectedRouteType("fastest")
     setForm(initialJob ? jobToFormState(initialJob) : getInitialCreateState())
   }, [initialJob])
@@ -126,10 +128,53 @@ export function JobForm({
     const handle = window.setTimeout(() => {
       startRouting(async () => {
         try {
-          const res = await getMultipleRoutes(form.pickup!, form.drop!)
-          setRoutes(res.routes)
+          // First get the routes
+          const routeRes = await getMultipleRoutes(form.pickup!, form.drop!)
+          setRoutes(routeRes.routes)
+
+          // Get the fastest route's geometry to sample points along it
+          const fastestRoute = routeRes.routes.find(r => r.type === "fastest")
+          const routeCoords = fastestRoute?.routeGeoJson?.geometry?.coordinates || []
+
+          // Sample 5 evenly-spaced points along the route for gas station search
+          const samplePoints: LngLat[] = []
+          if (routeCoords.length >= 5) {
+            const step = Math.floor(routeCoords.length / 5)
+            for (let i = 0; i < 5; i++) {
+              const idx = Math.min(i * step, routeCoords.length - 1)
+              const [lng, lat] = routeCoords[idx]
+              samplePoints.push({ lng, lat })
+            }
+          } else {
+            // Fall back to pickup, midpoint, drop
+            samplePoints.push(form.pickup!)
+            samplePoints.push({
+              lng: (form.pickup!.lng + form.drop!.lng) / 2,
+              lat: (form.pickup!.lat + form.drop!.lat) / 2,
+            })
+            samplePoints.push(form.drop!)
+          }
+
+          // Fetch gas stations near each sampled point in parallel (5 per point)
+          const stationPromises = samplePoints.map(point =>
+            searchNearbyPlaces(point, "gas_station", 5)
+          )
+          const allStationResults = await Promise.all(stationPromises)
+
+          // Flatten and deduplicate by name
+          const seenNames = new Set<string>()
+          const uniqueStations = allStationResults
+            .flat()
+            .filter(station => {
+              if (seenNames.has(station.name)) return false
+              seenNames.add(station.name)
+              return true
+            })
+
+          setFuelStations(uniqueStations)
+
           // Use the selected route's distance, default to fastest
-          const selectedRoute = res.routes.find((r) => r.type === selectedRouteType) ?? res.routes[0]
+          const selectedRoute = routeRes.routes.find((r) => r.type === selectedRouteType) ?? routeRes.routes[0]
           if (selectedRoute) {
             setForm((prev) => ({
               ...prev,
@@ -138,6 +183,7 @@ export function JobForm({
           }
         } catch (e) {
           setRoutes([])
+          setFuelStations([])
           const msg = e instanceof Error ? e.message : "Failed to compute routes"
           toast.error(msg)
         }
@@ -418,6 +464,7 @@ export function JobForm({
           activePoint={activePoint}
           onPick={handlePick}
           isLoadingRoutes={isRouting}
+          fuelStations={fuelStations}
         />
 
         <div className="grid gap-3 md:grid-cols-3">
