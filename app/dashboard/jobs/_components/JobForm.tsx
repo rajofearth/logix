@@ -132,21 +132,30 @@ export function JobForm({
           const routeRes = await getMultipleRoutes(form.pickup!, form.drop!)
           setRoutes(routeRes.routes)
 
-          // Get the fastest route's geometry to sample points along it
-          const fastestRoute = routeRes.routes.find(r => r.type === "fastest")
-          const routeCoords = fastestRoute?.routeGeoJson?.geometry?.coordinates || []
-
-          // Sample 5 evenly-spaced points along the route for gas station search
+          // Sample points from ALL routes for comprehensive gas station coverage
           const samplePoints: LngLat[] = []
-          if (routeCoords.length >= 5) {
-            const step = Math.floor(routeCoords.length / 5)
-            for (let i = 0; i < 5; i++) {
-              const idx = Math.min(i * step, routeCoords.length - 1)
-              const [lng, lat] = routeCoords[idx]
-              samplePoints.push({ lng, lat })
+          const seenCoords = new Set<string>() // Dedupe by approximate location
+
+          for (const route of routeRes.routes) {
+            const routeCoords = route.routeGeoJson?.geometry?.coordinates || []
+            if (routeCoords.length >= 3) {
+              // Sample 3 points per route (start, mid, end area)
+              const step = Math.floor(routeCoords.length / 3)
+              for (let i = 0; i < 3; i++) {
+                const idx = Math.min(i * step + Math.floor(step / 2), routeCoords.length - 1)
+                const [lng, lat] = routeCoords[idx]
+                // Round to ~1km precision for deduplication
+                const key = `${lng.toFixed(2)},${lat.toFixed(2)}`
+                if (!seenCoords.has(key)) {
+                  seenCoords.add(key)
+                  samplePoints.push({ lng, lat })
+                }
+              }
             }
-          } else {
-            // Fall back to pickup, midpoint, drop
+          }
+
+          // Fall back if no routes
+          if (samplePoints.length === 0) {
             samplePoints.push(form.pickup!)
             samplePoints.push({
               lng: (form.pickup!.lng + form.drop!.lng) / 2,
@@ -155,9 +164,9 @@ export function JobForm({
             samplePoints.push(form.drop!)
           }
 
-          // Fetch gas stations near each sampled point in parallel (5 per point)
+          // Fetch gas stations near each sampled point in parallel (4 per point)
           const stationPromises = samplePoints.map(point =>
-            searchNearbyPlaces(point, "gas_station", 5)
+            searchNearbyPlaces(point, "gas_station", 4)
           )
           const allStationResults = await Promise.all(stationPromises)
 

@@ -9,10 +9,12 @@ import type {
 } from "../_types"
 import { lngLatSchema } from "./jobSchemas"
 import { findNearestGasStation } from "./searchGasStation"
-
-// Fuel cost estimation constants
-const FUEL_EFFICIENCY_KM_PER_L = 15 // Typical delivery vehicle
-const FUEL_PRICE_PER_L = 100 // ₹100/L
+import {
+    calculateFuelCost,
+    fetchWithTimeout,
+    getDistanceBasedMidpoint,
+    ROUTE_CONFIG,
+} from "./routeConfig"
 
 type MapboxDirectionsResponse = {
     routes?: Array<{
@@ -33,12 +35,6 @@ function getMapboxAccessToken(): string {
         throw new Error("Missing MAPBOX_ACCESS_TOKEN on server")
     }
     return token
-}
-
-function calculateFuelCost(distanceMeters: number): number {
-    const distanceKm = distanceMeters / 1000
-    const litersNeeded = distanceKm / FUEL_EFFICIENCY_KM_PER_L
-    return Math.round(litersNeeded * FUEL_PRICE_PER_L)
 }
 
 function buildRouteGeoJson(
@@ -66,19 +62,41 @@ async function fetchDirections(
     url.searchParams.set("steps", "false")
     url.searchParams.set("access_token", token)
 
-    const res = await fetch(url.toString(), { cache: "no-store" })
-    if (!res.ok) {
-        const text = await res.text().catch(() => "")
-        throw new Error(`Mapbox Directions request failed (${res.status}): ${text}`)
-    }
+    try {
+        const res = await fetchWithTimeout(
+            url.toString(),
+            { cache: "no-store" },
+            ROUTE_CONFIG.api.timeoutMs
+        )
 
-    return (await res.json()) as MapboxDirectionsResponse
+        if (!res.ok) {
+            const text = await res.text().catch(() => "")
+            throw new Error(`Mapbox Directions request failed (${res.status}): ${text}`)
+        }
+
+        return (await res.json()) as MapboxDirectionsResponse
+    } catch (error) {
+        if (error instanceof Error && error.name === "AbortError") {
+            throw new Error("Route calculation timed out. Please try again.")
+        }
+        throw error
+    }
 }
 
-function getRouteMidpoint(coordinates: Array<[number, number]>): LngLat {
-    const midIndex = Math.floor(coordinates.length / 2)
-    const [lng, lat] = coordinates[midIndex]
-    return { lng, lat }
+// Validate pickup and drop are not identical (or too close)
+function validatePoints(pickup: LngLat, drop: LngLat): void {
+    const MIN_DISTANCE_METERS = 50 // Minimum 50m apart
+
+    // Simple distance check using lat/lng difference (approximate)
+    const latDiff = Math.abs(pickup.lat - drop.lat)
+    const lngDiff = Math.abs(pickup.lng - drop.lng)
+
+    // Rough conversion: 0.00001 degrees ≈ 1.1 meters at equator
+    const approxDistance = Math.sqrt(latDiff ** 2 + lngDiff ** 2) * 111000
+
+    if (approxDistance < MIN_DISTANCE_METERS) {
+        throw new Error("Pickup and drop locations are too close. Please select points at least 50 meters apart.")
+    }
 }
 
 export async function getMultipleRoutes(
@@ -88,51 +106,83 @@ export async function getMultipleRoutes(
     const parsedPickup = lngLatSchema.parse(pickup)
     const parsedDrop = lngLatSchema.parse(drop)
 
+    // Validate points are not identical
+    validatePoints(parsedPickup, parsedDrop)
+
     const coords = `${parsedPickup.lng},${parsedPickup.lat};${parsedDrop.lng},${parsedDrop.lat}`
 
     // Fetch routes with alternatives
     const data = await fetchDirections(coords, true)
 
     if (!data.routes?.length) {
-        throw new Error(data.message ?? "No routes returned from Mapbox Directions")
+        throw new Error(data.message ?? "No route found between these locations")
     }
 
     const routes: RouteOption[] = []
 
-    // First route is the fastest
-    const fastestRoute = data.routes[0]
+    // Convert all Mapbox routes to our format with fuel cost
+    const allCandidates = data.routes.map((route, index) => ({
+        index,
+        distanceMeters: Math.round(route.distance),
+        durationSeconds: Math.round(route.duration),
+        coordinates: route.geometry.coordinates,
+        fuelCost: calculateFuelCost(route.distance),
+    }))
+
+    // Sort by duration to find fastest
+    const sortedByDuration = [...allCandidates].sort((a, b) => a.durationSeconds - b.durationSeconds)
+    const fastestCandidate = sortedByDuration[0]
+
+    // Sort by fuel cost (distance) to find cheapest
+    const sortedByCost = [...allCandidates].sort((a, b) => a.fuelCost - b.fuelCost)
+    const cheapestCandidate = sortedByCost[0]
+
+    // Add fastest route
     routes.push({
         type: "fastest",
-        distanceMeters: Math.round(fastestRoute.distance),
-        durationSeconds: Math.round(fastestRoute.duration),
-        routeGeoJson: buildRouteGeoJson(fastestRoute.geometry.coordinates),
-        estimatedFuelCost: calculateFuelCost(fastestRoute.distance),
+        distanceMeters: fastestCandidate.distanceMeters,
+        durationSeconds: fastestCandidate.durationSeconds,
+        routeGeoJson: buildRouteGeoJson(fastestCandidate.coordinates),
+        estimatedFuelCost: fastestCandidate.fuelCost,
     })
 
-    // Use alternative as economy route if available, otherwise create a simulated one
-    if (data.routes.length > 1) {
-        const economyRoute = data.routes[1]
+    // Add economy route ONLY if it differs from fastest
+    // Economy = cheapest fuel cost (shortest distance)
+    if (cheapestCandidate.index !== fastestCandidate.index) {
+        // Different route is cheapest - add it as economy
         routes.push({
             type: "economy",
-            distanceMeters: Math.round(economyRoute.distance),
-            durationSeconds: Math.round(economyRoute.duration),
-            routeGeoJson: buildRouteGeoJson(economyRoute.geometry.coordinates),
-            estimatedFuelCost: calculateFuelCost(economyRoute.distance),
+            distanceMeters: cheapestCandidate.distanceMeters,
+            durationSeconds: cheapestCandidate.durationSeconds,
+            routeGeoJson: buildRouteGeoJson(cheapestCandidate.coordinates),
+            estimatedFuelCost: cheapestCandidate.fuelCost,
         })
-    } else {
-        // No alternative available, use the same as fastest with slight label difference
-        routes.push({
-            type: "economy",
-            distanceMeters: Math.round(fastestRoute.distance),
-            durationSeconds: Math.round(fastestRoute.duration),
-            routeGeoJson: buildRouteGeoJson(fastestRoute.geometry.coordinates),
-            estimatedFuelCost: calculateFuelCost(fastestRoute.distance),
-        })
+    } else if (sortedByCost.length > 1) {
+        // Fastest is also cheapest - only add economy if there's an alternative
+        // that is meaningfully different (>5% cost difference)
+        const secondCheapest = sortedByCost[1]
+        const costDiffPercent = Math.abs(secondCheapest.fuelCost - fastestCandidate.fuelCost) / fastestCandidate.fuelCost * 100
+
+        if (costDiffPercent > 5) {
+            routes.push({
+                type: "economy",
+                distanceMeters: secondCheapest.distanceMeters,
+                durationSeconds: secondCheapest.durationSeconds,
+                routeGeoJson: buildRouteGeoJson(secondCheapest.coordinates),
+                estimatedFuelCost: secondCheapest.fuelCost,
+            })
+        }
+        // If cost difference is <5%, don't add duplicate economy route
     }
+    // If only one route exists and it's fastest, don't add duplicate economy
+
+    // Keep reference to fastest route geometry for gas station search
+    const fastestRoute = data.routes[fastestCandidate.index]
 
     // Find nearest gas station and create via-gas-station route
     try {
-        const midpoint = getRouteMidpoint(fastestRoute.geometry.coordinates)
+        // Use distance-based midpoint for more accurate gas station placement
+        const midpoint = getDistanceBasedMidpoint(fastestRoute.geometry.coordinates)
         const gasStation = await findNearestGasStation(midpoint)
 
         if (gasStation) {
