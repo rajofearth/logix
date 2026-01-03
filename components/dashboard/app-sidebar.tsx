@@ -3,23 +3,22 @@
 import * as React from "react"
 import Link from "next/link"
 import {
-  IconBell,
+  IconBellRinging,
   IconBuildingWarehouse,
-  IconCamera,
-  IconCurrentLocation,
-  IconDashboard,
-  IconFileAi,
-  IconFileDescription,
-  IconFolder,
-  IconHelp,
+  IconCreditCard,
+  IconFileInvoice,
+  IconFolderOpen,
   IconInnerShadowTop,
-  IconListDetails,
-  IconMessage,
-  IconReceipt,
+  IconLayoutDashboard,
+  IconLifebuoy,
+  IconMapRoute,
+  IconMessageCircle,
+  IconScan,
   IconSearch,
-  IconSettings,
-  IconShieldCheck,
-  IconUsers,
+  IconSettings2,
+  IconSteeringWheel,
+  IconTruckDelivery,
+  IconUsersGroup,
 } from "@tabler/icons-react"
 
 import { NavGeneral } from '@/components/dashboard/nav-general'
@@ -43,27 +42,27 @@ const data = {
     {
       title: "Dashboard",
       url: "/dashboard",
-      icon: IconDashboard,
+      icon: IconLayoutDashboard,
     },
     {
       title: "Jobs",
       url: "/dashboard/jobs",
-      icon: IconListDetails,
+      icon: IconTruckDelivery,
     },
     {
       title: "Driver",
       url: "/dashboard/driver",
-      icon: IconUsers,
+      icon: IconSteeringWheel,
     },
     {
       title: "Tracking",
       url: "/dashboard/track",
-      icon: IconCurrentLocation,
+      icon: IconMapRoute,
     },
     {
       title: "Package Scans",
       url: "/dashboard/package-scans",
-      icon: IconCamera,
+      icon: IconScan,
     },
     {
       title: "Warehouse",
@@ -73,39 +72,39 @@ const data = {
     {
       title: "Invoices & Billing",
       url: "/dashboard/billing",
-      icon: IconReceipt,
+      icon: IconFileInvoice,
     },
     {
       title: "Payments",
       url: "/dashboard/payments",
-      icon: IconShieldCheck,
+      icon: IconCreditCard,
     },
     {
       title: "Projects",
       url: "/dashboard/project",
-      icon: IconFolder,
+      icon: IconFolderOpen,
     },
     {
       title: "Team",
       url: "/dashboard/teams",
-      icon: IconUsers,
+      icon: IconUsersGroup,
     },
   ],
   navGeneral: [
     {
       title: "Messages",
       url: "/dashboard/messages",
-      icon: IconMessage,
+      icon: IconMessageCircle,
     },
     {
       title: "Notifications",
       url: "/dashboard/notifications",
-      icon: IconBell,
+      icon: IconBellRinging,
     },
     {
       title: "Settings",
       url: "/dashboard/settings",
-      icon: IconSettings,
+      icon: IconSettings2,
     },
   ],
 
@@ -113,7 +112,7 @@ const data = {
     {
       title: "Get Help",
       url: "#",
-      icon: IconHelp,
+      icon: IconLifebuoy,
     },
     {
       title: "Search",

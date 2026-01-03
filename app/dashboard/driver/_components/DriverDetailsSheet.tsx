@@ -19,7 +19,6 @@ import {
     IconChartLine,
     IconLocation,
     IconStar,
-    IconCalendarEvent,
     IconPhone,
     IconMail,
 } from "@tabler/icons-react"

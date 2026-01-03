@@ -138,7 +138,7 @@ export function JobsTable({
     }
   }, [availableDrivers.length])
 
-  const handleAssignDriver = async (job: JobDTO, driverId: string | null) => {
+  const handleAssignDriver = React.useCallback(async (job: JobDTO, driverId: string | null) => {
     try {
       const updatedJob = await assignDriver(job.id, driverId)
       toast.success(driverId ? "Driver assigned" : "Driver unassigned")
@@ -148,7 +148,7 @@ export function JobsTable({
       const msg = e instanceof Error ? e.message : "Failed to assign driver"
       toast.error(msg)
     }
-  }
+  }, [onJobUpdate])
 
   const columns: ColumnDef<JobDTO>[] = React.useMemo(
     () => [
@@ -327,7 +327,7 @@ export function JobsTable({
         size: 40,
       },
     ],
-    [availableDrivers, loadingDrivers, fetchAvailableDrivers, router, onDelete]
+    [availableDrivers, loadingDrivers, fetchAvailableDrivers, handleAssignDriver, router, onDelete]
   )
 
   const table = useReactTable({
