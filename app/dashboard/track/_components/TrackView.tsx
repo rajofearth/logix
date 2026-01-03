@@ -171,7 +171,6 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                     }}
                                     routeGeoJson={routeGeoJson}
                                     pickupRouteGeoJson={pickupRouteGeoJson}
-                                    driverPhase={driverLocation?.driverPhase}
                                     fuelStations={fuelStations}
                                     driverLocation={driverLocation ? {
                                         lat: driverLocation.latitude,

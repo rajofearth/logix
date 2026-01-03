@@ -61,6 +61,11 @@ const data = {
       icon: IconCurrentLocation,
     },
     {
+      title: "Package Scans",
+      url: "/dashboard/package-scans",
+      icon: IconCamera,
+    },
+    {
       title: "Warehouse",
       url: "/dashboard/warehouse",
       icon: IconBuildingWarehouse,

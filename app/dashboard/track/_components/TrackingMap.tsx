@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types"
-import type { DriverPhase } from "../_hooks/useDriverLocation"
 
 interface DriverLocationProp {
     lat: number;
@@ -15,7 +14,6 @@ export function TrackingMap({
     drop,
     routeGeoJson,
     pickupRouteGeoJson,
-    driverPhase,
     fuelStations = [],
     driverLocation,
     driverPath = [],
@@ -24,7 +22,6 @@ export function TrackingMap({
     drop?: LngLat
     routeGeoJson?: GeoJsonFeature<LineStringGeometry> | null
     pickupRouteGeoJson?: GeoJsonFeature<LineStringGeometry> | null
-    driverPhase?: DriverPhase
     fuelStations?: Array<{ name: string; address?: string; distance?: number; coord: LngLat }>
     driverLocation?: DriverLocationProp
     driverPath?: Array<{ lat: number; lng: number }>
