@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { jobIdSchema, jobUpsertSchema } from "./jobSchemas"
 import { Decimal } from "@prisma/client/runtime/index-browser"
 import { z } from "zod"
+import { notify } from "@/lib/notifications/notify"
 
 function decimalToNumber(value: unknown): number {
   if (typeof value === "number") return value
@@ -115,6 +116,15 @@ export async function createJob(input: JobUpsertInput): Promise<JobDTO> {
     },
     include: { driver: { select: { name: true } } },
   })
+  try {
+    await notify.jobCreated({
+      jobId: created.id,
+      title: created.title,
+      driverName: created.driver?.name ?? null,
+    })
+  } catch (e) {
+    console.error("[Notifications] createJob notify error:", e)
+  }
   return jobToDto(created)
 }
 
@@ -147,12 +157,26 @@ export async function updateJob(
     },
     include: { driver: { select: { name: true } } },
   })
+  try {
+    await notify.jobUpdated({ jobId: updated.id, title: updated.title })
+  } catch (e) {
+    console.error("[Notifications] updateJob notify error:", e)
+  }
   return jobToDto(updated)
 }
 
 export async function deleteJob(id: string): Promise<void> {
   const parsedId = jobIdSchema.parse(id)
+  const existing = await prisma.job.findUnique({
+    where: { id: parsedId },
+    select: { title: true },
+  })
   await prisma.job.delete({ where: { id: parsedId } })
+  try {
+    await notify.jobDeleted({ jobId: parsedId, title: existing?.title ?? null })
+  } catch (e) {
+    console.error("[Notifications] deleteJob notify error:", e)
+  }
 }
 
 const assignDriverSchema = z.object({
@@ -185,6 +209,12 @@ export async function assignDriver(
     data: { driverId: parsed.driverId },
     include: { driver: { select: { name: true } } },
   })
+
+  try {
+    await notify.jobUpdated({ jobId: updated.id, title: updated.title })
+  } catch (e) {
+    console.error("[Notifications] assignDriver notify error:", e)
+  }
 
   return jobToDto(updated)
 }

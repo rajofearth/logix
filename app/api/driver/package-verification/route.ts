@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { requireDriverSession } from "@/app/api/_utils/driver-session";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { utapi } from "../uploads/_utils";
+import { notify } from "@/lib/notifications/notify";
 
 export const runtime = "nodejs";
 
@@ -138,6 +139,18 @@ export async function POST(req: Request) {
                 passed,
             },
         });
+
+        // Fire-and-forget admin notification (do not block driver flow)
+        try {
+            await notify.packageVerificationSubmitted({
+                jobId,
+                phase,
+                passed,
+                damagePercentage,
+            });
+        } catch (e) {
+            console.error("[Notifications] packageVerificationSubmitted notify error:", e);
+        }
 
         return jsonOk({
             success: true,

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { IconBell, IconCheck, IconReceipt, IconSettings, IconTruck, IconX } from "@tabler/icons-react"
+import { IconBell, IconCheck, IconReceipt, IconScan, IconSettings, IconTruck, IconX } from "@tabler/icons-react"
 import { formatDistanceToNow } from "date-fns"
 
 import type { NotificationDTO } from "../_types"
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 const typeIcons = {
     job: IconTruck,
     driver: IconBell,
+    packageVerification: IconScan,
     billing: IconReceipt,
     system: IconSettings,
 }
@@ -116,7 +117,7 @@ export function NotificationCard({
                         </Badge>
                     </div>
                     <span className="text-[10px] text-muted-foreground shrink-0">
-                        {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
+                        {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
                     </span>
                 </div>
 

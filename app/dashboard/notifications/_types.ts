@@ -1,13 +1,14 @@
 // Notification Types and Mock Data
+import type { NotificationType as PrismaNotificationType } from "@/generated/prisma/client"
 
-export type NotificationType = "job" | "driver" | "billing" | "system"
+export type NotificationType = PrismaNotificationType
 
 export interface NotificationDTO {
     id: string
     type: NotificationType
     title: string
     message: string
-    timestamp: Date
+    timestamp: string
     read: boolean
     avatar?: string
     icon?: string
@@ -27,6 +28,12 @@ export const notificationTypeConfig = {
         bgColor: "bg-emerald-500/10",
         textColor: "text-emerald-500",
         iconBgColor: "bg-emerald-500/20",
+    },
+    packageVerification: {
+        label: "Scans",
+        bgColor: "bg-amber-500/10",
+        textColor: "text-amber-500",
+        iconBgColor: "bg-amber-500/20",
     },
     billing: {
         label: "Billing",
@@ -49,7 +56,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "job",
         title: "New Job Assigned",
         message: "Job #JB-2024-0891 has been assigned to driver Michael Chen.",
-        timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 mins ago
+        timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(), // 5 mins ago
         read: false,
         actionUrl: "/dashboard/jobs",
     },
@@ -58,7 +65,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "driver",
         title: "Driver Arrived",
         message: "Sarah Wilson has arrived at the pickup location for Job #JB-2024-0887.",
-        timestamp: new Date(Date.now() - 15 * 60 * 1000), // 15 mins ago
+        timestamp: new Date(Date.now() - 15 * 60 * 1000).toISOString(), // 15 mins ago
         read: false,
         actionUrl: "/dashboard/driver",
     },
@@ -67,7 +74,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "billing",
         title: "Invoice Generated",
         message: "Invoice #INV-2024-0156 for $2,450.00 has been generated and sent to ABC Logistics.",
-        timestamp: new Date(Date.now() - 30 * 60 * 1000), // 30 mins ago
+        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 mins ago
         read: false,
         actionUrl: "/dashboard/billing",
     },
@@ -76,7 +83,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "job",
         title: "Job Completed",
         message: "Job #JB-2024-0885 has been successfully completed by driver James Rodriguez.",
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
         read: true,
         actionUrl: "/dashboard/jobs",
     },
@@ -85,7 +92,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "driver",
         title: "Driver Status Update",
         message: "Alex Thompson has switched to 'Available' status and is ready for new assignments.",
-        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000), // 3 hours ago
+        timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
         read: true,
         actionUrl: "/dashboard/driver",
     },
@@ -94,7 +101,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "system",
         title: "System Maintenance",
         message: "Scheduled maintenance will occur on Jan 5th, 2026 from 2:00 AM to 4:00 AM PST.",
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 hours ago
+        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
         read: true,
     },
     {
@@ -102,7 +109,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "billing",
         title: "Payment Received",
         message: "Payment of $1,875.00 received from XYZ Transport for Invoice #INV-2024-0149.",
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000), // 12 hours ago
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
         read: true,
         actionUrl: "/dashboard/billing",
     },
@@ -111,7 +118,7 @@ export const mockNotifications: NotificationDTO[] = [
         type: "job",
         title: "Delivery Delayed",
         message: "Job #JB-2024-0879 delivery has been delayed due to traffic. New ETA: 4:30 PM.",
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
         read: true,
         actionUrl: "/dashboard/jobs",
     },

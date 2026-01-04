@@ -1,6 +1,7 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { requireDriverSession } from "@/app/api/_utils/driver-session";
 import { prisma } from "@/lib/prisma";
+import { notify } from "@/lib/notifications/notify";
 
 export const runtime = "nodejs";
 
@@ -22,7 +23,7 @@ export async function POST(req: Request) {
         // Get job and verify ownership
         const job = await prisma.job.findUnique({
             where: { id: jobId },
-            select: { id: true, driverId: true, status: true },
+            select: { id: true, title: true, driverId: true, status: true },
         });
 
         if (!job) {
@@ -52,6 +53,21 @@ export async function POST(req: Request) {
                 where: { jobId },
             }),
         ]);
+
+        // Fire-and-forget admin notification (do not block driver flow)
+        try {
+            const driver = await prisma.driver.findUnique({
+                where: { id: driverId },
+                select: { name: true },
+            });
+            await notify.driverCompletedJob({
+                jobId: job.id,
+                jobTitle: job.title,
+                driverName: driver?.name ?? null,
+            });
+        } catch (e) {
+            console.error("[Notifications] driverCompletedJob notify error:", e);
+        }
 
         return jsonOk({ success: true, status: "completed" });
     } catch (e) {

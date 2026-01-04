@@ -36,6 +36,7 @@ import {
 } from '@/components/ui/sidebar'
 import { useSession } from '@/lib/auth-client'
 import { Skeleton } from '@/components/ui/skeleton'
+import { getUnreadCount } from "@/app/dashboard/notifications/_server/notificationActions"
 
 const data = {
   navMain: [
@@ -125,6 +126,41 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { data: session, isPending } = useSession()
+  const [unreadNotifications, setUnreadNotifications] = React.useState<number>(0)
+
+  React.useEffect(() => {
+    let cancelled = false
+    ;(async () => {
+      try {
+        const count = await getUnreadCount()
+        if (!cancelled) setUnreadNotifications(count)
+      } catch (e) {
+        console.error("[Sidebar] unread notifications error:", e)
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  React.useEffect(() => {
+    // Keep unread badge in sync with new incoming notifications
+    const es = new EventSource("/api/notifications/stream")
+
+    const refresh = async () => {
+      try {
+        const count = await getUnreadCount()
+        setUnreadNotifications(count)
+      } catch (e) {
+        console.error("[Sidebar] unread notifications refresh error:", e)
+      }
+    }
+
+    es.addEventListener("notification", (() => { void refresh() }) as EventListener)
+    return () => {
+      es.close()
+    }
+  }, [])
 
   return (
     <Sidebar collapsible="offcanvas" {...props}>
@@ -137,7 +173,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
-        <NavGeneral items={data.navGeneral} label="General" />
+        <NavGeneral
+          items={data.navGeneral}
+          label="General"
+          notificationsUnreadCount={unreadNotifications}
+        />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
 
       </SidebarContent>

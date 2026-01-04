@@ -24,6 +24,7 @@ const filterOptions: { value: FilterType; label: string }[] = [
     { value: "unread", label: "Unread" },
     { value: "job", label: "Jobs" },
     { value: "driver", label: "Drivers" },
+    { value: "packageVerification", label: "Scans" },
     { value: "billing", label: "Billing" },
     { value: "system", label: "System" },
 ]

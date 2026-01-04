@@ -33,6 +33,14 @@ enum RouteType {
   via_gas_station
 }
 
+enum NotificationType {
+  job
+  driver
+  packageVerification
+  billing
+  system
+}
+
 model Driver {
   id                      String          @id @default(uuid()) @db.Uuid
   name                    String
@@ -139,6 +147,7 @@ model AdminUser {
   image         String?        @map("profile_photo_url")
   sessions      AdminSession[]
   accounts      AdminAccount[]
+  notificationReceipts NotificationReceipt[]
   createdAt     DateTime       @default(now()) @map("created_at")
   updatedAt     DateTime       @updatedAt @map("updated_at")
 
@@ -146,6 +155,44 @@ model AdminUser {
 
 
   @@map("admin_users")
+}
+
+model NotificationEvent {
+  id        String           @id @default(uuid()) @db.Uuid
+  type      NotificationType
+  title     String
+  message   String
+  actionUrl String?          @map("action_url")
+  metadata  Json?
+
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  receipts  NotificationReceipt[]
+
+  @@index([createdAt])
+  @@index([type])
+  @@map("notification_events")
+}
+
+model NotificationReceipt {
+  id         String            @id @default(uuid()) @db.Uuid
+
+  userId     String            @db.Uuid @map("user_id")
+  user       AdminUser         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventId    String            @db.Uuid @map("event_id")
+  event      NotificationEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  readAt     DateTime?         @map("read_at")
+  archivedAt DateTime?         @map("archived_at")
+
+  createdAt  DateTime          @default(now()) @map("created_at")
+
+  @@unique([userId, eventId])
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([userId, archivedAt])
+  @@map("notification_receipts")
 }
 
 model AdminSession {
