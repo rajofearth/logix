@@ -8,9 +8,7 @@ import { BillSettlement } from '@/app/dashboard/payments/_components/BillSettlem
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShieldCheck, Zap, History, Users, CreditCard } from 'lucide-react';
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardPage } from "@/components/dashboard/crm/DashboardPage";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
@@ -18,20 +16,10 @@ export default function PaymentsPage() {
     const [activeTab, setActiveTab] = React.useState("portal");
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Payments" />
-                <div className="flex flex-1 flex-col overflow-hidden">
-                    <ScrollArea className="flex-1">
-                        <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
+        <DashboardPage title="Payments" className="p-0">
+            <div className="flex flex-1 flex-col overflow-hidden">
+                <ScrollArea className="flex-1">
+                    <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
                             {/* Header */}
                             <div className="space-y-1">
                                 <h2 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-orange-500 to-amber-500 bg-clip-text text-transparent">
@@ -158,10 +146,9 @@ export default function PaymentsPage() {
                                     </p>
                                 </div>
                             </div>
-                        </div>
-                    </ScrollArea>
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+                    </div>
+                </ScrollArea>
+            </div>
+        </DashboardPage>
     );
 }

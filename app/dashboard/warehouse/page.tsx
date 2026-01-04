@@ -1,9 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardPage } from "@/components/dashboard/crm/DashboardPage";
 import { WarehouseHeader } from "./_components/header";
 import { FloorNavigator } from "./_components/floor-navigator";
 import { WarehouseVisualGrid } from "./_components/warehouse-grid";
@@ -169,85 +167,58 @@ export default function WarehousePage() {
   // Loading state
   if (isLoading && warehouseList.length === 0) {
     return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties}
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-          <SiteHeader title="Warehouse Management" />
-          <div className="flex flex-1 items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-              <p className="text-zinc-400 text-sm">Loading warehouses...</p>
-            </div>
+      <DashboardPage title="Warehouse Management" className="p-0">
+        <div className="flex flex-1 items-center justify-center bg-zinc-950">
+          <div className="flex flex-col items-center gap-3">
+            <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
+            <p className="text-zinc-400 text-sm">Loading warehouses...</p>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
+        </div>
+      </DashboardPage>
     );
   }
 
   // Error state
   if (error && warehouseList.length === 0) {
     return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties}
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-          <SiteHeader title="Warehouse Management" />
-          <div className="flex flex-1 items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-red-400 text-sm">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-zinc-400 text-sm underline hover:text-white"
-              >
-                Retry
-              </button>
-            </div>
+      <DashboardPage title="Warehouse Management" className="p-0">
+        <div className="flex flex-1 items-center justify-center bg-zinc-950">
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-red-400 text-sm">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="text-zinc-400 text-sm underline hover:text-white"
+            >
+              Retry
+            </button>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
+        </div>
+      </DashboardPage>
     );
   }
 
   // Empty state
   if (warehouseList.length === 0) {
     return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties}
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-          <SiteHeader title="Warehouse Management" />
-          <div className="flex flex-1 items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-zinc-400 text-lg">No warehouses found</p>
-              <p className="text-zinc-500 text-sm max-w-md text-center">
-                Get started by creating your first warehouse. You can add floors, blocks, and products to organize your inventory.
-              </p>
-              <Button onClick={() => setAddWarehouseOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Warehouse
-              </Button>
-            </div>
-            <AddWarehouseDialog
-              open={addWarehouseOpen}
-              onOpenChange={setAddWarehouseOpen}
-              onSuccess={refreshWarehouses}
-            />
+      <DashboardPage title="Warehouse Management" className="p-0">
+        <div className="flex flex-1 items-center justify-center bg-zinc-950">
+          <div className="flex flex-col items-center gap-4">
+            <p className="text-zinc-400 text-lg">No warehouses found</p>
+            <p className="text-zinc-500 text-sm max-w-md text-center">
+              Get started by creating your first warehouse. You can add floors, blocks, and products to organize your inventory.
+            </p>
+            <Button onClick={() => setAddWarehouseOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Warehouse
+            </Button>
           </div>
-        </SidebarInset>
-      </SidebarProvider>
+          <AddWarehouseDialog
+            open={addWarehouseOpen}
+            onOpenChange={setAddWarehouseOpen}
+            onSuccess={refreshWarehouses}
+          />
+        </div>
+      </DashboardPage>
     );
   }
 
@@ -266,16 +237,8 @@ export default function WarehousePage() {
   };
 
   return (
-    <SidebarProvider
-      style={{
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-      } as React.CSSProperties}
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-        <SiteHeader title="Warehouse Management" />
-        <div className="flex flex-1 flex-col gap-3 p-4 overflow-hidden bg-zinc-950">
+    <DashboardPage title="Warehouse Management" className="p-0">
+      <div className="flex flex-1 flex-col gap-3 p-4 overflow-hidden bg-zinc-950">
           {/* Header with Warehouse Selector */}
           <WarehouseHeader
             warehouses={warehousesForHeader}
@@ -326,8 +289,7 @@ export default function WarehousePage() {
 
           {/* Footer Stats */}
           <WarehouseFooterStats floor={selectedFloor || placeholderFloor} />
-        </div>
-      </SidebarInset>
+      </div>
 
       <AddWarehouseDialog
         open={addWarehouseOpen}
@@ -353,6 +315,6 @@ export default function WarehousePage() {
           onSuccess={refreshWarehouse}
         />
       )}
-    </SidebarProvider>
+    </DashboardPage>
   );
 }

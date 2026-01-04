@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { TrackView } from "./_components/TrackView";
 import { type Delivery } from "./_data/deliveries";
+import { DashboardPage } from "@/components/dashboard/crm/DashboardPage";
 
 export const dynamic = "force-dynamic";
 
@@ -61,5 +62,9 @@ export default async function TrackPage() {
         };
     });
 
-    return <TrackView initialDeliveries={deliveries} />;
+    return (
+        <DashboardPage title="Tracking" className="p-0 h-full">
+            <TrackView initialDeliveries={deliveries} />
+        </DashboardPage>
+    );
 }

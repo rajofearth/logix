@@ -1,9 +1,7 @@
 "use client"
 
 import { use, useEffect, useState } from "react"
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/dashboard/app-sidebar'
-import { SiteHeader } from '@/components/dashboard/site-header'
+import { DashboardPage } from "@/components/dashboard/crm/DashboardPage"
 import { InvoicePreview } from "@/app/dashboard/billing/_component/invoice-preview"
 import { Button } from "@/components/ui/button"
 import { Printer, Download, Share2 } from "lucide-react"
@@ -52,52 +50,48 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
     if (!invoice) return <div>Invoice not found</div>
 
     return (
-        <SidebarProvider>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title={`Invoice ${invoice.invoiceNumber}`} />
-                <div className="flex flex-1 flex-col lg:flex-row bg-zinc-100 dark:bg-zinc-900">
-                    {/* Main Preview Area */}
-                    <div className="flex-1 p-4 md:p-8 overflow-auto">
-                        <InvoicePreview invoice={invoice} />
+        <DashboardPage title={`Invoice ${invoice.invoiceNumber}`} className="p-0">
+            <div className="flex flex-1 flex-col lg:flex-row bg-zinc-100 dark:bg-zinc-900">
+                {/* Main Preview Area */}
+                <div className="flex-1 p-4 md:p-8 overflow-auto">
+                    <InvoicePreview invoice={invoice} />
+                </div>
+
+                {/* Actions Sidebar */}
+                <div className="w-full lg:w-80 bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-6 space-y-6">
+                    <div className="space-y-2">
+                        <h3 className="font-bold">Document Actions</h3>
+                        <p className="text-xs text-muted-foreground">Manage this invoice and its distribution.</p>
                     </div>
 
-                    {/* Actions Sidebar */}
-                    <div className="w-full lg:w-80 bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 p-6 space-y-6">
-                        <div className="space-y-2">
-                            <h3 className="font-bold">Document Actions</h3>
-                            <p className="text-xs text-muted-foreground">Manage this invoice and its distribution.</p>
-                        </div>
+                    <div className="grid grid-cols-1 gap-2">
+                        <Button className="w-full justify-start" variant="outline" onClick={() => window.print()}>
+                            <Printer className="mr-2 h-4 w-4" /> Print Document
+                        </Button>
+                        <Button className="w-full justify-start" variant="outline">
+                            <Download className="mr-2 h-4 w-4" /> Download PDF
+                        </Button>
+                        <Button className="w-full justify-start" variant="outline">
+                            <Share2 className="mr-2 h-4 w-4" /> Share with Buyer
+                        </Button>
+                    </div>
 
-                        <div className="grid grid-cols-1 gap-2">
-                            <Button className="w-full justify-start" variant="outline" onClick={() => window.print()}>
-                                <Printer className="mr-2 h-4 w-4" /> Print Document
-                            </Button>
-                            <Button className="w-full justify-start" variant="outline">
-                                <Download className="mr-2 h-4 w-4" /> Download PDF
-                            </Button>
-                            <Button className="w-full justify-start" variant="outline">
-                                <Share2 className="mr-2 h-4 w-4" /> Share with Buyer
-                            </Button>
-                        </div>
-
-                        <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
-                            <h4 className="text-xs font-bold uppercase opacity-50">Details</h4>
-                            <div className="space-y-3">
-                                <div>
-                                    <p className="text-[10px] uppercase opacity-60">Status</p>
-                                    <Badge>{invoice.status}</Badge>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] uppercase opacity-60">Created At</p>
-                                    <p className="text-sm font-medium">{new Date(invoice.createdAt).toLocaleString()}</p>
-                                </div>
+                    <div className="pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-4">
+                        <h4 className="text-xs font-bold uppercase opacity-50">Details</h4>
+                        <div className="space-y-3">
+                            <div>
+                                <p className="text-[10px] uppercase opacity-60">Status</p>
+                                <Badge>{invoice.status}</Badge>
+                            </div>
+                            <div>
+                                <p className="text-[10px] uppercase opacity-60">Created At</p>
+                                <p className="text-sm font-medium">{new Date(invoice.createdAt).toLocaleString()}</p>
                             </div>
                         </div>
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        </DashboardPage>
     )
 }
 

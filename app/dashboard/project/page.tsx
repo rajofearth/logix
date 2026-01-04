@@ -11,9 +11,7 @@ import { ProjectsGrid } from "./_components/ProjectsGrid"
 import { Pagination } from "./_components/Pagination"
 import { ProjectDetailsSheet } from "./_components/ProjectDetailsSheet"
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardPage } from "@/components/dashboard/crm/DashboardPage"
 
 export default function ProjectsPage() {
     const [projects, setProjects] = React.useState<ProjectDTO[]>([])
@@ -71,49 +69,38 @@ export default function ProjectsPage() {
     }
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Projects" />
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 px-4 md:gap-6 md:py-6 lg:px-6">
-                            {/* Filters & Search */}
-                            <ProjectFilters
-                                stats={stats}
-                                activeFilter={filter}
-                                onFilterChange={setFilter}
-                                search={search}
-                                onSearchChange={setSearch}
-                            />
+        <DashboardPage title="Projects" className="p-0">
+            <div className="flex flex-1 flex-col">
+                <div className="@container/main flex flex-1 flex-col gap-2">
+                    <div className="flex flex-col gap-4 py-4 px-4 md:gap-6 md:py-6 lg:px-6">
+                        {/* Filters & Search */}
+                        <ProjectFilters
+                            stats={stats}
+                            activeFilter={filter}
+                            onFilterChange={setFilter}
+                            search={search}
+                            onSearchChange={setSearch}
+                        />
 
-                            {/* Projects Grid */}
-                            <ProjectsGrid
-                                projects={projects}
-                                isLoading={isLoading}
-                                onProjectClick={handleProjectClick}
-                            />
+                        {/* Projects Grid */}
+                        <ProjectsGrid
+                            projects={projects}
+                            isLoading={isLoading}
+                            onProjectClick={handleProjectClick}
+                        />
 
-                            {/* Pagination - always visible when there are items */}
-                            {totalItems > 0 && (
-                                <Pagination
-                                    currentPage={page}
-                                    totalPages={totalPages}
-                                    totalItems={totalItems}
-                                    onPageChange={setPage}
-                                />
-                            )}
-                        </div>
+                        {/* Pagination - always visible when there are items */}
+                        {totalItems > 0 && (
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                totalItems={totalItems}
+                                onPageChange={setPage}
+                            />
+                        )}
                     </div>
                 </div>
-            </SidebarInset>
+            </div>
 
             {/* Project Details Sheet */}
             <ProjectDetailsSheet
@@ -121,6 +108,6 @@ export default function ProjectsPage() {
                 open={isSheetOpen}
                 onOpenChange={setIsSheetOpen}
             />
-        </SidebarProvider>
+        </DashboardPage>
     )
 }

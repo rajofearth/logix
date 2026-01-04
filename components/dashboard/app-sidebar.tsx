@@ -30,9 +30,11 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarInput,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from '@/components/ui/sidebar'
 import { useSession } from '@/lib/auth-client'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -167,9 +169,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton className="data-[slot=sidebar-menu-button]:p-1.5!" render={<Link href="/dashboard" aria-label="Logix Home" />}><IconInnerShadowTop className="size-5!" /><span className="text-base font-semibold">Logix</span></SidebarMenuButton>
+            <SidebarMenuButton
+              className="data-[slot=sidebar-menu-button]:p-1.5!"
+              render={<Link href="/dashboard" aria-label="Logix Home" />}
+            >
+              <IconInnerShadowTop className="size-5!" />
+              <span className="text-base font-semibold">Logix</span>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+
+        <div className="px-2 pb-2">
+          <div className="flex items-center gap-2">
+            <IconSearch className="text-muted-foreground size-4" />
+            <SidebarInput
+              aria-label="Quick Find"
+              placeholder="Quick Find"
+              className="h-7 rounded-[3px]"
+            />
+          </div>
+        </div>
+
+        <SidebarSeparator />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />

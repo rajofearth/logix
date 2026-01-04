@@ -1,9 +1,6 @@
-import { AppSidebar } from '@/components/dashboard/app-sidebar'
-import { SiteHeader } from '@/components/dashboard/site-header'
-import {
-    SidebarInset,
-    SidebarProvider,
-} from '@/components/ui/sidebar'
+"use client"
+
+import { DashboardPage } from "@/components/dashboard/crm/DashboardPage"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Download, Filter, Search } from "lucide-react"
@@ -15,11 +12,8 @@ import Link from 'next/link'
 
 export default function BillingPage() {
     return (
-        <SidebarProvider>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Invoices & Billing" />
-                <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 space-y-6">
+        <DashboardPage title="Invoices & Billing" className="p-0">
+            <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 space-y-6">
                     {/* Header Actions */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
@@ -88,8 +82,7 @@ export default function BillingPage() {
                             </Card>
                         </TabsContent>
                     </Tabs>
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        </DashboardPage>
     )
 }

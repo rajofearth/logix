@@ -14,10 +14,6 @@ import { useDriverLocation } from "../_hooks/useDriverLocation";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-
 interface TrackViewProps {
     initialDeliveries: Delivery[];
 }
@@ -110,21 +106,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     };
 
     return (
-        <SidebarProvider
-            className="h-svh w-full overflow-hidden"
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset className="h-svh overflow-hidden flex flex-col">
-                <SiteHeader title="Tracking" />
-
-                {/* Main Content - Split Layout */}
-                <div className="flex flex-1 overflow-hidden">
+        <div className="flex h-full w-full overflow-hidden">
 
                     {/* Left Panel - Cards */}
                     <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 flex flex-col border-r border-border bg-background">
@@ -210,8 +192,6 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                         )}
                     </div>
 
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        </div>
     );
 }

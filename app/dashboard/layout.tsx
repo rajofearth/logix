@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import { auth } from "@/lib/auth";
+import { DashboardShell } from "@/components/dashboard/crm/DashboardShell";
 
 export default async function DashboardLayout({
   children,
@@ -15,7 +16,7 @@ export default async function DashboardLayout({
     redirect("/auth/sign-in");
   }
 
-  return children;
+  return <DashboardShell>{children}</DashboardShell>;
 }
 
 
