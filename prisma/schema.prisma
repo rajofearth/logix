@@ -293,9 +293,54 @@ model Job {
   // Package verification relations
   packageVerifications PackageVerification[]
 
+  // Chat (one thread per job)
+  chatThread        ChatThread?
+
   @@index([pickupAt])
   @@index([status])
   @@map("jobs")
+}
+
+// ============================================
+// Realtime Chat Models (Admin ↔ Driver)
+// ============================================
+
+enum ChatSenderType {
+  admin
+  driver
+}
+
+model ChatThread {
+  id        String @id @default(uuid()) @db.Uuid
+
+  jobId     String @unique @map("job_id") @db.Uuid
+  job       Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  messages  ChatMessage[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([jobId])
+  @@map("chat_threads")
+}
+
+model ChatMessage {
+  id             String         @id @default(uuid()) @db.Uuid
+
+  threadId       String         @map("thread_id") @db.Uuid
+  thread         ChatThread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  senderType     ChatSenderType @map("sender_type")
+  senderAdminId  String?        @map("sender_admin_id") @db.Uuid
+  senderDriverId String?        @map("sender_driver_id") @db.Uuid
+
+  content        String
+
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  @@index([threadId, createdAt])
+  @@map("chat_messages")
 }
 
 // ============================================

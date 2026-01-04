@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import type { MessageDTO } from "../_types"
+import type { ChatMessage } from "../_types"
 import type { DriverDTO } from "@/app/dashboard/driver/_types"
 import { cn } from "@/lib/utils"
 import { getInitials } from "@/lib/utils"
@@ -13,8 +13,9 @@ import { MessageInput } from "./MessageInput"
 
 interface ConversationViewProps {
     driver: DriverDTO | null
-    messages: MessageDTO[]
+    messages: ChatMessage[]
     onSendMessage: (content: string) => void
+    canSend?: boolean
 }
 
 function formatTime(date: Date): string {
@@ -46,6 +47,7 @@ export function ConversationView({
     driver,
     messages,
     onSendMessage,
+    canSend,
 }: ConversationViewProps) {
     const scrollRef = React.useRef<HTMLDivElement>(null)
 
@@ -122,10 +124,13 @@ export function ConversationView({
                         </div>
                     ) : (
                         messages.map((message, index) => {
+                            const ts = new Date(message.createdAt)
                             const showDate =
                                 index === 0 ||
-                                formatDate(message.timestamp) !==
-                                formatDate(messages[index - 1].timestamp)
+                                formatDate(ts) !==
+                                formatDate(new Date(messages[index - 1]!.createdAt))
+
+                            const isAdmin = message.senderType === "admin"
 
                             return (
                                 <React.Fragment key={message.id}>
@@ -135,29 +140,26 @@ export function ConversationView({
                                                 variant="secondary"
                                                 className="text-[0.65rem] bg-muted text-muted-foreground"
                                             >
-                                                {formatDate(message.timestamp)}
+                                                {formatDate(ts)}
                                             </Badge>
                                         </div>
                                     )}
-                                    <div className="flex justify-end">
-                                        <div className="max-w-[70%] rounded-lg bg-primary px-3 py-2 text-primary-foreground">
+                                    <div className={cn("flex", isAdmin ? "justify-end" : "justify-start")}>
+                                        <div
+                                            className={cn(
+                                                "max-w-[70%] rounded-lg px-3 py-2",
+                                                isAdmin
+                                                    ? "bg-primary text-primary-foreground"
+                                                    : "bg-muted text-foreground"
+                                            )}
+                                        >
                                             <p className="text-sm whitespace-pre-wrap">
                                                 {message.content}
                                             </p>
                                             <div className="mt-1 flex items-center justify-end gap-1">
                                                 <span className="text-[0.65rem] opacity-70">
-                                                    {formatTime(message.timestamp)}
+                                                    {formatTime(ts)}
                                                 </span>
-                                                {message.status === "read" && (
-                                                    <span className="text-[0.65rem] opacity-70">
-                                                        ✓✓
-                                                    </span>
-                                                )}
-                                                {message.status === "delivered" && (
-                                                    <span className="text-[0.65rem] opacity-70">
-                                                        ✓
-                                                    </span>
-                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -169,7 +171,7 @@ export function ConversationView({
             </ScrollArea>
 
             {/* Message Input */}
-            <MessageInput onSend={onSendMessage} />
+            <MessageInput onSend={onSendMessage} disabled={!canSend} />
         </div>
     )
 }

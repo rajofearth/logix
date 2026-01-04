@@ -90,6 +90,7 @@ export async function listDrivers(
         where,
         include: {
             jobs: {
+                where: { status: "in_progress" },
                 take: 1, // Only get current/latest job
                 orderBy: { createdAt: "desc" },
             },

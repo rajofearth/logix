@@ -62,6 +62,12 @@ export async function POST(req: Request) {
                 where: { id: driverId },
                 data: { status: "on_route" },
             }),
+            // Ensure chat thread exists (idempotent)
+            prisma.chatThread.upsert({
+                where: { jobId },
+                create: { jobId },
+                update: {},
+            }),
         ]);
 
         // Fire-and-forget admin notification (do not block driver flow)

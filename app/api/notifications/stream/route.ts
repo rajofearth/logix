@@ -1,9 +1,8 @@
-import { headers } from "next/headers"
 import type { NextRequest } from "next/server"
 
-import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import type { NotificationDTO } from "@/app/dashboard/notifications/_types"
+import { requireAdminSession } from "@/app/api/_utils/admin-session"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -32,19 +31,9 @@ function toDto(row: NotificationRow): NotificationDTO {
   }
 }
 
-async function requireAdminUserId(req: NextRequest): Promise<string> {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  })
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized")
-  }
-  return session.user.id
-}
-
 export async function GET(req: NextRequest) {
   try {
-    const userId = await requireAdminUserId(req)
+    const { adminUserId: userId } = await requireAdminSession(req.headers)
 
     const encoder = new TextEncoder()
     let lastCreatedAt: Date | null = null
