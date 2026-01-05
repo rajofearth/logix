@@ -48,6 +48,7 @@ export default function BillingPage() {
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                             <TabsList>
                                 <TabsTrigger value="all">All Invoices</TabsTrigger>
+                                <TabsTrigger value="salary">Salary Slips</TabsTrigger>
                                 <TabsTrigger value="pending">Pending</TabsTrigger>
                                 <TabsTrigger value="paid">Paid</TabsTrigger>
                                 <TabsTrigger value="draft">Drafts</TabsTrigger>
@@ -80,10 +81,38 @@ export default function BillingPage() {
                             </Card>
                         </TabsContent>
 
+                        <TabsContent value="salary" className="mt-0 space-y-4">
+                            <Card>
+                                <CardHeader className="pb-2">
+                                    <CardTitle className="text-lg">Salary Statements</CardTitle>
+                                    <CardDescription>Monthly salary slips generated from blockchain payments.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <InvoiceList type="SALARY_SLIP" />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
                         <TabsContent value="pending" className="mt-0">
                             <Card>
-                                <CardContent className="p-6 text-center text-muted-foreground">
-                                    No pending invoices found matching your criteria.
+                                <CardContent className="p-0">
+                                    <InvoiceList status="PENDING" />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="paid" className="mt-0">
+                            <Card>
+                                <CardContent className="p-0">
+                                    <InvoiceList status="PAID" />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        <TabsContent value="draft" className="mt-0">
+                            <Card>
+                                <CardContent className="p-0">
+                                    <InvoiceList status="DRAFT" />
                                 </CardContent>
                             </Card>
                         </TabsContent>

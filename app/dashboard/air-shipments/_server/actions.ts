@@ -7,7 +7,11 @@ import {
     generateFlightNumber
 } from "@/lib/carriers/carriers-data";
 import { getRandomActiveAircraft, openSkyConnector } from "@/lib/carriers/opensky";
-import type { ShipmentStatus, ShipmentSegmentType, ShipmentEventType } from "../../../../generated/prisma/enums";
+import type { ShipmentStatus, ShipmentSegmentType, ShipmentEventType, ShipmentSegment, ShipmentEvent, Shipment } from "@prisma/client";
+
+type ShipmentWithSegments = Shipment & {
+    segments: ShipmentSegment[];
+};
 
 // ==========================================
 // Types
@@ -192,7 +196,7 @@ export async function listShipments(
         prisma.shipment.count({ where }),
     ]);
 
-    const items: ShipmentListItem[] = shipments.map((s) => {
+    const items: ShipmentListItem[] = (shipments as ShipmentWithSegments[]).map((s) => {
         const airSegment = s.segments[0];
         const metadata = s.metadata as { packageName: string; weightKg: number } | null;
 
@@ -258,7 +262,7 @@ export async function getShipmentDetail(
         },
         createdAt: shipment.createdAt,
         updatedAt: shipment.updatedAt,
-        segments: shipment.segments.map((seg) => ({
+        segments: shipment.segments.map((seg: ShipmentSegment) => ({
             id: seg.id,
             type: seg.type,
             sortOrder: seg.sortOrder,
@@ -273,7 +277,7 @@ export async function getShipmentDetail(
             actualDepartureAt: seg.actualDepartureAt,
             actualArrivalAt: seg.actualArrivalAt,
         })),
-        events: shipment.events.map((evt) => ({
+        events: shipment.events.map((evt: ShipmentEvent) => ({
             id: evt.id,
             type: evt.type,
             title: evt.title,

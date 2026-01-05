@@ -292,7 +292,7 @@ function generateArcPoints(
         const lng = start[0] + (end[0] - start[0]) * t;
 
         // Calculate great circle interpolation (simplified)
-        const f = (1 - Math.cos(Math.PI * t)) / 2;
+
         const altitude = Math.sin(Math.PI * t) * 0.1; // Slight curve
         const adjustedLat = lat + altitude * (end[1] - start[1]);
 

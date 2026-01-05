@@ -1,103 +1,69 @@
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-enum VehicleOwnerType {
-  self
-  company
-  rented
-}
-
-enum DriverStatus {
-  available
-  on_route
-  off_duty
-}
-
-enum JobStatus {
-  pending
-  in_progress
-  completed
-  cancelled
-}
-
-enum RouteType {
-  fastest
-  economy
-  via_gas_station
-}
-
-enum NotificationType {
-  job
-  driver
-  packageVerification
-  billing
-  system
-}
+// ============================================
+// Auth & User Models
+// ============================================
 
 model Driver {
-  id                      String          @id @default(uuid()) @db.Uuid
+  id                      String            @id @default(uuid()) @db.Uuid
   name                    String
-  dob                     DateTime?       @db.Date
-  photoUrl                String?         @map("photo_url")
-  aadharNo                String?         @unique @map("aadhar_no")
-  isAadharVerified        Boolean         @default(false) @map("is_aadhar_verified")
-  aadhaarOtpReferenceId   String?         @map("aadhaar_otp_reference_id")
-  aadhaarOtpGeneratedAt   DateTime?       @map("aadhaar_otp_generated_at")
-  aadharCardFile          String?         @map("aadhar_card_file")
-  aadharCardFileKey       String?         @map("aadhar_card_file_key")
-  driverLicenseNo         String?         @unique @map("driver_license_no")
-  isDriverLicenseVerified Boolean         @default(false) @map("is_driver_license_verified")
-  driverLicenseFile       String?         @map("driver_license_file")
-  driverLicenseFileKey    String?         @map("driver_license_file_key")
-  panCardNo               String?         @unique @map("pan_card_no")
-  isPanCardVerified       Boolean         @default(false) @map("is_pan_card_verified")
-  panAadhaarLinkStatus    String?         @map("pan_aadhaar_link_status")
-  panAadhaarLinkCheckedAt DateTime?       @map("pan_aadhaar_link_checked_at")
-  panCardFile             String?         @map("pan_card_file")
-  panCardFileKey          String?         @map("pan_card_file_key")
-
-  vehicleOwnerType       VehicleOwnerType? @map("vehicle_owner_type")
-  vehiclePlateNo         String?           @map("vehicle_plate_no")
-  isVehiclePlateVerified Boolean           @default(false) @map("is_vehicle_plate_verified")
-  insuranceNo            String?           @map("insurance_no")
-  isInsuranceVerified    Boolean           @default(false) @map("is_insurance_verified")
-  insuranceFile          String?           @map("insurance_file")
-  insuranceFileKey       String?           @map("insurance_file_key")
-
-  createdAt               DateTime        @default(now()) @map("created_at")
-  updatedAt               DateTime        @updatedAt @map("updated_at")
+  dob                     DateTime?         @db.Date
+  photoUrl                String?           @map("photo_url")
+  aadharNo                String?           @unique @map("aadhar_no")
+  isAadharVerified        Boolean           @default(false) @map("is_aadhar_verified")
+  aadharCardFile          String?           @map("aadhar_card_file")
+  driverLicenseNo         String?           @unique @map("driver_license_no")
+  isDriverLicenseVerified Boolean           @default(false) @map("is_driver_license_verified")
+  driverLicenseFile       String?           @map("driver_license_file")
+  panCardNo               String?           @unique @map("pan_card_no")
+  isPanCardVerified       Boolean           @default(false) @map("is_pan_card_verified")
+  panCardFile             String?           @map("pan_card_file")
+  createdAt               DateTime          @default(now()) @map("created_at")
+  updatedAt               DateTime          @updatedAt @map("updated_at")
+  email                   String            @unique
+  emailVerified           Boolean           @default(false) @map("email_verified")
+  image                   String?
+  aadharCardFileKey       String?           @map("aadhar_card_file_key")
+  driverLicenseFileKey    String?           @map("driver_license_file_key")
+  panCardFileKey          String?           @map("pan_card_file_key")
+  phoneNumber             String?           @unique @map("phone_number")
+  phoneNumberVerified     Boolean           @default(false) @map("phone_number_verified")
+  aadhaarOtpGeneratedAt   DateTime?         @map("aadhaar_otp_generated_at")
+  aadhaarOtpReferenceId   String?           @map("aadhaar_otp_reference_id")
+  insuranceFile           String?           @map("insurance_file")
+  insuranceFileKey        String?           @map("insurance_file_key")
+  insuranceNo             String?           @map("insurance_no")
+  isInsuranceVerified     Boolean           @default(false) @map("is_insurance_verified")
+  isVehiclePlateVerified  Boolean           @default(false) @map("is_vehicle_plate_verified")
+  panAadhaarLinkCheckedAt DateTime?         @map("pan_aadhaar_link_checked_at")
+  panAadhaarLinkStatus    String?           @map("pan_aadhaar_link_status")
+  vehicleOwnerType        VehicleOwnerType? @map("vehicle_owner_type")
+  vehiclePlateNo          String?           @map("vehicle_plate_no")
+  status                  DriverStatus      @default(available)
+  accounts                Account[]
+  currentLocation         DriverLocation?   @relation("CurrentLocation")
+  jobs                    Job[]
+  locationHistory         LocationPoint[]   @relation("LocationHistory")
+  sessions                Session[]
   verifiedDriver          VerifiedDriver?
-
-  email               String
-  emailVerified       Boolean   @default(false) @map("email_verified")
-  image               String?
-  phoneNumber         String?   @unique @map("phone_number")
-  phoneNumberVerified Boolean   @default(false) @map("phone_number_verified")
-  sessions            Session[]
-  accounts            Account[]
-  status              DriverStatus  @default(available)
-  jobs                Job[]
-  
-  // Location tracking relations
-  currentLocation     DriverLocation?  @relation("CurrentLocation")
-  locationHistory     LocationPoint[]  @relation("LocationHistory")
+  walletAddress           String?           @map("wallet_address")
+  baseSalary              Decimal           @default(20000) @map("base_salary") @db.Decimal(12, 2)
+  salaryPayments          SalaryPayment[]
 
   @@map("users")
-  @@unique([email])
 }
 
 model VerifiedDriver {
   driverId    String    @id @map("user_id") @db.Uuid
   isVerified  Boolean   @default(false) @map("is_verified")
-  completedAt DateTime? @map("completed_at")
   createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
   driver      Driver    @relation(fields: [driverId], references: [id], onDelete: Cascade)
 
   @@map("verified_users")
@@ -106,7 +72,7 @@ model VerifiedDriver {
 model Session {
   id        String   @id
   expiresAt DateTime
-  token     String
+  token     String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   ipAddress String?
@@ -114,7 +80,6 @@ model Session {
   userId    String   @db.Uuid
   user      Driver   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("session")
 }
@@ -124,7 +89,6 @@ model Account {
   accountId             String
   providerId            String
   userId                String    @db.Uuid
-  user                  Driver    @relation(fields: [userId], references: [id], onDelete: Cascade)
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -134,79 +98,40 @@ model Account {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  Driver    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("account")
 }
 
 model AdminUser {
-  id            String         @id @default(uuid()) @db.Uuid
-  name          String
-  email         String         @unique
-  emailVerified Boolean        @default(false) @map("email_verified")
-  image         String?        @map("profile_photo_url")
-  sessions      AdminSession[]
-  accounts      AdminAccount[]
+  id                   String                @id @default(uuid()) @db.Uuid
+  name                 String
+  email                String                @unique
+  emailVerified        Boolean               @default(false) @map("email_verified")
+  image                String?               @map("profile_photo_url")
+  walletAddress        String?               @map("wallet_address")
+  encryptedWalletKey   String?               @map("encrypted_wallet_key")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  accounts             AdminAccount[]
+  sessions             AdminSession[]
   notificationReceipts NotificationReceipt[]
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-
-
-
 
   @@map("admin_users")
-}
-
-model NotificationEvent {
-  id        String           @id @default(uuid()) @db.Uuid
-  type      NotificationType
-  title     String
-  message   String
-  actionUrl String?          @map("action_url")
-  metadata  Json?
-
-  createdAt DateTime         @default(now()) @map("created_at")
-
-  receipts  NotificationReceipt[]
-
-  @@index([createdAt])
-  @@index([type])
-  @@map("notification_events")
-}
-
-model NotificationReceipt {
-  id         String            @id @default(uuid()) @db.Uuid
-
-  userId     String            @db.Uuid @map("user_id")
-  user       AdminUser         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  eventId    String            @db.Uuid @map("event_id")
-  event      NotificationEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
-
-  readAt     DateTime?         @map("read_at")
-  archivedAt DateTime?         @map("archived_at")
-
-  createdAt  DateTime          @default(now()) @map("created_at")
-
-  @@unique([userId, eventId])
-  @@index([userId, createdAt])
-  @@index([userId, readAt])
-  @@index([userId, archivedAt])
-  @@map("notification_receipts")
 }
 
 model AdminSession {
   id        String    @id
   expiresAt DateTime
-  token     String
+  token     String    @unique
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   ipAddress String?
   userAgent String?
-  userId    String    @db.Uuid @map("user_id")
+  userId    String    @map("user_id") @db.Uuid
   user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([token])
   @@index([userId])
   @@map("admin_session")
 }
@@ -215,8 +140,7 @@ model AdminAccount {
   id                    String    @id
   accountId             String
   providerId            String
-  userId                String    @db.Uuid @map("user_id")
-  user                  AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                String    @map("user_id") @db.Uuid
   accessToken           String?
   refreshToken          String?
   idToken               String?
@@ -226,6 +150,7 @@ model AdminAccount {
   password              String?
   createdAt             DateTime  @default(now())
   updatedAt             DateTime  @updatedAt
+  user                  AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@map("admin_account")
@@ -255,46 +180,38 @@ model Verification {
   @@map("verification")
 }
 
+// ============================================
+// Business Models (Jobs, Invoices, Chat)
+// ============================================
+
 model Job {
-  id                String   @id @default(uuid()) @db.Uuid
-  title             String
-  weightKg          Int      @map("weight_kg")
-
-  pickupAddress     String   @map("pickup_address")
-  pickupLat         Decimal  @map("pickup_lat") @db.Decimal(9, 6)
-  pickupLng         Decimal  @map("pickup_lng") @db.Decimal(9, 6)
-
-  dropAddress       String   @map("drop_address")
-  dropLat           Decimal  @map("drop_lat") @db.Decimal(9, 6)
-  dropLng           Decimal  @map("drop_lng") @db.Decimal(9, 6)
-
-  pickupAt          DateTime @map("pickup_at")
-  dropWindowStartAt DateTime @map("drop_window_start_at")
-  dropWindowEndAt   DateTime @map("drop_window_end_at")
-
-  distanceMeters    Int      @map("distance_meters")
-  durationSeconds   Int?     @map("duration_seconds")
-  routeType         RouteType? @map("route_type")
-  routeGeometry     Json?    @map("route_geometry")
-  estimatedFuelCost Int?     @map("estimated_fuel_cost")
-  status            JobStatus @default(pending)
-
-  driverId          String?  @map("driver_id") @db.Uuid
-  driver            Driver?  @relation(fields: [driverId], references: [id])
-  invoices          Invoice[]
-
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
-
-  // Location tracking relations
-  driverLocation    DriverLocation?
-  locationPoints    LocationPoint[]
-  
-  // Package verification relations
+  id                   String                @id @default(uuid()) @db.Uuid
+  title                String
+  weightKg             Int                   @map("weight_kg")
+  pickupAddress        String                @map("pickup_address")
+  pickupLat            Decimal               @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng            Decimal               @map("pickup_lng") @db.Decimal(9, 6)
+  dropAddress          String                @map("drop_address")
+  dropLat              Decimal               @map("drop_lat") @db.Decimal(9, 6)
+  dropLng              Decimal               @map("drop_lng") @db.Decimal(9, 6)
+  pickupAt             DateTime              @map("pickup_at")
+  dropWindowStartAt    DateTime              @map("drop_window_start_at")
+  dropWindowEndAt      DateTime              @map("drop_window_end_at")
+  distanceMeters       Int                   @map("distance_meters")
+  createdAt            DateTime              @default(now()) @map("created_at")
+  updatedAt            DateTime              @updatedAt @map("updated_at")
+  driverId             String?               @map("driver_id") @db.Uuid
+  status               JobStatus             @default(pending)
+  durationSeconds      Int?                  @map("duration_seconds")
+  estimatedFuelCost    Int?                  @map("estimated_fuel_cost")
+  routeGeometry        Json?                 @map("route_geometry")
+  routeType            RouteType?            @map("route_type")
+  chatThread           ChatThread?
+  driverLocation       DriverLocation?
+  invoices             Invoice[]
+  driver               Driver?               @relation(fields: [driverId], references: [id])
+  locationPoints       LocationPoint[]
   packageVerifications PackageVerification[]
-
-  // Chat (one thread per job)
-  chatThread        ChatThread?
 
   // Air shipments can optionally reference jobs for ground segments
   shipmentSegments  ShipmentSegment[] @relation("JobShipmentSegments")
@@ -304,25 +221,13 @@ model Job {
   @@map("jobs")
 }
 
-// ============================================
-// Realtime Chat Models (Admin ↔ Driver)
-// ============================================
-
-enum ChatSenderType {
-  admin
-  driver
-}
-
 model ChatThread {
-  id        String @id @default(uuid()) @db.Uuid
-
-  jobId     String @unique @map("job_id") @db.Uuid
-  job       Job    @relation(fields: [jobId], references: [id], onDelete: Cascade)
-
+  id        String        @id @default(uuid()) @db.Uuid
+  jobId     String        @unique @map("job_id") @db.Uuid
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
   messages  ChatMessage[]
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  job       Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([jobId])
   @@map("chat_threads")
@@ -330,98 +235,80 @@ model ChatThread {
 
 model ChatMessage {
   id             String         @id @default(uuid()) @db.Uuid
-
   threadId       String         @map("thread_id") @db.Uuid
-  thread         ChatThread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
-
   senderType     ChatSenderType @map("sender_type")
   senderAdminId  String?        @map("sender_admin_id") @db.Uuid
   senderDriverId String?        @map("sender_driver_id") @db.Uuid
-
   content        String
-
   createdAt      DateTime       @default(now()) @map("created_at")
+  thread         ChatThread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
 
   @@index([threadId, createdAt])
   @@map("chat_messages")
 }
 
-// ============================================
-// Package Verification Models
-// ============================================
-
-enum VerificationPhase {
-  pickup
-  delivery
-}
-
 model PackageVerification {
-  id                String            @id @default(uuid()) @db.Uuid
-  jobId             String            @map("job_id") @db.Uuid
-  job               Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  phase             VerificationPhase
-  
-  // Driver-captured image
-  capturedImageUrl  String            @map("captured_image_url")
-  capturedImageKey  String?           @map("captured_image_key")
-  
-  // PatchCore API response data
-  damagePercentage  Decimal           @map("damage_percentage") @db.Decimal(5, 2)
-  anomalyDetected   Boolean           @map("anomaly_detected")
-  threshold         Decimal           @db.Decimal(3, 2)
-  heatmapImageUrl   String?           @map("heatmap_image_url")
-  heatmapImageKey   String?           @map("heatmap_image_key")
-  
-  // Status
-  passed            Boolean
-  
-  createdAt         DateTime          @default(now()) @map("created_at")
+  id               String            @id @default(uuid()) @db.Uuid
+  jobId            String            @map("job_id") @db.Uuid
+  phase            VerificationPhase
+  capturedImageUrl String            @map("captured_image_url")
+  capturedImageKey String?           @map("captured_image_key")
+  damagePercentage Decimal           @map("damage_percentage") @db.Decimal(5, 2)
+  anomalyDetected  Boolean           @map("anomaly_detected")
+  threshold        Decimal           @db.Decimal(3, 2)
+  heatmapImageUrl  String?           @map("heatmap_image_url")
+  heatmapImageKey  String?           @map("heatmap_image_key")
+  passed           Boolean
+  createdAt        DateTime          @default(now()) @map("created_at")
+  job              Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
 
   @@index([jobId])
   @@map("package_verifications")
 }
 
 model Invoice {
-  id                String            @id @default(uuid()) @db.Uuid
-  invoiceNumber     String            @unique @map("invoice_number")
-  invoiceDate       DateTime          @map("invoice_date")
-  type              InvoiceType
-  status            InvoiceStatus     @default(DRAFT)
-  supplierName      String            @map("supplier_name")
-  supplierGstin     String?           @map("supplier_gstin")
-  supplierAddress   String            @map("supplier_address")
-  supplierEmail     String?           @map("supplier_email")
-  supplierPhone     String?           @map("supplier_phone")
-  supplierIecCode   String?           @map("supplier_iec_code")
-  buyerName         String            @map("buyer_name")
-  buyerGstin        String?           @map("buyer_gstin")
-  buyerAddress      String            @map("buyer_address")
-  buyerEmail        String?           @map("buyer_email")
-  buyerCountry      String?           @map("buyer_country")
-  buyerEin          String?           @map("buyer_ein")
-  placeOfSupply     String            @map("place_of_supply")
-  subtotal          Decimal           @db.Decimal(12, 2)
-  totalTax          Decimal           @map("total_tax") @db.Decimal(12, 2)
-  grandTotal        Decimal           @map("grand_total") @db.Decimal(12, 2)
-  totalInWords      String            @map("total_in_words")
-  ewayBillNumber    String?           @map("eway_bill_number")
-  lutNumber         String?           @map("lut_number")
-  shippingBillNumber String?          @map("shipping_bill_number")
-  portOfLoading     String?           @map("port_of_loading")
-  terms             String?           @db.Text
-  bankAccount       String?           @map("bank_account")
-  bankIfsc          String?           @map("bank_ifsc")
-  bankName          String?           @map("bank_name")
-  qrCode            String?           @map("qr_code") @db.Text
-  jobId             String?           @map("job_id") @db.Uuid
-  job               Job?              @relation(fields: [jobId], references: [id])
-  lineItems         InvoiceLineItem[]
-  auditLogs         InvoiceAuditLog[]
-  referenceInvoiceId String?         @map("reference_invoice_id") @db.Uuid
-  referenceInvoice   Invoice?        @relation("AdjustmentReferences", fields: [referenceInvoiceId], references: [id])
-  adjustments        Invoice[]       @relation("AdjustmentReferences")
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @map("updated_at")
+  id                  String               @id @default(uuid()) @db.Uuid
+  invoiceNumber       String               @unique @map("invoice_number")
+  invoiceDate         DateTime             @map("invoice_date")
+  type                InvoiceType
+  status              InvoiceStatus        @default(DRAFT)
+  supplierName        String               @map("supplier_name")
+  supplierGstin       String?              @map("supplier_gstin")
+  supplierAddress     String               @map("supplier_address")
+  supplierEmail       String?              @map("supplier_email")
+  supplierPhone       String?              @map("supplier_phone")
+  supplierIecCode     String?              @map("supplier_iec_code")
+  buyerName           String               @map("buyer_name")
+  buyerGstin          String?              @map("buyer_gstin")
+  buyerAddress        String               @map("buyer_address")
+  buyerEmail          String?              @map("buyer_email")
+  buyerCountry        String?              @map("buyer_country")
+  buyerEin            String?              @map("buyer_ein")
+  placeOfSupply       String               @map("place_of_supply")
+  subtotal            Decimal              @db.Decimal(12, 2)
+  totalTax            Decimal              @map("total_tax") @db.Decimal(12, 2)
+  grandTotal          Decimal              @map("grand_total") @db.Decimal(12, 2)
+  totalInWords        String               @map("total_in_words")
+  ewayBillNumber      String?              @map("eway_bill_number")
+  lutNumber           String?              @map("lut_number")
+  shippingBillNumber  String?              @map("shipping_bill_number")
+  portOfLoading       String?              @map("port_of_loading")
+  terms               String?
+  bankAccount         String?              @map("bank_account")
+  bankIfsc            String?              @map("bank_ifsc")
+  bankName            String?              @map("bank_name")
+  qrCode              String?              @map("qr_code")
+  jobId               String?              @map("job_id") @db.Uuid
+  referenceInvoiceId  String?              @map("reference_invoice_id") @db.Uuid
+  createdAt           DateTime             @default(now()) @map("created_at")
+  updatedAt           DateTime             @updatedAt @map("updated_at")
+  paidAmount          Decimal              @default(0) @map("paid_amount") @db.Decimal(12, 2)
+  auditLogs           InvoiceAuditLog[]
+  lineItems           InvoiceLineItem[]
+  job                 Job?                 @relation(fields: [jobId], references: [id])
+  referenceInvoice    Invoice?             @relation("AdjustmentReferences", fields: [referenceInvoiceId], references: [id])
+  adjustments         Invoice[]            @relation("AdjustmentReferences")
+  paymentTransactions PaymentTransaction[]
 
   @@index([invoiceDate])
   @@index([status])
@@ -455,8 +342,8 @@ model InvoiceAuditLog {
   action    String
   details   Json?
   invoiceId String   @map("invoice_id") @db.Uuid
-  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now()) @map("created_at")
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
 
   @@map("invoice_audit_logs")
 }
@@ -480,81 +367,78 @@ model CompanyGSTConfig {
   @@map("company_gst_configs")
 }
 
-enum InvoiceType {
-  TAX_INVOICE
-  BILL_OF_SUPPLY
-  DELIVERY_CHALLAN
-  EXPORT_INVOICE
-  CREDIT_NOTE
-  DEBIT_NOTE
+// ============================================
+// Notification Models
+// ============================================
+
+model NotificationEvent {
+  id        String                @id @default(uuid()) @db.Uuid
+  type      NotificationType
+  title     String
+  message   String
+  actionUrl String?               @map("action_url")
+  metadata  Json?
+  createdAt DateTime              @default(now()) @map("created_at")
+  receipts  NotificationReceipt[]
+
+  @@index([createdAt])
+  @@index([type])
+  @@map("notification_events")
 }
 
-enum InvoiceStatus {
-  DRAFT
-  PENDING
-  ISSUED
-  PAID
-  VOIDED
-  CANCELLED
-}
+model NotificationReceipt {
+  id         String            @id @default(uuid()) @db.Uuid
+  userId     String            @map("user_id") @db.Uuid
+  eventId    String            @map("event_id") @db.Uuid
+  readAt     DateTime?         @map("read_at")
+  archivedAt DateTime?         @map("archived_at")
+  createdAt  DateTime          @default(now()) @map("created_at")
+  event      NotificationEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       AdminUser         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-enum TaxType {
-  CGST
-  SGST
-  IGST
-  UTGST
-  CESS
-}
-
-enum DriverPhase {
-  en_route_to_pickup
-  at_pickup
-  en_route_to_dropoff
-  completed
+  @@unique([userId, eventId])
+  @@index([userId, createdAt])
+  @@index([userId, readAt])
+  @@index([userId, archivedAt])
+  @@map("notification_receipts")
 }
 
 // ============================================
-// Real-Time Location Tracking Models
+// Tracking & History Models
 // ============================================
 
-// Current driver location (latest position for fast lookups)
 model DriverLocation {
-  id         String   @id @default(uuid()) @db.Uuid
-  jobId      String   @unique @map("job_id") @db.Uuid
-  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  driverId   String   @unique @map("driver_id") @db.Uuid
-  driver     Driver   @relation("CurrentLocation", fields: [driverId], references: [id], onDelete: Cascade)
-  
-  latitude   Decimal  @db.Decimal(9, 6)
-  longitude  Decimal  @db.Decimal(9, 6)
-  speedMps   Decimal? @map("speed_mps") @db.Decimal(6, 2)
-  heading    Int?     // Degrees 0-360
-  routeGeometry Json? @map("route_geometry")
-  driverPhase   DriverPhase @default(en_route_to_pickup) @map("driver_phase")
-  pickupRouteGeometry Json? @map("pickup_route_geometry")
-  
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id                  String      @id @default(uuid()) @db.Uuid
+  jobId               String      @unique @map("job_id") @db.Uuid
+  job                 Job         @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  driverId            String      @unique @map("driver_id") @db.Uuid
+  driver              Driver      @relation("CurrentLocation", fields: [driverId], references: [id], onDelete: Cascade)
+  latitude            Decimal     @db.Decimal(9, 6)
+  longitude           Decimal     @db.Decimal(9, 6)
+  speedMps            Decimal?    @map("speed_mps") @db.Decimal(6, 2)
+  heading             Int?
+  updatedAt           DateTime    @updatedAt @map("updated_at")
+  routeGeometry       Json?       @map("route_geometry")
+  driverPhase         DriverPhase @default(en_route_to_pickup) @map("driver_phase")
+  pickupRouteGeometry Json?       @map("pickup_route_geometry")
 
   @@index([jobId])
   @@index([driverId])
   @@map("driver_locations")
 }
 
-// Complete path history - stores every location point
 model LocationPoint {
-  id         String   @id @default(uuid()) @db.Uuid
-  jobId      String   @map("job_id") @db.Uuid
-  job        Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  driverId   String   @map("driver_id") @db.Uuid
-  driver     Driver   @relation("LocationHistory", fields: [driverId], references: [id], onDelete: Cascade)
-  
-  latitude   Decimal  @db.Decimal(9, 6)
-  longitude  Decimal  @db.Decimal(9, 6)
-  speedMps   Decimal? @map("speed_mps") @db.Decimal(6, 2)
-  heading    Int?
-  
-  timestamp  DateTime @default(now())
-  
+  id        String   @id @default(uuid()) @db.Uuid
+  jobId     String   @map("job_id") @db.Uuid
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  driverId  String   @map("driver_id") @db.Uuid
+  driver    Driver   @relation("LocationHistory", fields: [driverId], references: [id], onDelete: Cascade)
+  latitude  Decimal  @db.Decimal(9, 6)
+  longitude Decimal  @db.Decimal(9, 6)
+  speedMps  Decimal? @map("speed_mps") @db.Decimal(6, 2)
+  heading   Int?
+  timestamp DateTime @default(now())
+
   @@index([jobId, timestamp])
   @@index([driverId, timestamp])
   @@map("location_points")
@@ -563,24 +447,6 @@ model LocationPoint {
 // ============================================
 // Warehouse Management Models
 // ============================================
-
-enum ProductCategory {
-  electronics
-  food
-  apparel
-  pharmaceuticals
-  machinery
-  raw_materials
-  packaging
-  other
-}
-
-enum BlockStatus {
-  normal
-  warning
-  critical
-  empty
-}
 
 model Warehouse {
   id        String   @id @default(uuid()) @db.Uuid
@@ -601,10 +467,10 @@ model Floor {
   name        String
   level       Int
   warehouseId String    @map("warehouse_id") @db.Uuid
-  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
-  blocks      Block[]
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @updatedAt @map("updated_at")
+  blocks      Block[]
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
 
   @@index([warehouseId])
   @@map("floors")
@@ -617,13 +483,13 @@ model Block {
   column      Int
   capacity    Int
   floorId     String          @map("floor_id") @db.Uuid
-  floor       Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
   category    ProductCategory
   temperature Decimal?        @db.Decimal(4, 1)
   humidity    Int?
-  products    Product[]
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
+  floor       Floor           @relation(fields: [floorId], references: [id], onDelete: Cascade)
+  products    Product[]
 
   @@index([floorId])
   @@map("blocks")
@@ -639,9 +505,9 @@ model Product {
   currentPrice Decimal         @map("current_price") @db.Decimal(10, 2)
   expiryDate   DateTime?       @map("expiry_date")
   blockId      String          @map("block_id") @db.Uuid
-  block        Block           @relation(fields: [blockId], references: [id], onDelete: Cascade)
   createdAt    DateTime        @default(now()) @map("created_at")
   updatedAt    DateTime        @updatedAt @map("updated_at")
+  block        Block           @relation(fields: [blockId], references: [id], onDelete: Cascade)
 
   @@index([blockId])
   @@index([sku])
@@ -649,35 +515,41 @@ model Product {
 }
 
 // ============================================
-// Air Shipments (Hybrid Ground + Air Tracking)
+// Payments & Transactions
 // ============================================
 
-enum ShipmentStatus {
-  created
-  in_transit
-  delivered
-  cancelled
-  exception
+model PaymentTransaction {
+  id              String   @id @default(uuid()) @db.Uuid
+  invoiceId       String   @map("invoice_id") @db.Uuid
+  amount          Decimal  @db.Decimal(12, 2)
+  transactionHash String   @map("transaction_hash")
+  payerAddress    String?  @map("payer_address")
+  paymentMethod   String   @default("ESCROW") @map("payment_method")
+  createdAt       DateTime @default(now()) @map("created_at")
+  invoice         Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+  @@index([transactionHash])
+  @@map("payment_transactions")
 }
 
-enum ShipmentSegmentType {
-  ground_pickup
-  air
-  ground_drop
+model SalaryPayment {
+  id              String   @id @default(uuid()) @db.Uuid
+  driverId        String   @map("driver_id") @db.Uuid
+  driver          Driver   @relation(fields: [driverId], references: [id], onDelete: Cascade)
+  amount          Decimal  @db.Decimal(12, 2)
+  transactionHash String   @map("transaction_hash")
+  status          String   @default("PAID")
+  paidAt          DateTime @default(now()) @map("paid_at")
+
+  @@index([driverId])
+  @@index([transactionHash])
+  @@map("salary_payments")
 }
 
-enum ShipmentEventType {
-  created
-  carrier_update
-  pickup_started
-  pickup_completed
-  air_departed
-  air_arrived
-  customs_clearance
-  out_for_delivery
-  delivered
-  exception
-}
+// ============================================
+// Air Shipments (Hybrid Ground + Air Tracking)
+// ============================================
 
 model Shipment {
   id            String         @id @default(uuid()) @db.Uuid
@@ -780,4 +652,130 @@ model AirPositionPoint {
 
   @@index([segmentId, timestamp])
   @@map("air_position_points")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum VehicleOwnerType {
+  self
+  company
+  rented
+}
+
+enum DriverStatus {
+  available
+  on_route
+  off_duty
+}
+
+enum JobStatus {
+  pending
+  in_progress
+  completed
+  cancelled
+}
+
+enum RouteType {
+  fastest
+  economy
+  via_gas_station
+}
+
+enum NotificationType {
+  job
+  driver
+  packageVerification
+  billing
+  system
+}
+
+enum ChatSenderType {
+  admin
+  driver
+}
+
+enum VerificationPhase {
+  pickup
+  delivery
+}
+
+enum InvoiceType {
+  TAX_INVOICE
+  BILL_OF_SUPPLY
+  DELIVERY_CHALLAN
+  EXPORT_INVOICE
+  CREDIT_NOTE
+  DEBIT_NOTE
+  SALARY_SLIP
+}
+
+enum InvoiceStatus {
+  DRAFT
+  PENDING
+  ISSUED
+  PAID
+  VOIDED
+  CANCELLED
+}
+
+enum TaxType {
+  CGST
+  SGST
+  IGST
+  UTGST
+  CESS
+}
+
+enum DriverPhase {
+  en_route_to_pickup
+  at_pickup
+  en_route_to_dropoff
+  completed
+}
+
+enum ProductCategory {
+  electronics
+  food
+  apparel
+  pharmaceuticals
+  machinery
+  raw_materials
+  packaging
+  other
+}
+
+enum BlockStatus {
+  normal
+  warning
+  critical
+  empty
+}
+
+enum ShipmentStatus {
+  created
+  in_transit
+  delivered
+  cancelled
+  exception
+}
+
+enum ShipmentSegmentType {
+  ground_pickup
+  air
+  ground_drop
+}
+
+enum ShipmentEventType {
+  created
+  carrier_update
+  pickup_started
+  pickup_completed
+  air_departed
+  air_arrived
+  customs_clearance
+  out_for_delivery
+  delivered
+  exception
 }

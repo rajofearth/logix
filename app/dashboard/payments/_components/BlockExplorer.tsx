@@ -5,6 +5,7 @@ import { ethers } from 'ethers';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Activity, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -23,14 +24,23 @@ interface BlockRecord {
     transactions: (TransactionRecord | string)[];
 }
 
-export function BlockExplorer() {
+interface BlockExplorerProps {
+    walletAddress?: string;
+}
+
+export function BlockExplorer({ walletAddress }: BlockExplorerProps) {
     const [blocks, setBlocks] = useState<BlockRecord[]>([]);
     const [loading, setLoading] = useState(true);
+    const [isOffline, setIsOffline] = useState(false);
 
     useEffect(() => {
         const fetchLatestBlocks = async () => {
             try {
                 const provider = new ethers.JsonRpcProvider(LOCAL_RPC);
+                // Check connection first
+                await provider.getNetwork();
+                setIsOffline(false);
+
                 const latestBlock = await provider.getBlockNumber();
                 const blockPromises = [];
 
@@ -55,6 +65,8 @@ export function BlockExplorer() {
                 setBlocks(mappedBlocks);
             } catch (error) {
                 console.error("Explorer fetch error:", error);
+                setIsOffline(true);
+                setBlocks([]);
             } finally {
                 setLoading(false);
             }
@@ -77,16 +89,25 @@ export function BlockExplorer() {
                             <CardTitle>Logix Explorer</CardTitle>
                             <CardDescription>
                                 Real-time local chain transactions
+                                {walletAddress && (
+                                    <span className="block text-[10px] text-primary mt-1">
+                                        Following: {walletAddress.substring(0, 6)}...{walletAddress.substring(38)}
+                                    </span>
+                                )}
                             </CardDescription>
                         </div>
                     </div>
                     <Badge
                         variant="outline"
-                        className="flex items-center gap-1.5 animate-pulse border-green-500/30"
+                        className={cn(
+                            "flex items-center gap-1.5 border-green-500/30",
+                            !isOffline && "animate-pulse",
+                            isOffline && "border-red-500/30 text-red-500"
+                        )}
                     >
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-ping" />
-                        <span className="h-1.5 w-1.5 rounded-full bg-green-500 absolute" />
-                        Live
+                        {!isOffline && <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-ping" />}
+                        {!isOffline && <span className="h-1.5 w-1.5 rounded-full bg-green-500 absolute" />}
+                        {isOffline ? "Offline" : "Live"}
                     </Badge>
                 </div>
             </CardHeader>
@@ -94,6 +115,28 @@ export function BlockExplorer() {
                 {loading ? (
                     <div className="flex items-center justify-center py-12">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : isOffline ? (
+                    <div className="text-center py-12 space-y-4">
+                        <div className="flex flex-col items-center gap-2">
+                            <Activity className="h-8 w-8 text-red-500/50" />
+                            <p className="text-muted-foreground text-sm font-medium">
+                                Blockchain Node Offline
+                            </p>
+                            <p className="text-xs text-muted-foreground max-w-xs mx-auto">
+                                Ensure your local Hardhat node is running with <code className="bg-muted px-1 rounded">npx hardhat node</code> in the contracts directory.
+                            </p>
+                        </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                setLoading(true);
+                                // useEffect will trigger fetch
+                            }}
+                        >
+                            Retry Connection
+                        </Button>
                     </div>
                 ) : (
                     <Table>
@@ -113,7 +156,10 @@ export function BlockExplorer() {
                                             key={tx.hash || `tx-${block.number || bIdx}-${tIdx}`}
                                             className={cn(
                                                 "group hover:bg-muted/50 transition-colors duration-200",
-                                                "animate-in fade-in-0 slide-in-from-left-2"
+                                                "animate-in fade-in-0 slide-in-from-left-2",
+                                                walletAddress && (tx.from.toLowerCase() === walletAddress.toLowerCase() || tx.to?.toLowerCase() === walletAddress.toLowerCase())
+                                                    ? "bg-primary/5 border-l-2 border-primary"
+                                                    : ""
                                             )}
                                             style={{
                                                 animationDelay: `${(bIdx * 3 + tIdx) * 50}ms`,

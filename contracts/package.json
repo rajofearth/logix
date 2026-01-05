@@ -1,10 +1,13 @@
 {
   "name": "contracts",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "node": "hardhat node",
+    "deploy:local": "hardhat run contracts/scripts/deploy-local.js --network localhost"
   },
   "keywords": [],
   "author": "",

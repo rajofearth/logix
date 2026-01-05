@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,46 +9,148 @@ import { Badge } from '@/components/ui/badge';
 import { Wallet, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import CryptoJS from 'crypto-js';
 
 const LOCAL_RPC = "http://127.0.0.1:8545";
-const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const TOKEN_ADDRESS = "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
+const ENCRYPTION_KEY = "demo-security-key"; // In prod, this would be more secure
 
 const ERC20_ABI = [
     "function balanceOf(address account) public view returns (uint256)",
     "function symbol() public view returns (string)"
 ];
 
-export function PaymentPortal() {
-    const [address, setAddress] = useState('');
+interface PaymentPortalProps {
+    address: string;
+    onConnect: (address: string, encryptedKey: string) => void;
+    onDisconnect: () => void;
+}
+
+export function PaymentPortal({ address, onConnect, onDisconnect }: PaymentPortalProps) {
     const [balance, setBalance] = useState('0');
     const [loading, setLoading] = useState(false);
     const [privateKey, setPrivateKey] = useState('');
-    const [isSecureMode, setIsSecureMode] = useState(false);
+    const [isSecureMode, setIsSecureMode] = useState(true);
+    const [isOffline, setIsOffline] = useState(false);
 
-    const fetchBalance = async (walletAddress: string) => {
+    const fetchBalance = React.useCallback(async (walletAddress: string) => {
         try {
             const provider = new ethers.JsonRpcProvider(LOCAL_RPC);
+            await provider.getNetwork();
+            setIsOffline(false);
             const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, provider);
             const bal = await tokenContract.balanceOf(walletAddress);
             setBalance(ethers.formatUnits(bal, 18));
         } catch (error) {
             console.error("Balance fetch error:", error);
+            setIsOffline(true);
         }
-    };
+    }, []);
+
+    useEffect(() => {
+        // Fetch persisted wallet on mount
+        const fetchPersistedWallet = async () => {
+            try {
+                const res = await fetch('/api/auth/wallet');
+                const data = await res.json();
+                if (data.address && data.encryptedKey) {
+                    onConnect(data.address, data.encryptedKey);
+                    fetchBalance(data.address);
+                } else {
+                    // Check connectivity even if not connected
+                    const checkConn = async () => {
+                        try {
+                            const provider = new ethers.JsonRpcProvider(LOCAL_RPC);
+                            await provider.getNetwork();
+                            setIsOffline(false);
+                        } catch {
+                            setIsOffline(true);
+                        }
+                    };
+                    checkConn();
+                }
+            } catch (error) {
+                console.error("Failed to fetch persisted wallet:", error);
+            }
+        };
+
+        if (!address) {
+            fetchPersistedWallet();
+        } else {
+            fetchBalance(address);
+        }
+    }, [address, onConnect, fetchBalance]); // onConnect and fetchBalance added to satisfy exhaustive-deps
 
     const connectWallet = async () => {
         if (!privateKey) {
             toast.error("Please enter a private key for the demo");
             return;
         }
+
+        // Validate Private Key Format
+        const cleanedKey = privateKey.trim();
+        if (!cleanedKey.startsWith('0x') && String(cleanedKey).length !== 64) {
+            // Heuristic check: if it looks like a command or sentence
+            if (cleanedKey.includes(' ') || cleanedKey.length > 70) {
+                toast.error("Invalid Private Key. It looks like you pasted a command or sentence.");
+                return;
+            }
+        }
+
         setLoading(true);
         try {
-            const wallet = new ethers.Wallet(privateKey);
-            setAddress(wallet.address);
+            // Attempt to create wallet first to validate key immediately
+            let wallet;
+            try {
+                // Ensure 0x prefix if missing for 64-char keys
+                const formattedKey = !cleanedKey.startsWith('0x') && cleanedKey.length === 64
+                    ? `0x${cleanedKey}`
+                    : cleanedKey;
+                wallet = new ethers.Wallet(formattedKey);
+            } catch (e) {
+                console.error("Invalid private key format:", e);
+                toast.error("Invalid Private Key format. Please check your key.");
+                setLoading(false);
+                return;
+            }
+
+            const provider = new ethers.JsonRpcProvider(LOCAL_RPC);
+
+            // Set provider to wallet
+            wallet.connect(provider);
+
+            await provider.getNetwork(); // Verify node is up
+
+            const encryptedKey = CryptoJS.AES.encrypt(privateKey, ENCRYPTION_KEY).toString();
+
+            // Persist to DB
+            const res = await fetch('/api/auth/wallet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    address: wallet.address,
+                    encryptedKey: encryptedKey
+                })
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || "Failed to persist wallet connection");
+            }
+
+            onConnect(wallet.address, encryptedKey);
             await fetchBalance(wallet.address);
-            toast.success("Wallet connected!");
-        } catch (error) {
-            toast.error(`Invalid private key: ${error}`);
+            toast.success("Wallet connected and saved!");
+            setIsOffline(false);
+        } catch (error: unknown) {
+            console.error(error);
+            const err = error as { code?: string; message?: string };
+            if (err.code === "NETWORK_ERROR" || err.code === "ECONNREFUSED" || err.message?.includes("could not detect network")) {
+                setIsOffline(true);
+                toast.error(`Connection failed: Local node appears offline. Run 'npx hardhat node'`);
+            } else {
+                toast.error(`Error: ${err.message || "Unknown error occurred"}`);
+            }
         } finally {
             setLoading(false);
         }
@@ -70,6 +172,17 @@ export function PaymentPortal() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
+                    {isOffline && (
+                        <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 animate-in fade-in slide-in-from-top-1">
+                            <div className="flex items-center gap-2 text-red-600 mb-1">
+                                <Shield className="h-4 w-4" />
+                                <p className="text-xs font-bold uppercase">Node Offline</p>
+                            </div>
+                            <p className="text-[10px] text-muted-foreground leading-relaxed">
+                                Local blockchain not detected. Run <code className="bg-muted px-1 rounded">npx hardhat node</code> and <code className="bg-muted px-1 rounded">npx hardhat run scripts/deploy.js --network localhost</code> in the contracts folder.
+                            </p>
+                        </div>
+                    )}
                     {!address ? (
                         <div className="space-y-4 animate-in fade-in-0 duration-300">
                             <div className="space-y-2">
@@ -118,7 +231,7 @@ export function PaymentPortal() {
                                 variant="outline"
                                 className="w-full transition-all duration-200 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 active:scale-[0.98]"
                                 onClick={() => {
-                                    setAddress('');
+                                    onDisconnect();
                                     setPrivateKey('');
                                 }}
                             >

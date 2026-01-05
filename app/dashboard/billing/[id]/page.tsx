@@ -6,7 +6,8 @@ import { AppSidebar } from '@/components/dashboard/app-sidebar'
 import { SiteHeader } from '@/components/dashboard/site-header'
 import { InvoicePreview } from "@/app/dashboard/billing/_component/invoice-preview"
 import { Button } from "@/components/ui/button"
-import { Printer, Download, Share2 } from "lucide-react"
+import { Printer, Download, Share2, CreditCard } from "lucide-react"
+import Link from "next/link"
 
 interface Invoice {
     id: string;
@@ -88,6 +89,13 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
                                     <p className="text-[10px] uppercase opacity-60">Status</p>
                                     <Badge>{invoice.status}</Badge>
                                 </div>
+                                {invoice.status !== 'PAID' && (
+                                    <Button className="w-full bg-primary hover:bg-primary/90" asChild>
+                                        <Link href={`/dashboard/payments?tab=bills&invoiceId=${invoice.id}`}>
+                                            <CreditCard className="mr-2 h-4 w-4" /> Settle Payment
+                                        </Link>
+                                    </Button>
+                                )}
                                 <div>
                                     <p className="text-[10px] uppercase opacity-60">Created At</p>
                                     <p className="text-sm font-medium">{new Date(invoice.createdAt).toLocaleString()}</p>

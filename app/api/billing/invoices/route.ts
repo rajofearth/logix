@@ -12,14 +12,21 @@ export async function GET(req: NextRequest) {
         const { searchParams } = new URL(req.url);
         const type = searchParams.get("type");
         const status = searchParams.get("status");
+        const pending = searchParams.get("pending");
 
         const invoices = await prisma.invoice.findMany({
             where: {
                 ...(type && { type: type as InvoiceType }),
                 ...(status && { status: status as InvoiceStatus }),
+                ...(pending === "true" && {
+                    status: {
+                        in: [InvoiceStatus.PENDING, InvoiceStatus.ISSUED]
+                    }
+                }),
             },
             include: {
-                lineItems: true
+                lineItems: true,
+                paymentTransactions: true
             },
             orderBy: {
                 createdAt: "desc"

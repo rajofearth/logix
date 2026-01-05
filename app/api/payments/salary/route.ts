@@ -1,22 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { decryptKey } from '@/lib/crypto';
+import { prisma } from '@/lib/prisma';
 
 // Hardcoded for demo/local node
 const LOCAL_RPC = "http://127.0.0.1:8545";
-const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const TOKEN_ADDRESS = "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
 
 const ERC20_ABI = [
     "function transfer(address to, uint256 amount) public returns (bool)",
     "function batchMint(address[] recipients, uint256[] amounts) public"
 ];
 
-// In a real app, this would be the admin/company account
-const ADMIN_ENCRYPTED_KEY = process.env.ADMIN_ENCRYPTED_KEY;
+
+
+export async function GET() {
+    try {
+        const drivers = await prisma.driver.findMany({
+            include: {
+                salaryPayments: {
+                    orderBy: { paidAt: 'desc' },
+                    take: 1
+                }
+            }
+        });
+
+        const formattedDrivers = drivers.map(d => ({
+            id: d.id,
+            name: d.name,
+            address: d.walletAddress || "0x0000000000000000000000000000000000000000",
+            salary: Number(d.baseSalary),
+            status: d.salaryPayments.length > 0 ? 'paid' : 'pending'
+        }));
+
+        return NextResponse.json(formattedDrivers);
+    } catch (error: unknown) {
+        console.error("Salary GET Error:", error);
+        return NextResponse.json({ error: "Failed to fetch drivers" }, { status: 500 });
+    }
+}
 
 export async function POST(req: NextRequest) {
     try {
-        const { driverPayments } = await req.json(); // Array of { address, amount }
+        const { driverPayments } = await req.json(); // Array of { id, address, amount }
 
         if (!driverPayments || !Array.isArray(driverPayments)) {
             return NextResponse.json({ error: "Invalid payment data" }, { status: 400 });
@@ -24,29 +50,90 @@ export async function POST(req: NextRequest) {
 
         const provider = new ethers.JsonRpcProvider(LOCAL_RPC);
 
-        // For demo, we use the first Hardhat account (Account 0) as Admin
-        // If not in env, we use the known local key for Account 0
-        const adminKey = ADMIN_ENCRYPTED_KEY
-            ? decryptKey(ADMIN_ENCRYPTED_KEY)
-            : "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+        // Fetch persisted wallet from AdminUser
+        const admin = await prisma.adminUser.findFirst();
+        if (!admin || !admin.walletAddress || !admin.encryptedWalletKey) {
+            return NextResponse.json({ error: "Wallet not connected. Please connect in Payments > Wallet & Security." }, { status: 400 });
+        }
 
+        const adminKey = decryptKey(admin.encryptedWalletKey);
         const wallet = new ethers.Wallet(adminKey, provider);
         const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, wallet);
 
-        const addresses = driverPayments.map(p => p.address);
-        const amounts = driverPayments.map(p => ethers.parseEther(p.amount.toString()));
+        const validPayments = driverPayments.filter(p =>
+            p.address &&
+            p.address !== "0x0000000000000000000000000000000000000000" &&
+            ethers.isAddress(p.address)
+        );
 
-        // Use batchMint for demo to ensure admin has enough funds or just transfer in loop
-        // For real salary, we'd use a special Salary contract or batch transfer
+        if (validPayments.length === 0) {
+            return NextResponse.json({ error: "No drivers with valid wallet addresses found" }, { status: 400 });
+        }
 
+        const addresses = validPayments.map(p => p.address);
+        const amounts = validPayments.map(p => ethers.parseEther(p.amount.toString()));
+
+        console.log(`Processing batch salary for ${addresses.length} valid drivers...`);
         const tx = await tokenContract.batchMint(addresses, amounts);
         await tx.wait();
+
+        // Store payment records in database only for valid ones
+        await prisma.$transaction(
+            validPayments.map(p => prisma.salaryPayment.create({
+                data: {
+                    driverId: p.id,
+                    amount: p.amount,
+                    transactionHash: tx.hash,
+                    status: "PAID"
+                }
+            }))
+        );
+
+        // Generate SALARY_SLIP Invoices for each payment
+        await prisma.$transaction(
+            validPayments.map(p => prisma.invoice.create({
+                data: {
+                    invoiceNumber: `SAL-${Date.now()}-${p.id.substring(0, 4)}`, // Simple unique number
+                    invoiceDate: new Date(),
+                    type: "SALARY_SLIP",
+                    status: "PAID",
+                    supplierName: "Logix Logistics", // Placeholder - could come from CompanyGSTConfig
+                    supplierAddress: "Admin Office",
+                    buyerName: `Driver: ${p.id.substring(0, 8)}...`, // Or fetch actual name if available in payload
+                    buyerAddress: p.address,
+                    placeOfSupply: "Local",
+                    subtotal: p.amount,
+                    totalTax: 0,
+                    grandTotal: p.amount,
+                    totalInWords: `${p.amount} LINR`,
+                    paidAmount: p.amount,
+                    paymentTransactions: {
+                        create: {
+                            amount: p.amount,
+                            transactionHash: tx.hash,
+                            paymentMethod: "CRYPTO_SALARY",
+                            payerAddress: admin.walletAddress!
+                        }
+                    },
+                    lineItems: {
+                        create: {
+                            description: "Monthly Salary Payment (LINR)",
+                            hsnCode: "9999", // Service code
+                            quantity: 1,
+                            rate: p.amount,
+                            taxableValue: p.amount,
+                            // invoiceId handled by nested create
+                        }
+                    }
+                }
+            }))
+        );
 
         return NextResponse.json({
             success: true,
             txHash: tx.hash,
-            count: driverPayments.length,
-            message: `Processed ${driverPayments.length} salary payments`
+            count: validPayments.length,
+            message: `Processed ${validPayments.length} salary payments. Skipped ${driverPayments.length - validPayments.length} invalid addresses.`
         });
 
     } catch (error: unknown) {

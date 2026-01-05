@@ -3,8 +3,8 @@ import { ethers } from 'ethers';
 import { decryptKey } from '@/lib/crypto';
 
 // Hardcoded for demo/local node
-const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
-const ESCROW_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+const TOKEN_ADDRESS = "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
+const ESCROW_ADDRESS = "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d";
 const LOCAL_RPC = "http://127.0.0.1:8545";
 
 const ERC20_ABI = [
@@ -21,7 +21,7 @@ const ESCROW_ABI = [
 
 export async function POST(req: NextRequest) {
     try {
-        const { action, buyerEncryptedKey, amount, reason, releases } = await req.json();
+        const { action, buyerEncryptedKey, amount, reason, releases, invoiceId } = await req.json();
 
         const provider = new ethers.JsonRpcProvider(LOCAL_RPC);
         const privateKey = decryptKey(buyerEncryptedKey || process.env.ADMIN_ENCRYPTED_KEY);
@@ -41,6 +41,25 @@ export async function POST(req: NextRequest) {
             const depositTx = await escrowContract.deposit(amountInWei, reason);
             await depositTx.wait();
 
+            // Record payment to invoice if invoiceId provided
+            if (invoiceId) {
+                try {
+                    await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/payments/invoice-payment`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            invoiceId,
+                            amount,
+                            transactionHash: depositTx.hash,
+                            payerAddress: wallet.address
+                        })
+                    });
+                } catch (paymentError) {
+                    console.error('Failed to record payment:', paymentError);
+                    // Don't fail the whole transaction if payment recording fails
+                }
+            }
+
             return NextResponse.json({ success: true, txHash: depositTx.hash });
         }
 
@@ -51,6 +70,24 @@ export async function POST(req: NextRequest) {
             console.log(`Releasing ${releaseAmount} LINR to ${to}...`);
             const releaseTx = await escrowContract.release(to, releaseAmountInWei, reason);
             await releaseTx.wait();
+
+            // Record payment to invoice if invoiceId provided
+            if (invoiceId) {
+                try {
+                    await fetch(`${process.env.NEXT_PUBLIC_BETTER_AUTH_URL}/api/payments/invoice-payment`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            invoiceId,
+                            amount: releaseAmount,
+                            transactionHash: releaseTx.hash,
+                            payerAddress: wallet.address
+                        })
+                    });
+                } catch (paymentError) {
+                    console.error('Failed to record payment:', paymentError);
+                }
+            }
 
             return NextResponse.json({ success: true, txHash: releaseTx.hash });
         }

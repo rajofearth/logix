@@ -4,8 +4,10 @@ import { useEffect, useState } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Eye, Download } from "lucide-react"
+import { Eye, CreditCard } from "lucide-react"
 import Link from "next/link"
+import { useCallback } from "react"
+import { cn } from "@/lib/utils"
 
 interface Invoice {
     id: string;
@@ -14,23 +16,37 @@ interface Invoice {
     type: string;
     buyerName: string;
     grandTotal: number;
+    paidAmount: number;
     status: string;
 }
 
-export function InvoiceList() {
+export function InvoiceList({ type, status }: { type?: string; status?: string }) {
     const [invoices, setInvoices] = useState<Invoice[]>([])
     const [loading, setLoading] = useState(true)
 
-    useEffect(() => {
-        fetch("/api/billing/invoices")
-            .then(res => res.json())
-            .then(data => {
-                setInvoices(data)
-                setLoading(false)
-            })
-    }, [])
+    const fetchInvoices = useCallback(async () => {
+        try {
+            const params = new URLSearchParams();
+            if (type) params.append("type", type);
+            if (status) params.append("status", status);
 
-    if (loading) return <div className="p-8 text-center text-muted-foreground">Loading invoices...</div>
+            const res = await fetch(`/api/billing/invoices?${params.toString()}`)
+            const data = await res.json()
+            setInvoices(data)
+        } catch (error) {
+            console.error("Failed to fetch invoices:", error)
+        } finally {
+            setLoading(false)
+        }
+    }, [type, status])
+
+    useEffect(() => {
+        fetchInvoices()
+        const interval = setInterval(fetchInvoices, 5000)
+        return () => clearInterval(interval)
+    }, [fetchInvoices])
+
+    if (loading && invoices.length === 0) return <div className="p-8 text-center text-muted-foreground">Loading invoices...</div>
 
     if (invoices.length === 0) return <div className="p-8 text-center text-muted-foreground">No invoices found.</div>
 
@@ -40,9 +56,9 @@ export function InvoiceList() {
                 <TableRow>
                     <TableHead>Invoice #</TableHead>
                     <TableHead>Date</TableHead>
-                    <TableHead>Type</TableHead>
                     <TableHead>Buyer</TableHead>
                     <TableHead>Amount</TableHead>
+                    <TableHead>Paid</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
@@ -52,27 +68,36 @@ export function InvoiceList() {
                     <TableRow key={invoice.id}>
                         <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
                         <TableCell>{new Date(invoice.invoiceDate).toLocaleDateString()}</TableCell>
-                        <TableCell>
-                            <span className="text-xs font-semibold uppercase opacity-70">
-                                {invoice.type.replace("_", " ")}
-                            </span>
-                        </TableCell>
                         <TableCell>{invoice.buyerName}</TableCell>
                         <TableCell>₹{Number(invoice.grandTotal).toLocaleString()}</TableCell>
+                        <TableCell className={Number(invoice.paidAmount) > 0 ? "text-green-600 font-medium" : ""}>
+                            ₹{Number(invoice.paidAmount).toLocaleString()}
+                        </TableCell>
                         <TableCell>
-                            <Badge variant={invoice.status === 'ISSUED' ? 'default' : 'secondary'}>
+                            <Badge
+                                variant={invoice.status === 'PAID' ? 'default' :
+                                    invoice.status === 'ISSUED' || invoice.status === 'PENDING' ? 'secondary' : 'outline'}
+                                className={cn(
+                                    invoice.status === 'PAID' && "bg-green-500 hover:bg-green-600"
+                                )}
+                            >
                                 {invoice.status}
                             </Badge>
                         </TableCell>
                         <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                                <Button variant="ghost" size="icon" asChild>
+                                {(invoice.status === 'ISSUED' || invoice.status === 'PENDING') && (
+                                    <Button variant="outline" size="sm" asChild className="h-8">
+                                        <Link href="/dashboard/payments">
+                                            <CreditCard className="mr-2 h-3 w-3" />
+                                            Pay
+                                        </Link>
+                                    </Button>
+                                )}
+                                <Button variant="ghost" size="icon" asChild className="h-8 w-8">
                                     <Link href={`/dashboard/billing/${invoice.id}`}>
                                         <Eye className="h-4 w-4" />
                                     </Link>
-                                </Button>
-                                <Button variant="ghost" size="icon">
-                                    <Download className="h-4 w-4" />
                                 </Button>
                             </div>
                         </TableCell>
@@ -82,3 +107,5 @@ export function InvoiceList() {
         </Table>
     )
 }
+
+

@@ -14,7 +14,8 @@ export async function GET(
             include: {
                 lineItems: true,
                 auditLogs: true,
-                adjustments: true
+                adjustments: true,
+                paymentTransactions: true
             }
         });
 

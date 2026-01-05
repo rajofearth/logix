@@ -14,8 +14,29 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
+import { useSearchParams } from 'next/navigation';
+
 export default function PaymentsPage() {
-    const [activeTab, setActiveTab] = React.useState("portal");
+    const searchParams = useSearchParams();
+    const [activeTab, setActiveTab] = React.useState(searchParams.get('tab') || "portal");
+    const [walletAddress, setWalletAddress] = React.useState<string>("");
+    const [encryptedPrivateKey, setEncryptedPrivateKey] = React.useState<string>("");
+
+    React.useEffect(() => {
+        const loadWallet = async () => {
+            try {
+                const res = await fetch('/api/auth/wallet');
+                const data = await res.json();
+                if (data.address && data.encryptedKey) {
+                    setWalletAddress(data.address);
+                    setEncryptedPrivateKey(data.encryptedKey);
+                }
+            } catch (error) {
+                console.error("Failed to load wallet on page init:", error);
+            }
+        };
+        loadWallet();
+    }, []);
 
     return (
         <SidebarProvider
@@ -43,14 +64,14 @@ export default function PaymentsPage() {
                             </div>
 
                             {/* Tabs */}
-                            <Tabs 
-                                value={activeTab} 
-                                onValueChange={setActiveTab} 
+                            <Tabs
+                                value={activeTab}
+                                onValueChange={setActiveTab}
                                 className="space-y-6"
                             >
                                 <TabsList className="bg-muted/50 p-1 h-auto flex-wrap gap-1">
-                                    <TabsTrigger 
-                                        value="portal" 
+                                    <TabsTrigger
+                                        value="portal"
                                         className={cn(
                                             "flex items-center gap-2 transition-all duration-200",
                                             "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
@@ -61,8 +82,8 @@ export default function PaymentsPage() {
                                         <span className="hidden sm:inline">Wallet & Security</span>
                                         <span className="sm:hidden">Wallet</span>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="salary" 
+                                    <TabsTrigger
+                                        value="salary"
                                         className={cn(
                                             "flex items-center gap-2 transition-all duration-200",
                                             "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
@@ -73,8 +94,8 @@ export default function PaymentsPage() {
                                         <span className="hidden sm:inline">Salary Management</span>
                                         <span className="sm:hidden">Salary</span>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="bills" 
+                                    <TabsTrigger
+                                        value="bills"
                                         className={cn(
                                             "flex items-center gap-2 transition-all duration-200",
                                             "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
@@ -85,8 +106,8 @@ export default function PaymentsPage() {
                                         <span className="hidden sm:inline">Bill Settlement</span>
                                         <span className="sm:hidden">Bills</span>
                                     </TabsTrigger>
-                                    <TabsTrigger 
-                                        value="explorer" 
+                                    <TabsTrigger
+                                        value="explorer"
                                         className={cn(
                                             "flex items-center gap-2 transition-all duration-200",
                                             "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
@@ -99,34 +120,45 @@ export default function PaymentsPage() {
                                     </TabsTrigger>
                                 </TabsList>
 
-                                <TabsContent 
-                                    value="portal" 
+                                <TabsContent
+                                    value="portal"
                                     className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
                                 >
-                                    <PaymentPortal />
+                                    <PaymentPortal
+                                        address={walletAddress}
+                                        onConnect={(addr, encKey) => {
+                                            setWalletAddress(addr);
+                                            setEncryptedPrivateKey(encKey);
+                                        }}
+                                        onDisconnect={() => {
+                                            setWalletAddress("");
+                                            setEncryptedPrivateKey("");
+                                        }}
+                                    />
                                 </TabsContent>
 
-                                <TabsContent 
-                                    value="salary" 
+                                <TabsContent
+                                    value="salary"
                                     className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
                                 >
-                                    <SalaryManagement />
+                                    <SalaryManagement walletAddress={walletAddress} />
                                 </TabsContent>
 
-                                <TabsContent 
-                                    value="bills" 
+                                <TabsContent
+                                    value="bills"
                                     className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
                                 >
-                                    <BillSettlement />
+                                    <BillSettlement encryptedPrivateKey={encryptedPrivateKey} />
                                 </TabsContent>
 
-                                <TabsContent 
-                                    value="explorer" 
+                                <TabsContent
+                                    value="explorer"
                                     className="space-y-4 animate-in fade-in-0 slide-in-from-right-2 duration-300"
                                 >
-                                    <BlockExplorer />
+                                    <BlockExplorer walletAddress={walletAddress} />
                                 </TabsContent>
                             </Tabs>
+                            {/* ... existing feature cards ... */}
 
                             {/* Feature Cards */}
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
