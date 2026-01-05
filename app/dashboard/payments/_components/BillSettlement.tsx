@@ -5,10 +5,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Receipt, CreditCard, Clock, FileText, Loader2 } from 'lucide-react';
+import { Receipt, CreditCard, Clock, FileText, Loader2, Fuel, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useSearchParams } from 'next/navigation';
+
 
 interface BillSettlementProps {
     encryptedPrivateKey: string;
@@ -23,13 +24,29 @@ interface SettlementInvoice {
     paidAmount: string | number;
 }
 
+interface FuelPaymentRequest {
+    id: string;
+    driverId: string;
+    driverName: string;
+    amount: number;
+    payeeAddress: string;
+    payeeName: string | null;
+    transactionNote: string | null;
+    status: string;
+    createdAt: string;
+}
+
 export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
     const [invoices, setInvoices] = useState<SettlementInvoice[]>([]);
+    const [fuelRequests, setFuelRequests] = useState<FuelPaymentRequest[]>([]);
     const [loading, setLoading] = useState(true);
+    const [fuelLoading, setFuelLoading] = useState(true);
     const [settling, setSettling] = useState<string | null>(null);
+    const [processingFuel, setProcessingFuel] = useState<string | null>(null);
     const searchParams = useSearchParams();
     const targetInvoiceId = searchParams.get('invoiceId');
     const tableRowRefs = React.useRef<{ [key: string]: HTMLTableRowElement | null }>({});
+
 
     const fetchInvoices = React.useCallback(async () => {
         try {
@@ -53,11 +70,30 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
         }
     }, []);
 
+    const fetchFuelRequests = React.useCallback(async () => {
+        try {
+            const res = await fetch('/api/payments/fuel-request?status=pending');
+            const data = await res.json();
+
+            if (Array.isArray(data)) {
+                setFuelRequests(data);
+            }
+        } catch (error) {
+            console.error("Failed to fetch fuel requests:", error);
+        } finally {
+            setFuelLoading(false);
+        }
+    }, []);
+
     useEffect(() => {
         fetchInvoices();
-        const interval = setInterval(fetchInvoices, 5000);
+        fetchFuelRequests();
+        const interval = setInterval(() => {
+            fetchInvoices();
+            fetchFuelRequests();
+        }, 5000);
         return () => clearInterval(interval);
-    }, [fetchInvoices]);
+    }, [fetchInvoices, fetchFuelRequests]);
 
     useEffect(() => {
         if (!loading && targetInvoiceId && tableRowRefs.current[targetInvoiceId]) {
@@ -97,6 +133,33 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
             toast.error(`Payment failed: ${error instanceof Error ? error.message : String(error)}`);
         } finally {
             setSettling(null);
+        }
+    };
+
+    const handleProcessFuelRequest = async (requestId: string, action: 'approve' | 'reject') => {
+        setProcessingFuel(requestId);
+        try {
+            const res = await fetch('/api/payments/fuel-request', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ requestId, action })
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                toast.success(result.message);
+                fetchFuelRequests();
+                if (action === 'approve') {
+                    fetchInvoices(); // Refresh invoices as a new one might be created
+                }
+            } else {
+                toast.error(result.error || `Failed to ${action} request`);
+            }
+        } catch (error) {
+            toast.error("Network error processing request");
+        } finally {
+            setProcessingFuel(null);
         }
     };
 
@@ -147,6 +210,94 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
                     </CardContent>
                 </Card>
             </div>
+
+            {/* Fuel Requests Table */}
+            <Card className="hover:shadow-lg transition-shadow duration-300 border-orange-500/20">
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <CardTitle className="flex items-center gap-2">
+                                <Fuel className="h-5 w-5 text-orange-500" />
+                                Fuel & Payment Requests
+                            </CardTitle>
+                            <CardDescription>Review pending payment requests from drivers</CardDescription>
+                        </div>
+                        <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
+                            {fuelRequests.length} Pending
+                        </Badge>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    {fuelLoading && fuelRequests.length === 0 ? (
+                        <div className="flex items-center justify-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-orange-500" />
+                        </div>
+                    ) : fuelRequests.length === 0 ? (
+                        <div className="text-center py-8 text-muted-foreground">
+                            No pending fuel requests.
+                        </div>
+                    ) : (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Driver</TableHead>
+                                    <TableHead>Payee/Merchant</TableHead>
+                                    <TableHead>Amount</TableHead>
+                                    <TableHead>Time</TableHead>
+                                    <TableHead className="text-right">Actions</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {fuelRequests.map((request) => (
+                                    <TableRow key={request.id}>
+                                        <TableCell className="font-medium">{request.driverName}</TableCell>
+                                        <TableCell>
+                                            <div className="flex flex-col">
+                                                <span>{request.payeeName || 'Unknown Merchant'}</span>
+                                                <span className="text-xs text-muted-foreground">{request.payeeAddress}</span>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-bold">₹{request.amount.toLocaleString()}</TableCell>
+                                        <TableCell className="text-muted-foreground text-sm">
+                                            {new Date(request.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 w-8 p-0 text-green-600 hover:text-green-700 hover:bg-green-50 border-green-200"
+                                                    onClick={() => handleProcessFuelRequest(request.id, 'approve')}
+                                                    disabled={!!processingFuel}
+                                                >
+                                                    {processingFuel === request.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <CheckCircle2 className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                                                    onClick={() => handleProcessFuelRequest(request.id, 'reject')}
+                                                    disabled={!!processingFuel}
+                                                >
+                                                    {processingFuel === request.id ? (
+                                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                                    ) : (
+                                                        <XCircle className="h-4 w-4" />
+                                                    )}
+                                                </Button>
+                                            </div>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                </CardContent>
+            </Card>
 
             {/* Bills Table */}
             <Card className="hover:shadow-lg transition-shadow duration-300">

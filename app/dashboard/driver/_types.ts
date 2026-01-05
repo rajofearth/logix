@@ -1,4 +1,4 @@
-import type { DriverStatus as PrismaDriverStatus } from "@/generated/prisma/client"
+import type { DriverStatus as PrismaDriverStatus } from "@prisma/client"
 
 // Map Prisma enum to frontend display values
 export type DriverStatus = "available" | "on-route" | "off-duty"

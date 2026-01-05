@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma"
-import type { NotificationType, Prisma } from "@/generated/prisma/client"
+import type { NotificationType, Prisma } from "@prisma/client"
 
 export type CreateNotificationEventInput = {
   type: NotificationType
@@ -115,11 +115,10 @@ export const notify = {
       title: "Package verification submitted",
       message:
         args.phase === "pickup"
-          ? `Pickup scan submitted (${args.passed ? "passed" : "failed"}${
-              typeof args.damagePercentage === "number"
-                ? `, ${args.damagePercentage.toFixed(1)}% damage`
-                : ""
-            }).`
+          ? `Pickup scan submitted (${args.passed ? "passed" : "failed"}${typeof args.damagePercentage === "number"
+            ? `, ${args.damagePercentage.toFixed(1)}% damage`
+            : ""
+          }).`
           : "Delivery scan submitted.",
       actionUrl: "/dashboard/package-scans",
       metadata: {

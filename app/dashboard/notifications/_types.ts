@@ -1,5 +1,5 @@
 // Notification Types and Mock Data
-import type { NotificationType as PrismaNotificationType } from "@/generated/prisma/client"
+import type { NotificationType as PrismaNotificationType } from "@prisma/client"
 
 export type NotificationType = PrismaNotificationType
 

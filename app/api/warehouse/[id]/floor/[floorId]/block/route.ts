@@ -1,6 +1,6 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
-import { ProductCategory } from "@/generated/prisma/client";
+import { ProductCategory } from "@prisma/client";
 
 export const runtime = "nodejs";
 
