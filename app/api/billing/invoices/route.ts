@@ -3,7 +3,7 @@ import { prisma } from "../../../../lib/prisma";
 import { InvoiceSchema } from "../../../../lib/billing/validation-schemas";
 import { generateSequentialNumber, calculateLineItemTaxes, amountToWords } from "../../../../lib/billing/invoice-generator";
 import { isInterState } from "../../../../lib/billing/gst-config";
-import { InvoiceType, InvoiceStatus } from "../../../../generated/prisma/enums";
+import { InvoiceType, InvoiceStatus } from "@prisma/client";
 
 // Forced Cache Refresh - ID: 999
 

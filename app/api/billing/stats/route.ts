@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
-import { InvoiceStatus } from '../../../../generated/prisma/enums';
+import { InvoiceStatus } from "@prisma/client";
 
 export async function GET(_req: NextRequest) {
     try {

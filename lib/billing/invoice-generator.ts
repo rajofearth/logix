@@ -1,6 +1,6 @@
 import { prisma } from "../prisma";
 import { GST_CONFIG, getFinancialYear } from "./gst-config";
-import { InvoiceType } from "../../generated/prisma/enums";
+import { InvoiceType } from "@prisma/client";
 
 interface LineItemInput {
     quantity: number;

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "../../../../lib/prisma";
 import { generateSequentialNumber, calculateLineItemTaxes, amountToWords } from "../../../../lib/billing/invoice-generator";
 import { isInterState } from "../../../../lib/billing/gst-config";
-import { InvoiceType } from "../../../../generated/prisma/enums";
+import { InvoiceType } from "@prisma/client";
 
 interface LineItemInput {
     description: string;
