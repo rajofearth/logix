@@ -13,6 +13,7 @@ import {
   IconLifebuoy,
   IconMapRoute,
   IconMessageCircle,
+  IconPlane,
   IconScan,
   IconSearch,
   IconSettings2,
@@ -59,6 +60,11 @@ const data = {
       title: "Tracking",
       url: "/dashboard/track",
       icon: IconMapRoute,
+    },
+    {
+      title: "Air Shipments",
+      url: "/dashboard/air-shipments",
+      icon: IconPlane,
     },
     {
       title: "Package Scans",
@@ -130,14 +136,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   React.useEffect(() => {
     let cancelled = false
-    ;(async () => {
-      try {
-        const count = await getUnreadCount()
-        if (!cancelled) setUnreadNotifications(count)
-      } catch (e) {
-        console.error("[Sidebar] unread notifications error:", e)
-      }
-    })()
+      ; (async () => {
+        try {
+          const count = await getUnreadCount()
+          if (!cancelled) setUnreadNotifications(count)
+        } catch (e) {
+          console.error("[Sidebar] unread notifications error:", e)
+        }
+      })()
     return () => {
       cancelled = true
     }

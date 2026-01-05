@@ -296,6 +296,9 @@ model Job {
   // Chat (one thread per job)
   chatThread        ChatThread?
 
+  // Air shipments can optionally reference jobs for ground segments
+  shipmentSegments  ShipmentSegment[] @relation("JobShipmentSegments")
+
   @@index([pickupAt])
   @@index([status])
   @@map("jobs")
@@ -643,4 +646,138 @@ model Product {
   @@index([blockId])
   @@index([sku])
   @@map("products")
+}
+
+// ============================================
+// Air Shipments (Hybrid Ground + Air Tracking)
+// ============================================
+
+enum ShipmentStatus {
+  created
+  in_transit
+  delivered
+  cancelled
+  exception
+}
+
+enum ShipmentSegmentType {
+  ground_pickup
+  air
+  ground_drop
+}
+
+enum ShipmentEventType {
+  created
+  carrier_update
+  pickup_started
+  pickup_completed
+  air_departed
+  air_arrived
+  customs_clearance
+  out_for_delivery
+  delivered
+  exception
+}
+
+model Shipment {
+  id            String         @id @default(uuid()) @db.Uuid
+  referenceCode String         @unique @map("reference_code")
+  status        ShipmentStatus @default(created)
+  metadata      Json?
+
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  segments      ShipmentSegment[]
+  events        ShipmentEvent[]
+
+  @@index([status, createdAt])
+  @@map("shipments")
+}
+
+model ShipmentSegment {
+  id               String              @id @default(uuid()) @db.Uuid
+
+  shipmentId       String              @map("shipment_id") @db.Uuid
+  shipment         Shipment            @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  type             ShipmentSegmentType
+  sortOrder        Int                 @default(0) @map("sort_order")
+
+  // Ground segments can reference existing jobs (which already have driver tracking)
+  jobId            String?             @map("job_id") @db.Uuid
+  job              Job?                @relation("JobShipmentSegments", fields: [jobId], references: [id], onDelete: SetNull)
+
+  // Air segment fields (prototype)
+  carrier          String?
+  carrierTrackingId String?            @map("carrier_tracking_id")
+  flightNumber     String?             @map("flight_number")
+  fromAirportIcao  String?             @map("from_airport_icao")
+  toAirportIcao    String?             @map("to_airport_icao")
+  icao24           String?             @map("icao24")
+
+  plannedDepartureAt DateTime?         @map("planned_departure_at")
+  plannedArrivalAt   DateTime?         @map("planned_arrival_at")
+  actualDepartureAt  DateTime?         @map("actual_departure_at")
+  actualArrivalAt    DateTime?         @map("actual_arrival_at")
+
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  events          ShipmentEvent[]
+  airPositions    AirPositionPoint[]
+
+  @@index([shipmentId, sortOrder])
+  @@index([jobId])
+  @@index([carrierTrackingId])
+  @@map("shipment_segments")
+}
+
+model ShipmentEvent {
+  id           String           @id @default(uuid()) @db.Uuid
+
+  shipmentId   String           @map("shipment_id") @db.Uuid
+  shipment     Shipment         @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  segmentId    String?          @map("segment_id") @db.Uuid
+  segment      ShipmentSegment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+
+  type         ShipmentEventType
+  title        String
+  description  String?          @db.Text
+
+  locationName String?          @map("location_name")
+  locationLat  Decimal?         @map("location_lat") @db.Decimal(9, 6)
+  locationLng  Decimal?         @map("location_lng") @db.Decimal(9, 6)
+
+  occurredAt   DateTime         @map("occurred_at")
+  raw          Json?
+
+  createdAt    DateTime         @default(now()) @map("created_at")
+
+  @@index([shipmentId, occurredAt])
+  @@index([segmentId, occurredAt])
+  @@index([type])
+  @@map("shipment_events")
+}
+
+model AirPositionPoint {
+  id                 String          @id @default(uuid()) @db.Uuid
+
+  segmentId           String          @map("segment_id") @db.Uuid
+  segment             ShipmentSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+
+  timestamp           DateTime
+  latitude            Decimal         @db.Decimal(9, 6)
+  longitude           Decimal         @db.Decimal(9, 6)
+  baroAltitudeMeters  Decimal?        @map("baro_altitude_meters") @db.Decimal(10, 2)
+  velocityMps         Decimal?        @map("velocity_mps") @db.Decimal(10, 2)
+  heading             Decimal?        @db.Decimal(6, 2)
+  onGround            Boolean?        @map("on_ground")
+  source              String?         @map("source")
+
+  createdAt           DateTime        @default(now()) @map("created_at")
+
+  @@index([segmentId, timestamp])
+  @@map("air_position_points")
 }
