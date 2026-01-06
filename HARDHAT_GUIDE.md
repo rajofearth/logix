@@ -1,79 +1,175 @@
-# Hardhat Deployment & Wallet Configuration Guide
+# Hardhat Deployment & Blockchain Integration Guide
 
-This guide explains how to deploy the LogixINR and Escrow contracts using Hardhat and how to configure the environment variables for different roles.
+This guide explains how to deploy the LogixINR token and Escrow contracts using Hardhat, configure wallets, and troubleshoot common issues.
+
+## Quick Start
+
+```bash
+# Terminal 1: Start local blockchain
+cd contracts && npm run node
+
+# Terminal 2: Deploy contracts (after node is running)
+cd contracts && npm run deploy:local
+```
 
 ## Prerequisites
 
-- Node.js installed
-- Dependencies installed (`npm install` in root and `contracts` folder)
-- A running Hardhat node (for local development)
+- Node.js v18+ installed
+- Dependencies installed in both root and contracts folders:
+  ```bash
+  pnpm install              # Root project
+  cd contracts && npm install  # Contracts
+  ```
+
+## Contract Addresses (Local Development)
+
+When deploying to a fresh Hardhat node, contracts are deployed to **deterministic addresses**:
+
+| Contract | Address |
+|----------|---------|
+| LogixINR Token | `0x5FbDB2315678afecb367f032d93F642f64180aa3` |
+| Escrow | `0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9` |
+
+> **Note**: These addresses are deterministic for the default deploy script. If you modify the deployment order or add contracts before these, addresses will change.
+
+## Environment Variables
+
+Add these to your root `.env` file:
+
+```env
+# Blockchain Configuration
+NEXT_PUBLIC_RPC_URL="http://127.0.0.1:8545"
+NEXT_PUBLIC_TOKEN_ADDRESS="0x5FbDB2315678afecb367f032d93F642f64180aa3"
+NEXT_PUBLIC_ESCROW_ADDRESS="0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9"
+
+# Encryption salt for wallet keys (must match between client and server)
+NEXT_PUBLIC_LOGIX_SALT="logix-salt"
+```
 
 ## Wallet Configuration
 
-The application uses three main roles for development: **Admin**, **Buyer**, and **Driver**.
-The private keys for these roles are **encrypted** in the `.env` file using a salt.
+### Default Hardhat Accounts
 
-### Default Development Accounts (Localhost)
+The Hardhat node provides 20 pre-funded accounts with 10,000 ETH each. Use these for testing:
 
-For local development with `npx hardhat node`, we use the default pre-funded accounts:
+| Role | Account | Address | Private Key |
+|------|---------|---------|-------------|
+| Admin/Buyer | #0 | `0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266` | `0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80` |
+| Buyer | #1 | `0x70997970C51812dc3A010C7d01b50e0d17dc79C8` | `0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d` |
+| Driver | #2 | `0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC` | `0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a` |
 
-| Role | Account Index | Address | Encrypted Key (in `.env`) |
-|------|---------------|---------|---------------------------|
-| Admin | 0 | `0xf39...2266` | `ADMIN_ENCRYPTED_KEY` |
-| Buyer | 1 | `0x709...79C8` | `BUYER_ENCRYPTED_KEY` |
-| Driver | 2 | `0x3C4...5e32` | `DRIVER_ENCRYPTED_KEY` |
+> ⚠️ **WARNING**: These keys are publicly known. Never use them on mainnet or any live network!
 
-These keys have already been added to your `.env` file.
+### Connecting Wallet in the App
 
-### Generating New Keys
+1. Navigate to **Dashboard > Payments > Wallet & Security**
+2. Enter a Hardhat private key (e.g., Account #0's key above)
+3. Click **Connect Wallet**
+4. Your LINR balance should appear
 
-If you need to generate new encrypted keys (e.g., for a different environment), you can use the `generate_keys.js` script in the root directory:
+## NPM Scripts (in `contracts/` folder)
 
+| Command | Description |
+|---------|-------------|
+| `npm run node` | Start local Hardhat blockchain |
+| `npm run deploy:local` | Deploy contracts to localhost |
+
+## Deployment Details
+
+The deploy script (`contracts/scripts/deploy-local.js`) performs:
+
+1. Deploys **LogixINR** ERC-20 token contract
+2. Deploys **Escrow** contract with token address
+3. Mints **5,000,000 LINR** to Buyer (Account #1)
+4. Mints **100,000 LINR** to Driver (Account #2)
+
+## Troubleshooting
+
+### Error: `BAD_DATA` or `value="0x"` when calling `balanceOf`
+
+**Cause**: The token address in your code doesn't match the deployed contract.
+
+**Solution**: 
+1. Check the Hardhat terminal for the actual deployed address
+2. Update `NEXT_PUBLIC_TOKEN_ADDRESS` in `.env`
+3. Or update the fallback address in the payment route files
+
+### Error: `WARNING: Calling an account which is not a contract`
+
+**Cause**: Same as above - wrong contract address.
+
+**Solution**: Ensure all payment routes use the correct contract addresses. Check these files:
+- `app/dashboard/payments/_components/PaymentPortal.tsx`
+- `app/api/payments/salary/route.ts`
+- `app/api/payments/escrow/route.ts`
+- `app/api/payments/transfer/route.ts`
+- `app/api/payments/driver-advance/route.ts`
+
+### Error: `invalid private key (argument="privateKey", value="[REDACTED]")`
+
+**Cause**: Wallet encryption/decryption key mismatch.
+
+**Solution**:
+1. Disconnect wallet in the UI
+2. Reconnect with a fresh Hardhat private key
+3. Ensure `lib/crypto.ts` salt matches `NEXT_PUBLIC_LOGIX_SALT` in `.env`
+
+### Node appears offline / Connection refused
+
+**Cause**: Hardhat node not running or wrong RPC URL.
+
+**Solution**:
 ```bash
-node generate_keys.js
+cd contracts && npm run node
 ```
+Ensure `NEXT_PUBLIC_RPC_URL` is `http://127.0.0.1:8545`
 
-Then update the values in `.env`.
+### Addresses change after restarting Hardhat node
 
-## Deployment
+**This is expected behavior**. Hardhat resets its blockchain state on restart.
 
-We have created a robust deployment script that deploys contracts, mints initial tokens, and exports deployment data.
+**Solution**:
+1. After restarting the node, redeploy: `cd contracts && npm run deploy:local`
+2. The addresses should remain the same (deterministic deployment)
+3. Reconnect your wallet in the app
 
-### 1. Start Local Blockchain
+## Development Workflow
 
-Open a terminal and run:
+1. **Start blockchain** (keep this terminal open):
+   ```bash
+   cd contracts && npm run node
+   ```
 
-```bash
-cd contracts
-npx hardhat node
-```
+2. **Deploy contracts** (separate terminal):
+   ```bash
+   cd contracts && npm run deploy:local
+   ```
 
-### 2. Deploy Contracts
+3. **Start Next.js dev server**:
+   ```bash
+   pnpm dev
+   ```
 
-In a **separate terminal**, run:
+4. **Connect wallet** in the Payments page using a Hardhat account key
 
-```bash
-cd contracts
-npx hardhat run contracts/scripts/deploy.js --network localhost
-```
+5. **Test features**: Salary payments, bill settlements, transfers, etc.
 
-This script will:
-1. Deploy `LogixINR` and `Escrow` contracts.
-2. Mint **5,000,000 LINR** to the **Buyer**.
-3. Mint **100,000 LINR** to the **Driver**.
-4. Save the deployment details to `contracts/deployments.json`.
+## Files Overview
 
-### 3. Update Environment Variables
+| File | Purpose |
+|------|---------|
+| `contracts/contracts/LogixINR.sol` | ERC-20 token with mint/burn capabilities |
+| `contracts/contracts/Escrow.sol` | Escrow contract for secure payments |
+| `contracts/scripts/deploy-local.js` | Local deployment script |
+| `lib/crypto.ts` | Wallet key encryption/decryption |
+| `app/api/auth/wallet/route.ts` | Wallet connect/disconnect API |
+| `app/api/payments/*/route.ts` | Payment processing APIs |
 
-After deployment, check the output for the new contract addresses (or look at `contracts/deployments.json`).
-Update the following variables in your root `.env` file if they have changed:
+## Production Demo (with ngrok)
 
-```env
-NEXT_PUBLIC_TOKEN_ADDRESS="<new_token_address>"
-NEXT_PUBLIC_ESCROW_ADDRESS="<new_escrow_address>"
-NEXT_PUBLIC_RPC_URL="http://127.0.0.1:8545"
-```
+To expose your local Hardhat node to a Vercel-deployed app:
 
-## detailed Deployment Script (`contracts/scripts/deploy.js`)
+1. See [NGROK_SETUP.md](./NGROK_SETUP.md) for detailed instructions
+2. Or run the startup script: `.\start-blockchain.ps1`
 
-The specific logic for deployment and minting is located in `contracts/contracts/scripts/deploy.js`. You can modify the initial minting amounts or added logic there.
+This allows your production app to connect to your local blockchain for demos.
