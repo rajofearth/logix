@@ -52,3 +52,25 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Failed to update wallet info" }, { status: 500 });
     }
 }
+
+export async function DELETE() {
+    try {
+        const admin = await prisma.adminUser.findFirst();
+
+        if (admin) {
+            await prisma.adminUser.update({
+                where: { id: admin.id },
+                data: {
+                    walletAddress: null,
+                    encryptedWalletKey: null
+                }
+            });
+        }
+
+        return NextResponse.json({ success: true });
+
+    } catch (error) {
+        console.error("Wallet disconnect error:", error);
+        return NextResponse.json({ error: "Failed to disconnect wallet" }, { status: 500 });
+    }
+}

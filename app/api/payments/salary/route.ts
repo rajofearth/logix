@@ -4,8 +4,8 @@ import { decryptKey } from '@/lib/crypto';
 import { prisma } from '@/lib/prisma';
 
 // Hardcoded for demo/local node
-const LOCAL_RPC = "http://127.0.0.1:8545";
-const TOKEN_ADDRESS = "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
+const LOCAL_RPC = process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8545";
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const ERC20_ABI = [
     "function transfer(address to, uint256 amount) public returns (bool)",
@@ -57,6 +57,12 @@ export async function POST(req: NextRequest) {
         }
 
         const adminKey = decryptKey(admin.encryptedWalletKey);
+        console.log("Decrypted key length:", adminKey?.length, "Starts with 0x:", adminKey?.startsWith('0x'));
+
+        if (!adminKey || adminKey.length === 0) {
+            return NextResponse.json({ error: "Failed to decrypt wallet key. Please reconnect your wallet." }, { status: 400 });
+        }
+
         const wallet = new ethers.Wallet(adminKey, provider);
         const tokenContract = new ethers.Contract(TOKEN_ADDRESS, ERC20_ABI, wallet);
 

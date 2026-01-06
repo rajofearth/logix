@@ -55,7 +55,7 @@ export default function PaymentsPage() {
                         <div className="flex flex-col gap-6 p-4 md:p-6 lg:p-8 animate-in fade-in-0 slide-in-from-bottom-4 duration-500">
                             {/* Header */}
                             <div className="space-y-1">
-                                <h2 className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-primary via-orange-500 to-amber-500 bg-clip-text text-transparent">
+                                <h2 className="text-2xl md:text-3xl font-bold tracking-tight bg-linear-to-r from-primary via-orange-500 to-amber-500 bg-clip-text text-transparent">
                                     Payment Platform
                                 </h2>
                                 <p className="text-muted-foreground text-sm md:text-base">
@@ -130,7 +130,12 @@ export default function PaymentsPage() {
                                             setWalletAddress(addr);
                                             setEncryptedPrivateKey(encKey);
                                         }}
-                                        onDisconnect={() => {
+                                        onDisconnect={async () => {
+                                            try {
+                                                await fetch('/api/auth/wallet', { method: 'DELETE' });
+                                            } catch (e) {
+                                                console.error('Failed to disconnect wallet:', e);
+                                            }
                                             setWalletAddress("");
                                             setEncryptedPrivateKey("");
                                         }}
@@ -162,7 +167,7 @@ export default function PaymentsPage() {
 
                             {/* Feature Cards */}
                             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-primary/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default">
+                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-linear-to-br from-primary/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default">
                                     <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary group-hover:scale-110 transition-transform duration-300">
                                         <ShieldCheck className="h-5 w-5" />
                                     </div>
@@ -171,7 +176,7 @@ export default function PaymentsPage() {
                                         Funds are held in high-security smart contracts and released only upon milestone completion or driver pickup.
                                     </p>
                                 </div>
-                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-orange-500/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default">
+                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-linear-to-br from-orange-500/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default">
                                     <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center mb-4 text-orange-500 group-hover:scale-110 transition-transform duration-300">
                                         <Zap className="h-5 w-5" />
                                     </div>
@@ -180,7 +185,7 @@ export default function PaymentsPage() {
                                         Blockchain tech ensures sub-second processing for driver advances and supplier micro-bill batches.
                                     </p>
                                 </div>
-                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-gradient-to-br from-amber-500/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default md:col-span-2 lg:col-span-1">
+                                <div className="group p-6 rounded-2xl border bg-card text-card-foreground shadow-sm bg-linear-to-br from-amber-500/5 to-transparent hover:shadow-md hover:scale-[1.02] transition-all duration-300 cursor-default md:col-span-2 lg:col-span-1">
                                     <div className="h-10 w-10 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 text-amber-500 group-hover:scale-110 transition-transform duration-300">
                                         <History className="h-5 w-5" />
                                     </div>

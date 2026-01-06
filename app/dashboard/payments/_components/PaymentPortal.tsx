@@ -9,11 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Wallet, Shield, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
-import CryptoJS from 'crypto-js';
+import { encryptKey } from '@/lib/crypto';
 
-const LOCAL_RPC = "http://127.0.0.1:8545";
-const TOKEN_ADDRESS = "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
-const ENCRYPTION_KEY = "demo-security-key"; // In prod, this would be more secure
+const LOCAL_RPC = process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8545";
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const ESCROW_ADDRESS = process.env.NEXT_PUBLIC_ESCROW_ADDRESS || "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+
 
 const ERC20_ABI = [
     "function balanceOf(address account) public view returns (uint256)",
@@ -23,7 +24,7 @@ const ERC20_ABI = [
 interface PaymentPortalProps {
     address: string;
     onConnect: (address: string, encryptedKey: string) => void;
-    onDisconnect: () => void;
+    onDisconnect: () => void | Promise<void>;
 }
 
 export function PaymentPortal({ address, onConnect, onDisconnect }: PaymentPortalProps) {
@@ -121,7 +122,7 @@ export function PaymentPortal({ address, onConnect, onDisconnect }: PaymentPorta
 
             await provider.getNetwork(); // Verify node is up
 
-            const encryptedKey = CryptoJS.AES.encrypt(privateKey, ENCRYPTION_KEY).toString();
+            const encryptedKey = encryptKey(privateKey);
 
             // Persist to DB
             const res = await fetch('/api/auth/wallet', {
@@ -221,7 +222,7 @@ export function PaymentPortal({ address, onConnect, onDisconnect }: PaymentPorta
                                     Connected
                                 </Badge>
                             </div>
-                            <div className="p-4 border rounded-xl bg-gradient-to-br from-primary/5 via-orange-500/5 to-transparent">
+                            <div className="p-4 border rounded-xl bg-linear-to-br from-primary/5 via-orange-500/5 to-transparent">
                                 <p className="text-sm text-muted-foreground mb-1">Logix INR Balance</p>
                                 <h2 className="text-3xl font-bold text-foreground">
                                     {parseFloat(balance).toLocaleString()} <span className="text-primary">LINR</span>
@@ -230,8 +231,8 @@ export function PaymentPortal({ address, onConnect, onDisconnect }: PaymentPorta
                             <Button
                                 variant="outline"
                                 className="w-full transition-all duration-200 hover:bg-destructive/10 hover:text-destructive hover:border-destructive/20 active:scale-[0.98]"
-                                onClick={() => {
-                                    onDisconnect();
+                                onClick={async () => {
+                                    await onDisconnect();
                                     setPrivateKey('');
                                 }}
                             >

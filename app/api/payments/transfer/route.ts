@@ -3,8 +3,8 @@ import { ethers } from 'ethers';
 import { decryptKey } from '@/lib/crypto';
 
 // Hardcoded for demo/local node
-const LOCAL_RPC = "http://127.0.0.1:8545";
-const TOKEN_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const LOCAL_RPC = process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8545";
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 const ERC20_ABI = [
     "function transfer(address to, uint256 amount) public returns (bool)",

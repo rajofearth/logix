@@ -4,8 +4,8 @@ import { decryptKey } from '@/lib/crypto';
 
 // Hardcoded for demo/local node
 // Hardcoded defaults for demo/local node if env not set
-const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c";
-const ESCROW_ADDRESS = process.env.NEXT_PUBLIC_ESCROW_ADDRESS || "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d";
+const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const ESCROW_ADDRESS = process.env.NEXT_PUBLIC_ESCROW_ADDRESS || "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
 const LOCAL_RPC = process.env.NEXT_PUBLIC_RPC_URL || "http://127.0.0.1:8545";
 
 const ERC20_ABI = [
