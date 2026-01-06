@@ -69,10 +69,6 @@ export async function POST(req: Request) {
             where: { jobId, phase },
         });
 
-        if (existingVerification) {
-            return jsonError(`Verification for ${phase} phase already exists`, 400);
-        }
-
         // Convert captured image to File
         let capturedImageFile: File;
         if (capturedImage instanceof File) {
@@ -124,21 +120,52 @@ export async function POST(req: Request) {
         const damageThreshold = 30; // 30% threshold for pickup
         const passed = phase === "pickup" ? damagePercentage <= damageThreshold : true;
 
-        // Create verification record
-        const verification = await prisma.packageVerification.create({
-            data: {
-                jobId,
-                phase,
-                capturedImageUrl: capturedResult.data.ufsUrl,
-                capturedImageKey: capturedResult.data.key,
-                damagePercentage,
-                anomalyDetected,
-                threshold,
-                heatmapImageUrl,
-                heatmapImageKey,
-                passed,
-            },
-        });
+        let verification;
+
+        if (existingVerification) {
+            // Delete old images from storage (fire-and-forget)
+            const keysToDelete = [
+                existingVerification.capturedImageKey,
+                existingVerification.heatmapImageKey,
+            ].filter((key): key is string => Boolean(key));
+
+            if (keysToDelete.length > 0) {
+                utapi.deleteFiles(keysToDelete).catch(() => {
+                    // Ignore delete errors
+                });
+            }
+
+            // Update existing verification
+            verification = await prisma.packageVerification.update({
+                where: { id: existingVerification.id },
+                data: {
+                    capturedImageUrl: capturedResult.data.ufsUrl,
+                    capturedImageKey: capturedResult.data.key,
+                    damagePercentage,
+                    anomalyDetected,
+                    threshold,
+                    heatmapImageUrl,
+                    heatmapImageKey,
+                    passed,
+                },
+            });
+        } else {
+            // Create new verification record
+            verification = await prisma.packageVerification.create({
+                data: {
+                    jobId,
+                    phase,
+                    capturedImageUrl: capturedResult.data.ufsUrl,
+                    capturedImageKey: capturedResult.data.key,
+                    damagePercentage,
+                    anomalyDetected,
+                    threshold,
+                    heatmapImageUrl,
+                    heatmapImageKey,
+                    passed,
+                },
+            });
+        }
 
         // Fire-and-forget admin notification (do not block driver flow)
         try {
