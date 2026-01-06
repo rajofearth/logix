@@ -71,32 +71,6 @@ export async function POST(req: Request) {
             return jsonError("Payee address is required", 400);
         }
 
-        // Check driver has enough balance
-        const salaryPayments = await prisma.salaryPayment.findMany({
-            where: { driverId },
-        });
-        const fuelRequests = await prisma.fuelPaymentRequest.findMany({
-            where: {
-                driverId,
-                status: { in: ['pending', 'approved'] }
-            },
-        });
-
-        const totalEarned = salaryPayments.reduce(
-            (sum, p) => sum + Number(p.amount), 0
-        );
-        const totalSpent = fuelRequests.reduce(
-            (sum, r) => sum + Number(r.amount), 0
-        );
-        const availableBalance = totalEarned - totalSpent;
-
-        if (body.amount > availableBalance) {
-            return jsonError(
-                `Insufficient balance. Available: ₹${availableBalance.toFixed(2)}`,
-                400
-            );
-        }
-
         // Create the payment request
         const request = await prisma.fuelPaymentRequest.create({
             data: {
