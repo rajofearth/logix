@@ -1,6 +1,7 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { requireDriverSession } from "@/app/api/_utils/driver-session";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export const runtime = "nodejs";
 
@@ -56,15 +57,16 @@ export async function GET(req: Request) {
 
         // Get this month's salary payments
         const monthlyPayments = salaryPayments.filter(
-            p => new Date(p.paidAt) >= startOfMonth
+            (p: { paidAt: Date }) => new Date(p.paidAt) >= startOfMonth
         );
         const monthlyEarnings = monthlyPayments.reduce(
-            (sum, p) => sum + Number(p.amount),
+            (sum: number, p: { amount: Prisma.Decimal }) => sum + Number(p.amount),
             0
         );
 
         // Get fuel payment requests
-        const fuelRequests = await prisma.fuelPaymentRequest.findMany({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const fuelRequests = await (prisma as any).fuelPaymentRequest.findMany({
             where: { driverId },
             orderBy: { createdAt: 'desc' },
             take: 10,
@@ -72,15 +74,15 @@ export async function GET(req: Request) {
 
         // Calculate available balance: total salary received - approved fuel requests
         const totalSalaryReceived = salaryPayments.reduce(
-            (sum, p) => sum + Number(p.amount),
+            (sum: number, p: { amount: Prisma.Decimal }) => sum + Number(p.amount),
             0
         );
         const totalApprovedFuel = fuelRequests
-            .filter(r => r.status === 'approved')
-            .reduce((sum, r) => sum + Number(r.amount), 0);
+            .filter((r: { status: string }) => r.status === 'approved')
+            .reduce((sum: number, r: { amount: Prisma.Decimal }) => sum + Number(r.amount), 0);
         const pendingFuel = fuelRequests
-            .filter(r => r.status === 'pending')
-            .reduce((sum, r) => sum + Number(r.amount), 0);
+            .filter((r: { status: string }) => r.status === 'pending')
+            .reduce((sum: number, r: { amount: Prisma.Decimal }) => sum + Number(r.amount), 0);
 
         const availableBalance = totalSalaryReceived - totalApprovedFuel - pendingFuel;
 

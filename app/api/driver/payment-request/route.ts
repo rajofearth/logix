@@ -29,13 +29,15 @@ export async function GET(req: Request) {
     try {
         const { driverId } = await requireDriverSession(req.headers);
 
-        const requests = await prisma.fuelPaymentRequest.findMany({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const requests = await (prisma as any).fuelPaymentRequest.findMany({
             where: { driverId },
             orderBy: { createdAt: 'desc' },
             take: 50,
         });
 
-        const dto: PaymentRequestDto[] = requests.map(r => ({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const dto: PaymentRequestDto[] = requests.map((r: any) => ({
             id: r.id,
             amount: Number(r.amount),
             payeeAddress: r.payeeAddress,
@@ -72,7 +74,8 @@ export async function POST(req: Request) {
         }
 
         // Create the payment request
-        const request = await prisma.fuelPaymentRequest.create({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const request = await (prisma as any).fuelPaymentRequest.create({
             data: {
                 driverId,
                 amount: body.amount,
