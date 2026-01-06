@@ -180,7 +180,7 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card className="border-red-500/20 bg-gradient-to-br from-red-500/5 to-transparent hover:shadow-md hover:scale-[1.01] transition-all duration-300">
+                <Card className="border-red-500/20 bg-linear-to-br from-red-500/5 to-transparent hover:shadow-md hover:scale-[1.01] transition-all duration-300">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
                             <div className="p-1.5 rounded-lg bg-red-500/10">
@@ -196,7 +196,7 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
                     </CardContent>
                 </Card>
 
-                <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent hover:shadow-md hover:scale-[1.01] transition-all duration-300">
+                <Card className="border-primary/20 bg-linear-to-br from-primary/5 to-transparent hover:shadow-md hover:scale-[1.01] transition-all duration-300">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
                             <div className="p-1.5 rounded-lg bg-primary/10">
@@ -218,9 +218,9 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
                         <div>
                             <CardTitle className="flex items-center gap-2">
                                 <Fuel className="h-5 w-5 text-orange-500" />
-                                Fuel & Payment Requests
+                                Driver Expense Requests
                             </CardTitle>
-                            <CardDescription>Review pending payment requests from drivers</CardDescription>
+                            <CardDescription>Review and approve pending expense requests from drivers (fuel, advances, etc.)</CardDescription>
                         </div>
                         <Badge variant="outline" className="bg-orange-500/10 text-orange-500 border-orange-500/20">
                             {fuelRequests.length} Pending
@@ -234,7 +234,7 @@ export function BillSettlement({ encryptedPrivateKey }: BillSettlementProps) {
                         </div>
                     ) : fuelRequests.length === 0 ? (
                         <div className="text-center py-8 text-muted-foreground">
-                            No pending fuel requests.
+                            No pending expense requests.
                         </div>
                     ) : (
                         <Table>
