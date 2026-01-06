@@ -18,6 +18,7 @@ import {
   IconSearch,
   IconSettings2,
   IconSteeringWheel,
+  IconTrain,
   IconTruckDelivery,
   IconUsersGroup,
 } from "@tabler/icons-react"
@@ -65,6 +66,11 @@ const data = {
       title: "Air Shipments",
       url: "/dashboard/air-shipments",
       icon: IconPlane,
+    },
+    {
+      title: "Train Shipments",
+      url: "/dashboard/train-shipments",
+      icon: IconTrain,
     },
     {
       title: "Package Scans",

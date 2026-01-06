@@ -811,3 +811,104 @@ enum FuelPaymentStatus {
   approved
   rejected
 }
+
+// ============================================
+// Train Shipments (Indian Railways)
+// ============================================
+
+enum TrainShipmentStatus {
+  created
+  waiting_for_train
+  in_transit
+  at_station
+  delivered
+  cancelled
+}
+
+model TrainShipment {
+  id              String               @id @default(uuid()) @db.Uuid
+  referenceCode   String               @unique @map("reference_code")
+  status          TrainShipmentStatus  @default(created)
+
+  // Package details
+  packageName     String               @map("package_name")
+  weightKg        Decimal              @map("weight_kg") @db.Decimal(10, 2)
+  packageCount    Int                  @default(1) @map("package_count")
+  description     String?
+
+  // Train details
+  trainNumber     String               @map("train_number")
+  trainName       String               @map("train_name")
+  coachType       String?              @map("coach_type")
+  pnr             String?
+
+  // Route
+  fromStationCode String               @map("from_station_code")
+  fromStationName String               @map("from_station_name")
+  toStationCode   String               @map("to_station_code")
+  toStationName   String               @map("to_station_name")
+
+  // Timing
+  journeyDate     DateTime             @map("journey_date") @db.Date
+  scheduledDep    DateTime             @map("scheduled_dep")
+  scheduledArr    DateTime             @map("scheduled_arr")
+  actualDep       DateTime?            @map("actual_dep")
+  actualArr       DateTime?            @map("actual_arr")
+
+  // Tracking
+  currentStation  String?              @map("current_station")
+  currentLat      Decimal?             @map("current_lat") @db.Decimal(9, 6)
+  currentLng      Decimal?             @map("current_lng") @db.Decimal(9, 6)
+  delayMinutes    Int?                 @map("delay_minutes")
+  lastTrackedAt   DateTime?            @map("last_tracked_at")
+
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  events          TrainShipmentEvent[]
+  positions       TrainPositionPoint[]
+
+  @@index([status, journeyDate])
+  @@index([trainNumber])
+  @@map("train_shipments")
+}
+
+model TrainShipmentEvent {
+  id           String              @id @default(uuid()) @db.Uuid
+  shipmentId   String              @map("shipment_id") @db.Uuid
+  shipment     TrainShipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  type         String
+  title        String
+  description  String?
+  stationCode  String?             @map("station_code")
+  stationName  String?             @map("station_name")
+  occurredAt   DateTime            @map("occurred_at")
+
+  createdAt    DateTime            @default(now()) @map("created_at")
+
+  @@index([shipmentId, occurredAt])
+  @@map("train_shipment_events")
+}
+
+model TrainPositionPoint {
+  id            String        @id @default(uuid()) @db.Uuid
+  shipmentId    String        @map("shipment_id") @db.Uuid
+  shipment      TrainShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+
+  stationCode   String        @map("station_code")
+  stationName   String        @map("station_name")
+  latitude      Decimal       @db.Decimal(9, 6)
+  longitude     Decimal       @db.Decimal(9, 6)
+  arrivalTime   DateTime?     @map("arrival_time")
+  departureTime DateTime?     @map("departure_time")
+  delay         String?
+  platform      String?
+  distanceKm    Int?          @map("distance_km")
+
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@unique([shipmentId, stationCode])
+  @@index([shipmentId, createdAt])
+  @@map("train_position_points")
+}

@@ -113,6 +113,9 @@ importers:
       input-otp:
         specifier: ^1.4.2
         version: 1.4.2(react-dom@19.2.1(react@19.2.1))(react@19.2.1)
+      irctc-connect:
+        specifier: ^2.1.3
+        version: 2.1.3
       lucide-react:
         specifier: ^0.561.0
         version: 0.561.0(react@19.2.1)
@@ -2530,6 +2533,9 @@ packages:
   ipaddr.js@1.9.1:
     resolution: {integrity: sha512-0KI/607xoxSToH7GjN1FfSbLoU0+btTicjsQSWQlh/hZykN8KpmMf7uYwPW3R+akZ6R/w18ZlXSHBYXiYUPO3g==}
     engines: {node: '>= 0.10'}
+
+  irctc-connect@2.1.3:
+    resolution: {integrity: sha512-s95Mce7JhnxMaKDR51W5BYcaFUZQflqcCXdDmy1SG3cGjPK3IW1T0K/FLwhianjOAOhoIFO3Fc3nJcIaGe+Faw==}
 
   is-arrayish@0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
@@ -6043,6 +6049,8 @@ snapshots:
   internmap@2.0.3: {}
 
   ipaddr.js@1.9.1: {}
+
+  irctc-connect@2.1.3: {}
 
   is-arrayish@0.2.1: {}
 
