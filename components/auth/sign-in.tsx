@@ -1,9 +1,5 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
@@ -24,54 +20,56 @@ export default function SignIn({ from }: Readonly<{ from?: string }>) {
   const [loading, setLoading] = useState(false);
 
   return (
-    <Card className="max-w-md">
-      <CardHeader>
-        <CardTitle className="text-lg md:text-xl">Sign In</CardTitle>
-        <CardDescription className="text-xs md:text-sm">
+    <div className="window active" style={{ maxWidth: "400px", margin: "auto" }}>
+      <div className="title-bar">
+        <div className="title-bar-text">Sign In</div>
+        <div className="title-bar-controls">
+          <button aria-label="Minimize"></button>
+          <button aria-label="Close"></button>
+        </div>
+      </div>
+      <div className="window-body has-space">
+        <p style={{ marginBottom: "16px", color: "#000" }}>
           Enter your email below to login to your account
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="grid gap-4">
-          <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                onChange={(e) => {
-                  setEmail(e.target.value);
-                }}
-                value={email}
-              />
-            </div>
+        </p>
 
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                
-              </div>
+        <div className="group" style={{ marginBottom: "12px" }}>
+          <label htmlFor="email" style={{ color: "#000" }}>Email:</label>
+          <input
+            id="email"
+            type="text"
+            placeholder="m@example.com"
+            required
+            onChange={(e) => {
+              setEmail(e.target.value);
+            }}
+            value={email}
+            style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+          />
+        </div>
 
-              <Input
-                id="password"
-                type="password"
-                placeholder="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+        <div className="group" style={{ marginBottom: "12px" }}>
+          <label htmlFor="password" style={{ color: "#000" }}>Password:</label>
+          <input
+            id="password"
+            type="password"
+            placeholder="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+          />
+        </div>
 
-          <Button
-              type="submit"
-              className="w-full"
-              disabled={loading}
-              onClick={async () => {
-                await signIn.email(
+        <section style={{ display: "flex", justifyContent: "flex-end", gap: "6px", marginTop: "16px" }}>
+          <button
+            className="default"
+            disabled={loading}
+            onClick={async () => {
+              await signIn.email(
                 {
-                    email,
-                    password
+                  email,
+                  password
                 },
                 {
                   onRequest: () => {
@@ -84,30 +82,29 @@ export default function SignIn({ from }: Readonly<{ from?: string }>) {
                     router.replace(sanitizeFrom(from) ?? "/dashboard");
                   },
                 },
-                );
-              }}
-            >
-              {loading ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <p> Login </p>
-              )}
-              </Button>
+              );
+            }}
+          >
+            {loading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" style={{ marginRight: "4px", display: "inline-block" }} />
+                Loading...
+              </>
+            ) : (
+              "Login"
+            )}
+          </button>
+        </section>
 
-          
-
-          
+        <div style={{ textAlign: "center", marginTop: "16px", fontSize: "12px", color: "#000" }}>
+          <p>
+            Don&apos;t have an account?{" "}
+            <Link href="/auth/sign-up">
+              Sign up
+            </Link>
+          </p>
         </div>
-      </CardContent>
-      <CardFooter className="flex justify-center text-sm text-muted-foreground">
-        <p>
-          Don&apos;t have an account?{" "}
-          <Link href="/auth/sign-up" className="text-foreground underline underline-offset-4">
-            Sign up
-          </Link>
-        </p>
-      </CardFooter>
-      
-    </Card>
+      </div>
+    </div>
   );
 }
