@@ -454,15 +454,7 @@
    🎭 KEYFRAME ANIMATIONS
    ═══════════════════════════════════════════════════════════════════════════════ */
 
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-  }
 
-  100% {
-    transform: translateX(100%);
-  }
-}
 
 @keyframes badge-pulse {
 
@@ -612,12 +604,7 @@
     animation: glow-pulse 3s ease-in-out infinite;
   }
 
-  /* Animate Shimmer */
-  .animate-shimmer {
-    background: linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 20%) 50%, transparent 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
+
 
   /* Float In Animation */
   .animate-float-in {
@@ -678,12 +665,11 @@
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 [data-slot="skeleton"] {
-  background: linear-gradient(90deg,
-      var(--muted) 0%,
-      oklch(from var(--muted) l c h / 50%) 50%,
-      var(--muted) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+  /* Removed shimmer animation as per user request */
+  background: var(--muted);
+  border-radius: var(--radius-sm);
+  /* Optional: Revert to standard pulse if desired, or keep static */
+  /* animation: animate-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; */
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════

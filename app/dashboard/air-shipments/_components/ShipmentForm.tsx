@@ -2,7 +2,17 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { IconLoader2, IconPackage, IconPlaneDeparture, IconPlaneArrival, IconArrowRight } from "@tabler/icons-react";
+import {
+    IconLoader2,
+    IconPackage,
+    IconPlaneDeparture,
+    IconPlaneArrival,
+    IconArrowRight,
+    IconScale, // Using IconScale instead of IconWeight for better compatibility
+    IconClipboardText, // Using IconClipboardText for description
+    IconSearch,
+    IconMapPin
+} from "@tabler/icons-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +29,7 @@ import {
 import { REAL_AIRPORTS } from "@/lib/carriers/carriers-data";
 import { createShipment } from "../_server/actions";
 
+
 export function ShipmentForm() {
     const router = useRouter();
     const [isLoading, setIsLoading] = React.useState(false);
@@ -31,22 +42,14 @@ export function ShipmentForm() {
     // Combobox states
     const [fromIcao, setFromIcao] = React.useState<string | null>(null);
     const [toIcao, setToIcao] = React.useState<string | null>(null);
-
-    // We maintain input values to allow filtering if needed, 
-    // but for now we'll rely on the Combobox's finding capabilities 
-    // or just show the list (it's short). 
-    // Ideally, we'd filter REAL_AIRPORTS based on a query state here.
     const [fromQuery, setFromQuery] = React.useState("");
     const [toQuery, setToQuery] = React.useState("");
 
-    // Update query when selection changes to reflect the choice in the input
     const handleFromSelect = (icao: string | null) => {
         setFromIcao(icao);
         if (icao) {
             const airport = REAL_AIRPORTS.find(a => a.icao === icao);
-            if (airport) {
-                setFromQuery(`${airport.city} (${airport.icao})`);
-            }
+            if (airport) setFromQuery(`${airport.city} (${airport.icao})`);
         }
     };
 
@@ -54,27 +57,22 @@ export function ShipmentForm() {
         setToIcao(icao);
         if (icao) {
             const airport = REAL_AIRPORTS.find(a => a.icao === icao);
-            if (airport) {
-                setToQuery(`${airport.city} (${airport.icao})`);
-            }
+            if (airport) setToQuery(`${airport.city} (${airport.icao})`);
         }
     };
 
-    const filteredFromAirports = fromQuery
-        ? REAL_AIRPORTS.filter(a =>
-            a.city.toLowerCase().includes(fromQuery.toLowerCase()) ||
-            a.name.toLowerCase().includes(fromQuery.toLowerCase()) ||
-            a.icao.toLowerCase().includes(fromQuery.toLowerCase())
-        )
-        : REAL_AIRPORTS;
+    const filterAirports = (query: string) => {
+        if (!query) return REAL_AIRPORTS;
+        const lower = query.toLowerCase();
+        return REAL_AIRPORTS.filter(a =>
+            a.city.toLowerCase().includes(lower) ||
+            a.name.toLowerCase().includes(lower) ||
+            a.icao.toLowerCase().includes(lower)
+        );
+    };
 
-    const filteredToAirports = toQuery
-        ? REAL_AIRPORTS.filter(a =>
-            a.city.toLowerCase().includes(toQuery.toLowerCase()) ||
-            a.name.toLowerCase().includes(toQuery.toLowerCase()) ||
-            a.icao.toLowerCase().includes(toQuery.toLowerCase())
-        )
-        : REAL_AIRPORTS;
+    const filteredFrom = filterAirports(fromQuery);
+    const filteredTo = filterAirports(toQuery);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -83,23 +81,9 @@ export function ShipmentForm() {
 
         try {
             const weight = parseFloat(weightKg);
-            if (isNaN(weight) || weight <= 0) {
-                setError("Please enter a valid weight");
-                setIsLoading(false);
-                return;
-            }
-
-            if (!fromIcao || !toIcao) {
-                setError("Please select both pickup and delivery airports");
-                setIsLoading(false);
-                return;
-            }
-
-            if (fromIcao === toIcao) {
-                setError("Pickup and delivery airports cannot be the same");
-                setIsLoading(false);
-                return;
-            }
+            if (isNaN(weight) || weight <= 0) throw new Error("Please enter a valid weight");
+            if (!fromIcao || !toIcao) throw new Error("Please select both pickup and delivery airports");
+            if (fromIcao === toIcao) throw new Error("Pickup and delivery airports cannot be the same");
 
             const result = await createShipment({
                 packageName: packageName.trim(),
@@ -114,201 +98,221 @@ export function ShipmentForm() {
             } else {
                 setError(result.error);
             }
-        } catch {
-            setError("Failed to create shipment. Please try again.");
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : "Failed to create shipment");
         } finally {
             setIsLoading(false);
         }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-8 max-w-4xl mx-auto py-6">
-            <div className="rounded-xl border bg-card shadow-sm overflow-hidden">
-                <div className="bg-muted/30 p-6 border-b">
-                    <div className="flex items-center gap-3">
-                        <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-sm">
-                            <IconPackage className="size-5" />
+        <form onSubmit={handleSubmit} className="space-y-8 max-w-5xl mx-auto pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Main Card */}
+            <div className="group relative rounded-sm border bg-card/50 backdrop-blur-xl shadow-premium overflow-hidden transition-all duration-300 hover:shadow-premium-lg">
+                {/* Header Gradient */}
+                <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
+
+                <div className="px-8 py-6 border-b bg-muted/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                        <div className="size-12 rounded-sm bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shadow-inner border border-primary/10">
+                            <IconPackage className="size-6 text-primary" />
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold tracking-tight">New Air Shipment</h2>
-                            <p className="text-sm text-muted-foreground">
-                                Create a new shipment and assign it to an available flight route.
-                            </p>
+                            <h2 className="text-xl font-bold tracking-tight text-foreground">New Air Shipment</h2>
+                            <p className="text-sm text-muted-foreground">Configure route and cargo details</p>
                         </div>
                     </div>
                 </div>
 
-                <div className="p-8 space-y-8">
-                    {/* Route Selection Section */}
+                <div className="p-8 space-y-10">
+                    {/* 1. Route Section */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Route Details</h3>
+                        <div className="flex items-center gap-2 text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                            <span className="flex items-center justify-center size-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">1</span>
+                            Route Configuration
+                        </div>
 
-                        <div className="relative rounded-xl border bg-card shadow-sm grid md:grid-cols-[1fr,auto,1fr] items-center">
-                            {/* Pickup Input */}
-                            <div className="p-4 space-y-1.5 hover:bg-muted/50 transition-colors rounded-l-xl">
-                                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                                    <IconPlaneDeparture className="size-3.5 text-blue-500" />
-                                    PICKUP AIRPORT
-                                </Label>
-                                <Combobox
-                                    value={fromIcao}
-                                    onValueChange={handleFromSelect}
-                                >
-                                    <ComboboxInput
-                                        placeholder="Select pickup location..."
-                                        value={fromQuery}
-                                        onChange={(e) => setFromQuery(e.target.value)}
-                                        className="h-9 border-none bg-transparent px-0 text-base font-medium shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
-                                    />
-                                    <ComboboxContent align="start" className="w-[300px]">
-                                        <ComboboxList>
-                                            {filteredFromAirports.length === 0 && (
-                                                <ComboboxEmpty>No results found</ComboboxEmpty>
-                                            )}
-                                            {filteredFromAirports.map((airport) => (
-                                                <ComboboxItem key={airport.icao} value={airport.icao}>
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="font-medium">{airport.city} ({airport.icao})</span>
-                                                        <span className="text-xs text-muted-foreground truncate max-w-[260px]">{airport.name}</span>
-                                                    </div>
-                                                </ComboboxItem>
-                                            ))}
-                                        </ComboboxList>
-                                    </ComboboxContent>
-                                </Combobox>
-                            </div>
+                        <div className="relative p-1 rounded-sm bg-muted/30 border ring-1 ring-border/50">
+                            {/* Visual Divider Vertical (Desktop) */}
+                            <div className="absolute inset-y-0 left-1/2 -ml-px w-px bg-gradient-to-b from-transparent via-primary/20 to-transparent hidden md:block" />
 
-                            {/* Divider / Connector */}
-                            <div className="flex items-center justify-center py-2 md:py-0 px-2 text-muted-foreground/30 relative z-10">
-                                <IconArrowRight className="size-5 md:rotate-0 rotate-90" />
-                                <div className="absolute inset-y-2 left-1/2 -ml-px w-px bg-border md:block hidden" />
-                                <div className="absolute inset-x-2 top-1/2 -mt-px h-px bg-border md:hidden block" />
-                            </div>
+                            <div className="grid md:grid-cols-2 gap-4 relative">
+                                {/* Pickup */}
+                                <div className="group/field relative bg-card hover:bg-card/80 transition-colors rounded-sm p-5 border shadow-sm hover:shadow-md focus-within:ring-2 focus-within:ring-primary/20">
+                                    <Label className="mb-2 block text-xs font-semibold text-muted-foreground uppercase tracking-wide">Pickup Location</Label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-sm bg-blue-500/10 flex items-center justify-center text-blue-500 shrink-0">
+                                            <IconPlaneDeparture className="size-5" />
+                                        </div>
+                                        <div className="flex-1 relative">
+                                            <Combobox value={fromIcao} onValueChange={handleFromSelect}>
+                                                <div className="relative">
+                                                    <IconSearch className="absolute left-0 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                                                    <ComboboxInput
+                                                        placeholder="Search pickup airport..."
+                                                        value={fromQuery}
+                                                        onChange={(e) => setFromQuery(e.target.value)}
+                                                        className="w-full bg-transparent border-none p-0 pl-6 h-9 text-base font-medium placeholder:text-muted-foreground/40 focus-visible:ring-0"
+                                                    />
+                                                </div>
+                                                <ComboboxContent align="start" className="w-[320px] p-0 overflow-hidden rounded-sm border-border shadow-2xl animate-in fade-in zoom-in-95 backdrop-blur-3xl bg-popover/95">
+                                                    <ComboboxList className="max-h-[280px] p-1">
+                                                        {filteredFrom.length === 0 && <ComboboxEmpty className="py-4 text-sm text-muted-foreground text-center">No airports found</ComboboxEmpty>}
+                                                        {filteredFrom.map((airport) => (
+                                                            <ComboboxItem key={airport.icao} value={airport.icao} className="rounded-sm p-2 aria-selected:bg-primary/10 aria-selected:text-primary cursor-pointer">
+                                                                <div className="flex items-center gap-3 w-full">
+                                                                    <div className="size-8 rounded-sm bg-muted flex items-center justify-center shrink-0">
+                                                                        <IconMapPin className="size-4 text-muted-foreground" />
+                                                                    </div>
+                                                                    <div className="flex flex-col min-w-0 flex-1">
+                                                                        <span className="font-medium text-sm truncate">{airport.city}</span>
+                                                                        <span className="text-xs text-muted-foreground truncate">{airport.name}</span>
+                                                                    </div>
+                                                                    <span className="font-mono text-xs font-bold bg-muted px-1.5 py-0.5 rounded-sm tracking-wide border">{airport.icao}</span>
+                                                                </div>
+                                                            </ComboboxItem>
+                                                        ))}
+                                                    </ComboboxList>
+                                                </ComboboxContent>
+                                            </Combobox>
+                                        </div>
+                                    </div>
+                                </div>
 
-                            {/* Delivery Input */}
-                            <div className="p-4 space-y-1.5 hover:bg-muted/50 transition-colors rounded-r-xl">
-                                <Label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-                                    <IconPlaneArrival className="size-3.5 text-green-500" />
-                                    DELIVERY AIRPORT
-                                </Label>
-                                <Combobox
-                                    value={toIcao}
-                                    onValueChange={handleToSelect}
-                                >
-                                    <ComboboxInput
-                                        placeholder="Select delivery location..."
-                                        value={toQuery}
-                                        onChange={(e) => setToQuery(e.target.value)}
-                                        className="h-9 border-none bg-transparent px-0 text-base font-medium shadow-none focus-visible:ring-0 placeholder:text-muted-foreground/50"
-                                    />
-                                    <ComboboxContent align="end" className="w-[300px]">
-                                        <ComboboxList>
-                                            {filteredToAirports.length === 0 && (
-                                                <ComboboxEmpty>No results found</ComboboxEmpty>
-                                            )}
-                                            {filteredToAirports.map((airport) => (
-                                                <ComboboxItem
-                                                    key={airport.icao}
-                                                    value={airport.icao}
-                                                    disabled={airport.icao === fromIcao}
-                                                >
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="font-medium">{airport.city} ({airport.icao})</span>
-                                                        <span className="text-xs text-muted-foreground truncate max-w-[260px]">{airport.name}</span>
-                                                    </div>
-                                                </ComboboxItem>
-                                            ))}
-                                        </ComboboxList>
-                                    </ComboboxContent>
-                                </Combobox>
+                                {/* Connector Icon */}
+                                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 hidden md:flex size-8 rounded-sm bg-background border shadow-sm items-center justify-center text-muted-foreground rotate-45">
+                                    <IconArrowRight className="size-4 -rotate-45" />
+                                </div>
+
+                                {/* Delivery */}
+                                <div className="group/field relative bg-card hover:bg-card/80 transition-colors rounded-sm p-5 border shadow-sm hover:shadow-md focus-within:ring-2 focus-within:ring-primary/20">
+                                    <Label className="mb-2 block text-xs font-semibold text-muted-foreground uppercase tracking-wide">Delivery Location</Label>
+                                    <div className="flex items-center gap-3">
+                                        <div className="size-10 rounded-sm bg-green-500/10 flex items-center justify-center text-green-500 shrink-0">
+                                            <IconPlaneArrival className="size-5" />
+                                        </div>
+                                        <div className="flex-1 relative">
+                                            <Combobox value={toIcao} onValueChange={handleToSelect}>
+                                                <div className="relative">
+                                                    <IconSearch className="absolute left-0 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                                                    <ComboboxInput
+                                                        placeholder="Search delivery airport..."
+                                                        value={toQuery}
+                                                        onChange={(e) => setToQuery(e.target.value)}
+                                                        className="w-full bg-transparent border-none p-0 pl-6 h-9 text-base font-medium placeholder:text-muted-foreground/40 focus-visible:ring-0"
+                                                    />
+                                                </div>
+                                                <ComboboxContent align="end" className="w-[320px] p-0 overflow-hidden rounded-sm border-border shadow-2xl animate-in fade-in zoom-in-95 backdrop-blur-3xl bg-popover/95">
+                                                    <ComboboxList className="max-h-[280px] p-1">
+                                                        {filteredTo.length === 0 && <ComboboxEmpty className="py-4 text-sm text-muted-foreground text-center">No airports found</ComboboxEmpty>}
+                                                        {filteredTo.map((airport) => (
+                                                            <ComboboxItem key={airport.icao} value={airport.icao} disabled={airport.icao === fromIcao} className="rounded-sm p-2 aria-selected:bg-primary/10 aria-selected:text-primary cursor-pointer disabled:opacity-50">
+                                                                <div className="flex items-center gap-3 w-full">
+                                                                    <div className="size-8 rounded-sm bg-muted flex items-center justify-center shrink-0">
+                                                                        <IconMapPin className="size-4 text-muted-foreground" />
+                                                                    </div>
+                                                                    <div className="flex flex-col min-w-0 flex-1">
+                                                                        <span className="font-medium text-sm truncate">{airport.city}</span>
+                                                                        <span className="text-xs text-muted-foreground truncate">{airport.name}</span>
+                                                                    </div>
+                                                                    <span className="font-mono text-xs font-bold bg-muted px-1.5 py-0.5 rounded-sm tracking-wide border">{airport.icao}</span>
+                                                                </div>
+                                                            </ComboboxItem>
+                                                        ))}
+                                                    </ComboboxList>
+                                                </ComboboxContent>
+                                            </Combobox>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="h-px bg-border" />
+                    <div className="h-px bg-border/50" />
 
-                    {/* Cargo Details Section */}
+                    {/* 2. Cargo Section */}
                     <div className="space-y-4">
-                        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">Cargo Information</h3>
+                        <div className="flex items-center gap-2 text-sm font-semibold tracking-wider text-muted-foreground uppercase">
+                            <span className="flex items-center justify-center size-5 rounded-full bg-primary/20 text-primary text-[10px] font-bold">2</span>
+                            Cargo Details
+                        </div>
 
-                        <div className="grid gap-6">
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="packageName">
-                                        Package Name <span className="text-destructive">*</span>
-                                    </Label>
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {/* Package Name */}
+                            <div className="space-y-2">
+                                <Label htmlFor="packageName" className="text-xs font-medium uppercase text-muted-foreground">Package Name</Label>
+                                <div className="relative group/input">
+                                    <IconPackage className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground transition-colors group-focus-within/input:text-primary" />
                                     <Input
                                         id="packageName"
-                                        placeholder="e.g., Electronics Shipment"
+                                        placeholder="e.g. Industrial Parts Batch A"
                                         value={packageName}
                                         onChange={(e) => setPackageName(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        className="h-11"
-                                    />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="weightKg">
-                                        Weight (kg) <span className="text-destructive">*</span>
-                                    </Label>
-                                    <Input
-                                        id="weightKg"
-                                        type="number"
-                                        step="0.1"
-                                        min="0.1"
-                                        placeholder="e.g., 25"
-                                        value={weightKg}
-                                        onChange={(e) => setWeightKg(e.target.value)}
-                                        required
-                                        disabled={isLoading}
-                                        className="h-11"
+                                        className="pl-10 h-12 bg-background/50 border-input transition-all focus:border-primary focus:ring-primary/20"
                                     />
                                 </div>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="description">Description (optional)</Label>
-                                <Textarea
-                                    id="description"
-                                    placeholder="Additional details about the package content, handling instructions, etc."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    rows={4}
-                                    disabled={isLoading}
-                                    className="resize-none"
-                                />
+                            {/* Weight */}
+                            <div className="space-y-2">
+                                <Label htmlFor="weight" className="text-xs font-medium uppercase text-muted-foreground">Total Weight (kg)</Label>
+                                <div className="relative group/input">
+                                    <IconScale className="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground transition-colors group-focus-within/input:text-primary" />
+                                    <Input
+                                        id="weight"
+                                        type="number"
+                                        step="0.1"
+                                        placeholder="0.00"
+                                        value={weightKg}
+                                        onChange={(e) => setWeightKg(e.target.value)}
+                                        className="pl-10 h-12 bg-background/50 border-input transition-all focus:border-primary focus:ring-primary/20 font-mono"
+                                    />
+                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-medium text-muted-foreground">KG</div>
+                                </div>
+                            </div>
+
+                            {/* Description - Full Width */}
+                            <div className="md:col-span-2 space-y-2">
+                                <Label htmlFor="desc" className="text-xs font-medium uppercase text-muted-foreground">Description & Instructions <span className="text-muted-foreground/50 lowercase ml-1">(Optional)</span></Label>
+                                <div className="relative group/input">
+                                    <IconClipboardText className="absolute left-3 top-4 size-5 text-muted-foreground transition-colors group-focus-within/input:text-primary" />
+                                    <Textarea
+                                        id="desc"
+                                        placeholder="Add any special handling instructions or content details..."
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                        className="pl-10 min-h-[100px] bg-background/50 border-input transition-all focus:border-primary focus:ring-primary/20 resize-none"
+                                    />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="bg-muted/30 p-6 border-t flex items-center justify-between">
-                    <p className="text-xs text-muted-foreground max-w-md">
-                        * Real-time tracking will be enabled immediately after shipment creation.
-                        Flight route will be determined by the selected airports.
+                {/* Footer Action */}
+                <div className="p-6 bg-muted/20 border-t flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <p className="text-xs text-muted-foreground text-center sm:text-left">
+                        By creating this shipment, you agree to the carrier assignment terms. <br />
+                        <span className="opacity-70">Tracking will be activated immediately.</span>
                     </p>
-
-                    <div className="flex gap-4">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            onClick={() => router.back()}
-                            disabled={isLoading}
-                        >
+                    <div className="flex w-full sm:w-auto gap-3">
+                        <Button type="button" variant="ghost" className="flex-1 sm:flex-none hover:bg-destructive/10 hover:text-destructive" onClick={() => router.back()}>
                             Cancel
                         </Button>
-                        <Button type="submit" disabled={isLoading} className="gap-2 min-w-[140px]">
-                            {isLoading && <IconLoader2 className="size-4 animate-spin" />}
+                        <Button type="submit" disabled={isLoading} className="flex-1 sm:flex-none min-w-[160px] bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/25 transition-all text-primary-foreground font-semibold">
+                            {isLoading ? <IconLoader2 className="animate-spin size-4 mr-2" /> : <IconPackage className="size-4 mr-2" />}
                             Create Shipment
                         </Button>
                     </div>
                 </div>
             </div>
 
+            {/* Error Message */}
             {error && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 flex items-center gap-2 text-destructive animate-in fade-in slide-in-from-top-1">
-                    <span className="text-sm font-medium">Error: {error}</span>
+                <div className="mx-auto max-w-lg mt-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center justify-center gap-2 animate-in fade-in slide-in-from-bottom-2">
+                    <div className="size-2 rounded-full bg-destructive animate-pulse" />
+                    {error}
                 </div>
             )}
         </form>
