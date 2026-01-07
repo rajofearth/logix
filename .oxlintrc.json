@@ -15,7 +15,8 @@
     "out/**",
     "build/**",
     "next-env.d.ts",
-    "components/ui/**"
+    "components/ui/**",
+    "design-docs/**"
   ],
   "rules": {
     "@next/next/google-font-display": "warn",

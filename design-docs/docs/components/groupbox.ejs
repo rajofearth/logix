@@ -1,0 +1,86 @@
+<section class="component">
+  <h3 id="groupbox">GroupBox</h3>
+  <div>
+    <blockquote>
+      A <em>group box</em> is a special control you can use to organize a set of
+      controls. A group box is a rectangular frame with an optional label that surrounds
+      a set of controls.
+
+      <footer>&mdash; Microsoft Windows User Experience p. 189</footer>
+    </blockquote>
+
+    <p>
+      A group box can be used by wrapping your elements with the <code>fieldset</code> tag.
+      It contains a sunken outer border and a raised inner border, resembling an engraved box
+      around your controls.
+    </p>
+
+    <%- example(`
+      <fieldset>
+        <div>Select one:</div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example">
+          <label for="radio${getCurrentId()}">Diners</label>
+        </div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example">
+          <label for="radio${getCurrentId()}">Drive-Ins</label>
+        </div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example">
+          <label for="radio${getCurrentId()}">Dives</label>
+        </div>
+      </fieldset>
+    `) %>
+
+    <p>
+      You can provide your group with a label by placing a <code>legend</code> element
+      within the <code>fieldset</code>.
+    </p>
+
+    <%- example(`
+      <fieldset>
+        <legend>Today's mood</legend>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example2">
+          <label for="radio${getCurrentId()}">Claire Saffitz</label>
+        </div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example2">
+          <label for="radio${getCurrentId()}">Brad Leone</label>
+        </div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example2">
+          <label for="radio${getCurrentId()}">Chris Morocco</label>
+        </div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="fieldset-example2">
+          <label for="radio${getCurrentId()}">Carla Lalli Music</label>
+        </div>
+      </fieldset>
+    `) %>
+
+    <p>
+      There is a handy <code>group</code> utility class provided out of the box which can be used
+      to group elements without the need for a <code>fieldset</code>, and ensure a consistent
+      spacing between them.
+    </p>
+
+    <%- example(`
+      <div class="group">
+        <div>
+          <input checked type="checkbox" id="example${getNewId()}">
+          <label for="example${getCurrentId()}">I am checked</label>
+        </div>
+        <div>
+          <input disabled type="checkbox" id="example${getNewId()}">
+          <label for="example${getCurrentId()}">I am inactive</label>
+        </div>
+        <div>
+          <input checked disabled type="checkbox" id="example${getNewId()}">
+          <label for="example${getCurrentId()}">I am inactive but still checked</label>
+        </div>
+      </div>
+    `) %>
+  </div>
+</section>
