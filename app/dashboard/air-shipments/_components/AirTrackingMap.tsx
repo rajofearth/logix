@@ -100,8 +100,26 @@ export function AirTrackingMap({
     // Internal time state for simulated position - updates every 1 second for smooth animation
     const [internalTime, setInternalTime] = React.useState(() => Date.now());
 
-    // DEMO: Simulated booking/departure time (set to mount time)
-    const [demoDepartureTime] = React.useState(() => Date.now());
+    // DEMO: Simulated booking/departure time (persisted in localStorage)
+    const [demoDepartureTime, setDemoDepartureTime] = React.useState<number>(() => Date.now());
+
+    // Initialize persisted start time regarding the active flight
+    React.useEffect(() => {
+        const activeSegment = airSegments.find(s => s.isActive) || airSegments[0];
+        if (!activeSegment?.flightNumber) return;
+
+        const storageKey = `logix_demo_start_${activeSegment.carrier}_${activeSegment.flightNumber}`;
+        const stored = localStorage.getItem(storageKey);
+
+        if (stored) {
+            setDemoDepartureTime(parseInt(stored));
+        } else {
+            // First time this flight is viewed/booked
+            const now = Date.now();
+            localStorage.setItem(storageKey, now.toString());
+            setDemoDepartureTime(now);
+        }
+    }, [airSegments]);
 
     React.useEffect(() => {
         const interval = setInterval(() => {
@@ -122,63 +140,31 @@ export function AirTrackingMap({
 
         // Calculate progress based on actual departure and arrival times
         const now = internalTime;
-        const hasTimes = activeSegment.plannedDepartureAt && activeSegment.plannedArrivalAt;
 
-        // Define total duration for calculation (8 hours default)
-        const defaultDuration = 8 * 60 * 60 * 1000;
+        // FORCE DEMO MODE: Real-time 'Depart Now' simulation
+        // Overrides scheduled times to ensure immediate animation on page load/booking
+        const demoDuration = 50 * 60 * 1000; // 50 mins
 
-        let departure: number;
-        let arrival: number;
+        let departure = demoDepartureTime;
+        let arrival = demoDepartureTime + demoDuration;
         let status: 'scheduled' | 'in_flight' | 'landed' = 'in_flight';
         let progress = 0;
 
-        if (hasTimes) {
-            departure = new Date(activeSegment.plannedDepartureAt!).getTime();
-            arrival = new Date(activeSegment.plannedArrivalAt!).getTime();
+        const elapsed = now - departure;
 
-            const totalDuration = arrival - departure;
-            const elapsed = now - departure;
-
-            if (now < departure) {
-                status = 'scheduled';
-                progress = 0;
-            } else if (now >= arrival) {
-                status = 'landed';
-                progress = 1;
-            } else {
-                status = 'in_flight';
-                progress = Math.max(0, Math.min(1, elapsed / totalDuration));
-            }
+        if (now < departure) {
+            status = 'scheduled';
+            progress = 0;
+        } else if (now >= arrival) {
+            status = 'landed';
+            progress = 1;
         } else {
-            // DEMO MODE: specific logic to make animation match time
-            // 1. Calculate visual progress (5 minute cycle)
-            // DEMO MODE: Real-time "Depart Now" simulation
-            // Simulates a flight that was "booked" just now (at component mount)
-            // Duration: 50 minutes as per user request
-            const demoDuration = 50 * 60 * 1000;
-
-            // Use the stored demo departure time (defaults to mount time)
-            departure = demoDepartureTime;
-            arrival = demoDepartureTime + demoDuration;
-
-            const elapsed = now - departure;
-
-            if (now < departure) {
-                status = 'scheduled';
-                progress = 0;
-            } else if (now >= arrival) {
-                status = 'landed';
-                progress = 1;
-            } else {
-                status = 'in_flight';
-                progress = Math.max(0, Math.min(1, elapsed / demoDuration));
-            }
+            status = 'in_flight';
+            progress = Math.max(0, Math.min(1, elapsed / demoDuration));
         }
 
         const remaining = Math.max(0, arrival - now);
         const timeUntilDeparture = Math.max(0, departure - now);
-
-
 
         // Interpolate position along great circle
         const point = interpolateGreatCircle(fromCoords, toCoords, progress);
