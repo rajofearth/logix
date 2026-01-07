@@ -1,8 +1,6 @@
 "use client"
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { ScrollArea } from "@/components/ui/scroll-area"
 
 import { AppearanceSettings } from "./_components/AppearanceSettings"
@@ -13,29 +11,25 @@ import { MapSettings } from "./_components/MapSettings"
 
 export default function SettingsPage() {
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Settings" />
-                <div className="flex flex-1 flex-col overflow-hidden">
-                    <ScrollArea className="flex-1">
-                        <div className="max-w-2xl mx-auto py-4 px-4 md:py-6 lg:px-6 space-y-6">
-                            <ProfileSettings />
-                            <AppearanceSettings />
-                            <NotificationSettings />
-                            <MapSettings />
-                            <CompanySettings />
-                        </div>
-                    </ScrollArea>
+        <DashboardShell title="Control Panel - Settings">
+            <div className="h-full flex flex-col bg-[#ece9d8]">
+                <div className="flex-1 overflow-hidden p-4">
+                    <div className="win7-groupbox h-full flex flex-col">
+                        <legend>System Settings</legend>
+                        <ScrollArea className="flex-1 win7-p-4">
+                            <div className="max-w-3xl mx-auto space-y-6 pb-6">
+                                {/* We keep the child components as is for functionality, 
+                                    but wrap them in a nice Win7 container layout */}
+                                <ProfileSettings />
+                                <AppearanceSettings />
+                                <NotificationSettings />
+                                <MapSettings />
+                                <CompanySettings />
+                            </div>
+                        </ScrollArea>
+                    </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        </DashboardShell>
     )
 }

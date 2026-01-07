@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { IconBriefcase, IconSearch } from "@tabler/icons-react"
 
 import type { ProjectStatus } from "./_types"
 import type { ProjectDTO } from "./_types"
@@ -11,9 +12,7 @@ import { ProjectsGrid } from "./_components/ProjectsGrid"
 import { Pagination } from "./_components/Pagination"
 import { ProjectDetailsSheet } from "./_components/ProjectDetailsSheet"
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export default function ProjectsPage() {
     const [projects, setProjects] = React.useState<ProjectDTO[]>([])
@@ -71,21 +70,21 @@ export default function ProjectsPage() {
     }
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Projects" />
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 px-4 md:gap-6 md:py-6 lg:px-6">
-                            {/* Filters & Search */}
+        <DashboardShell title="Project Management" >
+            <div className="flex flex-col h-full bg-[#ece9d8]">
+                {/* Header Toolbar */}
+                <div className="flex items-center justify-between p-2 border-b border-white shadow-[0_1px_0_#aca899] mb-2">
+                    <div className="flex items-center gap-2">
+                        <IconBriefcase className="size-5 text-gray-500" />
+                        <span className="font-bold text-sm">Active Projects</span>
+                    </div>
+                </div>
+
+                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    {/* Filters & Search - wrapped in groupbox if possible, or just placed */}
+                    <div className="win7-groupbox">
+                        <legend>Project Filters</legend>
+                        <div className="win7-p-4">
                             <ProjectFilters
                                 stats={stats}
                                 activeFilter={filter}
@@ -93,27 +92,31 @@ export default function ProjectsPage() {
                                 search={search}
                                 onSearchChange={setSearch}
                             />
-
-                            {/* Projects Grid */}
-                            <ProjectsGrid
-                                projects={projects}
-                                isLoading={isLoading}
-                                onProjectClick={handleProjectClick}
-                            />
-
-                            {/* Pagination - always visible when there are items */}
-                            {totalItems > 0 && (
-                                <Pagination
-                                    currentPage={page}
-                                    totalPages={totalPages}
-                                    totalItems={totalItems}
-                                    onPageChange={setPage}
-                                />
-                            )}
                         </div>
                     </div>
+
+                    {/* Projects Grid */}
+                    <div className="win7-inset-border bg-white p-4 min-h-[400px]">
+                        <ProjectsGrid
+                            projects={projects}
+                            isLoading={isLoading}
+                            onProjectClick={handleProjectClick}
+                        />
+                    </div>
+
+                    {/* Pagination */}
+                    {totalItems > 0 && (
+                        <div className="flex justify-center pt-2">
+                            <Pagination
+                                currentPage={page}
+                                totalPages={totalPages}
+                                totalItems={totalItems}
+                                onPageChange={setPage}
+                            />
+                        </div>
+                    )}
                 </div>
-            </SidebarInset>
+            </div>
 
             {/* Project Details Sheet */}
             <ProjectDetailsSheet
@@ -121,6 +124,6 @@ export default function ProjectsPage() {
                 open={isSheetOpen}
                 onOpenChange={setIsSheetOpen}
             />
-        </SidebarProvider>
+        </DashboardShell>
     )
 }

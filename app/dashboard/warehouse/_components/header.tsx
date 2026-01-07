@@ -9,7 +9,6 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
     Eye,
     Users,
@@ -113,32 +112,32 @@ export function WarehouseHeader({
     const showDropdown = isSearchFocused && searchQuery.trim().length > 0;
 
     return (
-        <div className="flex items-center justify-between px-4 py-3 rounded-lg bg-zinc-900/80 border border-zinc-800 shrink-0">
+        <div className="flex items-center justify-between px-3 py-2 bg-[#ece9d8] border border-white shadow-[1px_1px_0_#aca899] select-none">
             {/* Left: Zone Info */}
             <div className="flex items-center gap-4">
                 <div className="flex flex-col">
-                    <span className="text-lg font-bold text-white">{selectedWarehouse?.code || "SZ-01"}</span>
-                    <span className="text-xs text-zinc-400">Storage Zone</span>
+                    <span className="text-lg font-bold text-black font-sans">{selectedWarehouse?.code || "SZ-01"}</span>
+                    <span className="text-xs text-gray-500">Storage Zone</span>
                 </div>
 
                 <div className="flex items-center gap-2 ml-2">
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800 text-zinc-300 text-xs">
-                        <Eye className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1.5 px-2 py-1 border border-[#7f9db9] bg-white text-black text-xs">
+                        <Eye className="h-3.5 w-3.5 text-blue-600" />
                         <span>{selectedWarehouse?.totalBlocks || 120}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2 py-1 rounded bg-zinc-800 text-zinc-300 text-xs">
-                        <Users className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1.5 px-2 py-1 border border-[#7f9db9] bg-white text-black text-xs">
+                        <Users className="h-3.5 w-3.5 text-green-600" />
                         <span>{selectedWarehouse?.workers || 120}</span>
                     </div>
                 </div>
 
                 <Select value={selectedWarehouseId} onValueChange={(value) => value && onWarehouseChange(value)}>
-                    <SelectTrigger className="w-[140px] h-8 text-xs bg-zinc-800 border-zinc-700 text-zinc-300">
+                    <SelectTrigger className="w-[140px] h-6 text-xs bg-white border-[#7f9db9] text-black">
                         <SelectValue placeholder="Zone">{selectedWarehouse?.name || "Select"}</SelectValue>
                     </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-700">
+                    <SelectContent>
                         {warehouses.map((warehouse) => (
-                            <SelectItem key={warehouse.id} value={warehouse.id} className="text-zinc-300">
+                            <SelectItem key={warehouse.id} value={warehouse.id}>
                                 {warehouse.name}
                             </SelectItem>
                         ))}
@@ -149,19 +148,19 @@ export function WarehouseHeader({
             {/* Center: Search */}
             <div className="flex-1 max-w-md mx-4 relative" ref={searchRef}>
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
-                    <Input
+                    <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => setIsSearchFocused(true)}
                         placeholder="Search products, SKUs, blocks..."
-                        className="w-full h-9 pl-9 pr-9 rounded-md bg-zinc-800 border border-zinc-700 text-sm text-zinc-200 placeholder:text-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-600 focus:border-zinc-600"
+                        className="w-full h-8 pl-8 pr-8 bg-white border border-[#7f9db9] text-sm text-black placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
                     />
                     {searchQuery && (
                         <button
                             onClick={() => setSearchQuery("")}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-black"
                         >
                             <X className="h-4 w-4" />
                         </button>
@@ -170,7 +169,7 @@ export function WarehouseHeader({
 
                 {/* Search Results Dropdown */}
                 {showDropdown && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-xl z-50 overflow-hidden">
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-[#7f9db9] shadow-lg z-50 overflow-hidden">
                         {searchResults.length > 0 ? (
                             <div className="max-h-80 overflow-y-auto">
                                 {searchResults.map((result, index) => {
@@ -179,20 +178,20 @@ export function WarehouseHeader({
                                         <button
                                             key={`${result.type}-${result.block.id}-${result.product?.id || index}`}
                                             onClick={() => handleResultClick(result)}
-                                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-zinc-800 transition-colors text-left border-b border-zinc-800 last:border-0"
+                                            className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-[#316ac5] hover:text-white group transition-colors text-left border-b border-gray-100 last:border-0"
                                         >
-                                            <div className="p-1.5 rounded bg-zinc-800">
+                                            <div className="p-1 px-2 group-hover:bg-white/20">
                                                 {result.type === "product" ? (
-                                                    <Package className="h-4 w-4 text-zinc-400" />
+                                                    <Package className="h-4 w-4 text-blue-500 group-hover:text-white" />
                                                 ) : (
-                                                    <CategoryIcon className="h-4 w-4 text-zinc-400" />
+                                                    <CategoryIcon className="h-4 w-4 text-blue-500 group-hover:text-white" />
                                                 )}
                                             </div>
                                             <div className="flex-1 min-w-0">
-                                                <div className="text-sm text-white font-medium truncate">
+                                                <div className="text-sm font-medium truncate">
                                                     {result.type === "product" ? result.product?.name : `Block ${result.block.name}`}
                                                 </div>
-                                                <div className="text-xs text-zinc-500 flex items-center gap-2">
+                                                <div className="text-xs text-gray-500 group-hover:text-white/80 flex items-center gap-2">
                                                     {result.type === "product" && (
                                                         <>
                                                             <span className="font-mono">{result.product?.sku}</span>
@@ -206,7 +205,7 @@ export function WarehouseHeader({
                                                 </div>
                                             </div>
                                             {result.type === "product" && (
-                                                <div className="text-xs text-zinc-400">
+                                                <div className="text-xs text-gray-400 group-hover:text-white">
                                                     {result.product?.quantity} qty
                                                 </div>
                                             )}
@@ -215,7 +214,7 @@ export function WarehouseHeader({
                                 })}
                             </div>
                         ) : (
-                            <div className="px-4 py-6 text-center text-zinc-500 text-sm">
+                            <div className="px-4 py-6 text-center text-gray-500 text-sm">
                                 No results found for &quot;{searchQuery}&quot;
                             </div>
                         )}
@@ -225,25 +224,23 @@ export function WarehouseHeader({
 
             {/* Right: Live Status & Actions */}
             <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-zinc-800 border border-zinc-700">
+                <div className="flex items-center gap-2 px-3 py-1 bg-white border border-[#7f9db9] shadow-inner">
                     <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
                     </span>
-                    <span className="text-xs text-zinc-300">Live Data</span>
+                    <span className="text-xs text-black uppercase font-bold">Online</span>
                 </div>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8 text-xs gap-1.5 bg-zinc-800 border-zinc-700 text-zinc-300 hover:bg-zinc-700 hover:text-white"
+                <button
+                    className="win7-btn text-xs flex items-center gap-1 px-2 py-1"
                     onClick={onAddWarehouse}
                 >
                     <Plus className="h-3.5 w-3.5" />
                     Add Warehouse
-                </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-400 hover:text-white">
+                </button>
+                <button className="win7-btn px-2 py-1">
                     <Settings className="h-4 w-4" />
-                </Button>
+                </button>
             </div>
         </div>
     );
