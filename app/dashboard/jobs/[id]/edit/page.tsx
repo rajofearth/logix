@@ -3,14 +3,10 @@
 import * as React from "react"
 import { useParams } from "next/navigation"
 import { toast } from "sonner"
-
 import type { JobDTO } from "../../_types"
 import { getJob } from "../../_server/jobActions"
 import { JobForm } from "../../_components/JobForm"
-
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export default function EditJobPage() {
   const params = useParams<{ id: string }>()
@@ -37,37 +33,19 @@ export default function EditJobPage() {
   }, [id])
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Edit Job" />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              {isLoading ? (
-                <div className="text-muted-foreground px-4 text-sm lg:px-6">
-                  Loading job…
-                </div>
-              ) : job ? (
-                <JobForm mode="edit" initialJob={job} />
-              ) : (
-                <div className="text-muted-foreground px-4 text-sm lg:px-6">
-                  Job not found.
-                </div>
-              )}
-            </div>
-          </div>
+    <DashboardShell title={`Logix Dashboard - Edit Job ${job?.title || ""}`}>
+      <div className="win7-groupbox">
+        <legend>Edit Job Details</legend>
+        <div className="win7-p-4">
+          {isLoading ? (
+            <div className="text-muted-foreground text-sm">Loading job…</div>
+          ) : job ? (
+            <JobForm mode="edit" initialJob={job} />
+          ) : (
+            <div className="text-muted-foreground text-sm">Job not found.</div>
+          )}
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      </div>
+    </DashboardShell>
   )
 }
-
-

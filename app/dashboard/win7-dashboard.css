@@ -912,16 +912,8 @@
 }
 
 /* Override Button styling */
-.win7-desktop button,
-.win7-desktop [data-slot="button"] {
-  font: var(--w7-font);
-  border: 1px solid var(--w7-el-bd);
-  border-radius: var(--w7-el-bdr);
-  background: var(--w7-el-grad);
-  color: #222;
-  min-height: 23px;
-  box-shadow: var(--w7-el-sd);
-}
+/* Moved specific button styling to end of file to handle exclusions */
+
 
 .win7-desktop button:hover:not(:disabled),
 .win7-desktop [data-slot="button"]:hover:not(:disabled) {
@@ -1138,4 +1130,50 @@
 .win7-desktop .border-border,
 .win7-desktop .border {
   border-color: #c0c1cd !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   👻 GHOST BUTTONS & UTILITIES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.win7-desktop .win7-btn-ghost,
+.win7-desktop button.ghost,
+.win7-desktop button[data-variant="ghost"] {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: inherit;
+}
+
+.win7-desktop .win7-btn-ghost:hover,
+.win7-desktop button.ghost:hover,
+.win7-desktop button[data-variant="ghost"]:hover {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border: none !important;
+  transform: none;
+}
+
+/* Exclude ghost buttons from generic button styling */
+.win7-desktop button:not(.win7-btn-ghost):not(.ghost):not([data-variant="ghost"]),
+.win7-desktop [data-slot="button"]:not(.win7-btn-ghost):not(.ghost):not([data-variant="ghost"]) {
+  font: var(--w7-font);
+  border: 1px solid var(--w7-el-bd);
+  border-radius: var(--w7-el-bdr);
+  background: var(--w7-el-grad);
+  color: #222;
+  min-height: 23px;
+  box-shadow: var(--w7-el-sd);
+}
+
+/* Fallback for sr-only if Tailwind is missing */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
 }
