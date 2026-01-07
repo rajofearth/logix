@@ -21,6 +21,8 @@ export interface CreateShipmentInput {
     packageName: string;
     weightKg: number;
     description?: string;
+    fromIcao?: string;
+    toIcao?: string;
 }
 
 export interface ShipmentFilters {
@@ -29,6 +31,22 @@ export interface ShipmentFilters {
     search?: string;
     limit?: number;
     offset?: number;
+}
+
+export interface FlightLeg {
+    from: string;
+    to: string;
+    carrier: string;
+    flightNumber: string;
+    departureTime: Date;
+    arrivalTime: Date;
+    aircraft: string;
+}
+
+export interface FlightOption {
+    price: number;
+    totalDuration: number;
+    legs: FlightLeg[];
 }
 
 export interface ShipmentListItem {
@@ -103,8 +121,21 @@ export async function createShipment(
 ): Promise<{ success: true; shipmentId: string } | { success: false; error: string }> {
     try {
         // Get random carrier and route
+        // Get random carrier and route (or use provided airports)
         const carrier = getRandomCarrier();
-        const route = getRandomAirportPair();
+
+        let fromAirport = "";
+        let toAirport = "";
+
+        if (input.fromIcao && input.toIcao) {
+            fromAirport = input.fromIcao;
+            toAirport = input.toIcao;
+        } else {
+            const randomRoute = getRandomAirportPair();
+            fromAirport = randomRoute.from;
+            toAirport = randomRoute.to;
+        }
+
         const flightNumber = generateFlightNumber(carrier);
 
         // Get a random active aircraft for tracking
@@ -134,8 +165,8 @@ export async function createShipment(
                         carrier: carrier.name,
                         carrierTrackingId: `${carrier.code}-${Date.now()}`,
                         flightNumber,
-                        fromAirportIcao: route.from,
-                        toAirportIcao: route.to,
+                        fromAirportIcao: fromAirport,
+                        toAirportIcao: toAirport,
                         icao24: aircraft.icao24,
                         plannedDepartureAt,
                         plannedArrivalAt,
@@ -343,29 +374,172 @@ export async function refreshAircraftPosition(
     }
 }
 
+
+
+/**
+ * Get available flight options for a route
+ * Generates both direct and connecting flight options
+ */
+export async function getFlightsForRoute(
+    fromIcao: string,
+    toIcao: string
+): Promise<FlightOption[]> {
+    const options: FlightOption[] = [];
+
+    // Generate 2-3 direct flight options
+    const directCount = Math.floor(Math.random() * 2) + 2;
+    for (let i = 0; i < directCount; i++) {
+        const carrier = getRandomCarrier();
+        const flightNumber = generateFlightNumber(carrier);
+
+        // Random time between 2 hours and 24 hours from now
+        const offsetHours = Math.floor(Math.random() * 22) + 2;
+        const durationHours = Math.floor(Math.random() * 8) + 4; // 4-12 hours flight
+
+        const departureTime = new Date(Date.now() + offsetHours * 60 * 60 * 1000);
+        const arrivalTime = new Date(departureTime.getTime() + durationHours * 60 * 60 * 1000);
+
+        // Random aircraft from a set list
+        const aircraftTypes = ["B777-300ER", "A350-900", "B787-9", "A330-300", "B747-8F"];
+        const aircraft = aircraftTypes[Math.floor(Math.random() * aircraftTypes.length)];
+
+        options.push({
+            price: Math.floor(Math.random() * 500) + 400, // $400-$900 for direct
+            totalDuration: durationHours * 60, // in minutes
+            legs: [{
+                from: fromIcao,
+                to: toIcao,
+                carrier: carrier.name,
+                flightNumber,
+                departureTime,
+                arrivalTime,
+                aircraft,
+            }],
+        });
+    }
+
+    // Generate 1-2 connecting flight options (2 legs)
+    const connectingHubs = ["KJFK", "KLAX", "EDDF", "OMDB", "WSSS", "VHHH"];
+    const availableHubs = connectingHubs.filter(h => h !== fromIcao && h !== toIcao);
+
+    if (availableHubs.length > 0) {
+        const connectingCount = Math.floor(Math.random() * 2) + 1;
+        for (let i = 0; i < connectingCount && i < availableHubs.length; i++) {
+            const hubIcao = availableHubs[Math.floor(Math.random() * availableHubs.length)];
+
+            const carrier1 = getRandomCarrier();
+            const carrier2 = getRandomCarrier();
+
+            // First leg
+            const offsetHours = Math.floor(Math.random() * 20) + 3;
+            const leg1Duration = Math.floor(Math.random() * 4) + 3; // 3-7 hours
+            const layover = Math.floor(Math.random() * 3) + 1; // 1-4 hours layover
+            const leg2Duration = Math.floor(Math.random() * 4) + 3; // 3-7 hours
+
+            const dep1 = new Date(Date.now() + offsetHours * 60 * 60 * 1000);
+            const arr1 = new Date(dep1.getTime() + leg1Duration * 60 * 60 * 1000);
+            const dep2 = new Date(arr1.getTime() + layover * 60 * 60 * 1000);
+            const arr2 = new Date(dep2.getTime() + leg2Duration * 60 * 60 * 1000);
+
+            const aircraftTypes = ["B777-300ER", "A350-900", "B787-9", "A330-300"];
+
+            options.push({
+                price: Math.floor(Math.random() * 300) + 250, // $250-$550 for connecting (cheaper)
+                totalDuration: (leg1Duration + layover + leg2Duration) * 60, // in minutes
+                legs: [
+                    {
+                        from: fromIcao,
+                        to: hubIcao,
+                        carrier: carrier1.name,
+                        flightNumber: generateFlightNumber(carrier1),
+                        departureTime: dep1,
+                        arrivalTime: arr1,
+                        aircraft: aircraftTypes[Math.floor(Math.random() * aircraftTypes.length)],
+                    },
+                    {
+                        from: hubIcao,
+                        to: toIcao,
+                        carrier: carrier2.name,
+                        flightNumber: generateFlightNumber(carrier2),
+                        departureTime: dep2,
+                        arrivalTime: arr2,
+                        aircraft: aircraftTypes[Math.floor(Math.random() * aircraftTypes.length)],
+                    },
+                ],
+            });
+        }
+    }
+
+    // Sort by first leg departure time
+    return options.sort((a, b) => a.legs[0].departureTime.getTime() - b.legs[0].departureTime.getTime());
+}
+
 /**
  * Update shipment status
  */
 export async function updateShipmentStatus(
     shipmentId: string,
     status: ShipmentStatus,
-    eventTitle?: string
+    props?: {
+        eventTitle?: string;
+        flightDetails?: FlightOption;
+    }
 ): Promise<{ success: boolean }> {
     try {
-        await prisma.$transaction([
-            prisma.shipment.update({
+        const { eventTitle, flightDetails } = props || {};
+
+        await prisma.$transaction(async (tx) => {
+            // Update status
+            await tx.shipment.update({
                 where: { id: shipmentId },
                 data: { status },
-            }),
-            prisma.shipmentEvent.create({
+            });
+
+            // Create event
+            const description = flightDetails
+                ? flightDetails.legs.length > 1
+                    ? `Route updated: ${flightDetails.legs.map(l => l.from).join(" -> ")} -> ${flightDetails.legs[flightDetails.legs.length - 1].to} via ${flightDetails.legs[0].carrier}`
+                    : `Loaded onto ${flightDetails.legs[0].carrier} flight ${flightDetails.legs[0].flightNumber} (${flightDetails.legs[0].aircraft})`
+                : undefined;
+
+            await tx.shipmentEvent.create({
                 data: {
                     shipmentId,
                     type: status === "delivered" ? "delivered" : "carrier_update",
                     title: eventTitle || `Status updated to ${status}`,
+                    description,
                     occurredAt: new Date(),
                 },
-            }),
-        ]);
+            });
+
+            // If flight details provided, update the air segment
+            if (flightDetails) {
+                // Delete existing air segments
+                await tx.shipmentSegment.deleteMany({
+                    where: { shipmentId, type: "air" }
+                });
+
+                // Create new segments for each leg
+                for (let i = 0; i < flightDetails.legs.length; i++) {
+                    const leg = flightDetails.legs[i];
+                    await tx.shipmentSegment.create({
+                        data: {
+                            shipmentId,
+                            type: "air",
+                            sortOrder: i, // 0, 1, 2...
+                            carrier: leg.carrier,
+                            carrierTrackingId: `${flightDetails.legs[0].carrier.substring(0, 2)}-${Date.now()}-${i}`,
+                            flightNumber: leg.flightNumber,
+                            fromAirportIcao: leg.from,
+                            toAirportIcao: leg.to,
+                            icao24: i === 0 ? "3c66a8" : null, // Mock ICAO24 only for first leg for now or random
+                            plannedDepartureAt: leg.departureTime,
+                            plannedArrivalAt: leg.arrivalTime,
+                        }
+                    });
+                }
+            }
+        });
 
         return { success: true };
     } catch (error) {

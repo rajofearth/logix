@@ -21,10 +21,12 @@ import {
     getShipmentDetail,
     updateShipmentStatus,
     type ShipmentDetail,
+    type FlightOption,
 } from "../_server/actions";
 import { useShipmentStream } from "../_hooks/useShipmentStream";
 import { ShipmentTimeline } from "../_components/ShipmentTimeline";
 import { AirTrackingMap } from "../_components/AirTrackingMap";
+import { FlightSelectionDialog } from "../_components/FlightSelectionDialog";
 
 const STATUS_COLORS: Record<string, string> = {
     created: "bg-blue-500/10 text-blue-500 border-blue-500/20",
@@ -52,6 +54,7 @@ export default function ShipmentDetailPage() {
     const [shipment, setShipment] = React.useState<ShipmentDetail | null>(null);
     const [isLoading, setIsLoading] = React.useState(true);
     const [isUpdating, setIsUpdating] = React.useState(false);
+    const [isFlightDialogOpen, setIsFlightDialogOpen] = React.useState(false);
 
     // Subscribe to real-time updates
     const { airPosition, events: liveEvents, isConnected, error } = useShipmentStream(
@@ -77,10 +80,28 @@ export default function ShipmentDetailPage() {
     }, [fetchShipment]);
 
     const handleStatusUpdate = async (newStatus: "in_transit" | "delivered") => {
+        if (newStatus === "in_transit") {
+            setIsFlightDialogOpen(true);
+            return;
+        }
+
         setIsUpdating(true);
         try {
             await updateShipmentStatus(shipmentId, newStatus);
             await fetchShipment();
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleFlightSelection = async (flight: FlightOption) => {
+        setIsUpdating(true);
+        try {
+            await updateShipmentStatus(shipmentId, "in_transit", {
+                flightDetails: flight
+            });
+            await fetchShipment();
+            setIsFlightDialogOpen(false);
         } finally {
             setIsUpdating(false);
         }
@@ -337,8 +358,20 @@ export default function ShipmentDetailPage() {
                             {/* Right Panel - Map */}
                             <div className="h-[400px] lg:h-full">
                                 <AirTrackingMap
-                                    fromAirportIcao={airSegment?.fromAirportIcao || null}
-                                    toAirportIcao={airSegment?.toAirportIcao || null}
+                                    segments={shipment.segments.map((seg) => ({
+                                        id: seg.id,
+                                        type: seg.type,
+                                        sortOrder: seg.sortOrder,
+                                        fromIcao: seg.fromAirportIcao,
+                                        toIcao: seg.toAirportIcao,
+                                        flightNumber: seg.flightNumber,
+                                        carrier: seg.carrier,
+                                        plannedDepartureAt: seg.plannedDepartureAt,
+                                        plannedArrivalAt: seg.plannedArrivalAt,
+                                        actualDepartureAt: seg.actualDepartureAt,
+                                        actualArrivalAt: seg.actualArrivalAt,
+                                        isActive: shipment.status === "in_transit" && seg.type === "air",
+                                    }))}
                                     aircraftPosition={airPosition}
                                 />
                             </div>
@@ -346,6 +379,15 @@ export default function ShipmentDetailPage() {
                     </div>
                 </div>
             </SidebarInset>
+
+            <FlightSelectionDialog
+                open={isFlightDialogOpen}
+                onOpenChange={setIsFlightDialogOpen}
+                fromIcao={airSegment?.fromAirportIcao || ""}
+                toIcao={airSegment?.toAirportIcao || ""}
+                onSelectFlight={handleFlightSelection}
+                isUpdating={isUpdating}
+            />
         </SidebarProvider>
     );
 }
