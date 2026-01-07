@@ -1,9 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Delivery } from "../_data/deliveries";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface DeliveryCardProps {
     delivery: Delivery;
@@ -21,81 +20,76 @@ export function DeliveryCard({
     onClick
 }: DeliveryCardProps) {
     return (
-        <Card
+        <div
             onMouseEnter={() => onHover(delivery.id)}
             onMouseLeave={() => onHover(null)}
             onClick={onClick}
             className={cn(
-                "transition-all duration-300 cursor-pointer",
+                "transition-all duration-100 cursor-pointer p-2 border",
                 isSelected
-                    ? "ring-2 ring-primary bg-primary/10 dark:bg-primary/15 shadow-md"
-                    : "hover:ring-1 hover:ring-primary/20",
-                isHovered && !isSelected && "scale-[1.02] shadow-lg"
+                    ? "bg-[#316ac5] border-[#000080] text-white" // Win7 Selected Item Blue
+                    : "bg-white border-transparent hover:bg-[#eef1ff] hover:border-[#a8a8a8]", // Hover state
+                "group relative select-none"
             )}
         >
-            <CardContent className="p-0">
-                {/* Header Section */}
-                <div className="flex items-start justify-between p-3 pb-2">
-                    <div className="space-y-0.5">
-                        <p className="text-sm font-semibold text-foreground">{delivery.type}</p>
+            {/* Dotted focus outline simulation if needed, but simple selection is fine */}
+
+            {/* Header Section */}
+            <div className="flex items-start justify-between pb-1">
+                <p className={cn(
+                    "text-xs font-bold font-sans",
+                    isSelected ? "text-white" : "text-black"
+                )}>
+                    {delivery.type}
+                </p>
+                {isSelected && <span className="text-[10px] text-white opacity-80">Selected</span>}
+            </div>
+
+            {/* Route Section - Compact */}
+            <div className="space-y-1 mb-2">
+                {/* Origin */}
+                <div className="flex items-start gap-2">
+                    <div className="w-3 flex justify-center pt-1">
+                        <div className={cn("size-1.5 rounded-full", isSelected ? "bg-white" : "bg-green-600")} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p className={cn("text-[11px] truncate leading-tight", isSelected ? "text-white" : "text-black")}>
+                            {delivery.origin.address}
+                        </p>
                     </div>
                 </div>
 
-                {/* Route Section - Compact */}
-                <div className="px-3 py-2 space-y-2">
-                    {/* Origin */}
-                    <div className="flex items-start gap-2 group/origin">
-                        <div className="relative flex flex-col items-center pt-0.5">
-                            <div className="size-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 transition-all duration-200 group-hover/origin:ring-emerald-500/40" />
-                            <div className="w-0.5 h-5 bg-linear-to-b from-emerald-500/50 to-destructive/50" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.origin.address}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.origin.detail}
-                            </p>
-                        </div>
+                {/* Destination */}
+                <div className="flex items-start gap-2">
+                    <div className="w-3 flex justify-center pt-1">
+                        <div className={cn("size-1.5 rounded-sm", isSelected ? "bg-white" : "bg-red-600")} />
                     </div>
-
-                    {/* Destination */}
-                    <div className="flex items-start gap-2 group/dest">
-                        <div className="relative flex flex-col items-center pt-0.5">
-                            <div className="size-2.5 rounded-full bg-destructive ring-2 ring-destructive/20 transition-all duration-200 group-hover/dest:ring-destructive/40" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.destination.address}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.destination.detail}
-                            </p>
-                        </div>
+                    <div className="flex-1 min-w-0">
+                        <p className={cn("text-[11px] truncate leading-tight", isSelected ? "text-white" : "text-black")}>
+                            {delivery.destination.address}
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                {/* Driver Section - Compact */}
-                <div className="flex items-center justify-between px-3 py-2 border-t border-border/50">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="size-8 ring-2 ring-background shadow-sm transition-transform duration-200 hover:scale-110">
-                            <AvatarImage src={delivery.driver.avatar} alt={delivery.driver.name} />
-                            <AvatarFallback className="text-xs">{delivery.driver.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                            <p className="text-[10px] text-muted-foreground">Driver Details</p>
-                            <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.driver.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.driver.role}
-                            </p>
-                        </div>
-                    </div>
-
-
+            {/* Driver Section - Compact */}
+            <div className={cn(
+                "flex items-center gap-2 pt-1 border-t",
+                isSelected ? "border-white/30" : "border-gray-200"
+            )}>
+                <Avatar className="size-6 ring-1 ring-black/10">
+                    <AvatarImage src={delivery.driver.avatar} alt={delivery.driver.name} />
+                    <AvatarFallback className="text-[9px] text-black">{delivery.driver.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                    <p className={cn("text-[11px] font-medium truncate", isSelected ? "text-white" : "text-black")}>
+                        {delivery.driver.name}
+                    </p>
+                    <p className={cn("text-[9px] truncate", isSelected ? "text-white/80" : "text-gray-500")}>
+                        {delivery.driver.role}
+                    </p>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

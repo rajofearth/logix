@@ -10,25 +10,20 @@ import {
     IconTrain,
 } from "@tabler/icons-react";
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
     listTrainShipments,
     type TrainShipmentListItem,
 } from "./_server/actions";
 
-const STATUS_COLORS: Record<string, string> = {
-    created: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    waiting_for_train: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-    in_transit: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    at_station: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    delivered: "bg-green-500/10 text-green-500 border-green-500/20",
-    cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
+const STATUS_LABELS: Record<string, string> = {
+    created: "Created",
+    waiting_for_train: "Waiting",
+    in_transit: "In Transit",
+    at_station: "At Station",
+    delivered: "Delivered",
+    cancelled: "Cancelled",
 };
 
 function formatDate(date: Date): string {
@@ -80,173 +75,123 @@ export default function TrainShipmentsPage() {
     };
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Train Shipments" />
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-                            {/* Header */}
-                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                                <div>
-                                    <h1 className="text-2xl font-bold tracking-tight">
-                                        Train Shipments
-                                    </h1>
-                                    <p className="text-muted-foreground">
-                                        Manage your Indian Railways cargo shipments
-                                    </p>
-                                </div>
-                                <Link href="/dashboard/train-shipments/new">
-                                    <Button className="gap-2">
-                                        <IconPlus className="size-4" />
-                                        Create Shipment
-                                    </Button>
-                                </Link>
+        <DashboardShell title="Logix Dashboard - Train Shipments" itemCount={total}>
+            <div className="flex flex-col gap-4">
+                {/* Controls Groupbox */}
+                <div className="win7-groupbox">
+                    <legend>Shipment Controls</legend>
+                    <div className="win7-p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <form onSubmit={handleSearch} className="flex gap-4 items-center w-full sm:w-auto">
+                            <div className="relative flex-1 sm:w-64">
+                                <IconSearch className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-500 pointer-events-none" />
+                                <input
+                                    placeholder="Search train shipments..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-7 pr-2 h-7 w-full border border-[#7f9db9] text-xs outline-none"
+                                    style={{ background: '#fff' }}
+                                />
                             </div>
+                            <button
+                                type="button" // Prevent form submit on refresh
+                                onClick={() => fetchShipments(search)}
+                                className="win7-btn h-7 w-7 flex items-center justify-center p-0"
+                                title="Refresh"
+                            >
+                                <IconRefresh className={`size-3.5 ${isLoading ? "animate-spin" : ""}`} />
+                            </button>
+                            <button type="submit" className="hidden">Search</button> {/* Implicit submit */}
+                        </form>
 
-                            {/* Search and filters */}
-                            <div className="flex flex-col sm:flex-row gap-4">
-                                <form onSubmit={handleSearch} className="flex-1 flex gap-2">
-                                    <div className="relative flex-1 max-w-md">
-                                        <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                        <Input
-                                            placeholder="Search by reference, train, package..."
-                                            value={search}
-                                            onChange={(e) => setSearch(e.target.value)}
-                                            className="pl-9"
-                                        />
-                                    </div>
-                                    <Button type="submit" variant="secondary">
-                                        Search
-                                    </Button>
-                                </form>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={() => fetchShipments(search)}
-                                >
-                                    <IconRefresh className="size-4" />
-                                </Button>
-                            </div>
-
-                            {/* Stats */}
-                            <div className="text-sm text-muted-foreground">
-                                {total} shipment{total !== 1 ? "s" : ""} found
-                            </div>
-
-                            {/* Shipments list */}
-                            {isLoading ? (
-                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                                        <Skeleton key={i} className="h-48 rounded-lg" />
-                                    ))}
-                                </div>
-                            ) : shipments.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center py-16 text-center">
-                                    <div className="flex size-16 items-center justify-center rounded-full bg-muted mb-4">
-                                        <IconTrain className="size-8 text-muted-foreground" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold mb-2">
-                                        No train shipments yet
-                                    </h3>
-                                    <p className="text-muted-foreground mb-4 max-w-md">
-                                        Create your first train shipment to start tracking cargo
-                                        across Indian Railways.
-                                    </p>
-                                    <Link href="/dashboard/train-shipments/new">
-                                        <Button className="gap-2">
-                                            <IconPlus className="size-4" />
-                                            Create Shipment
-                                        </Button>
-                                    </Link>
-                                </div>
-                            ) : (
-                                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                    {shipments.map((shipment) => (
-                                        <div
-                                            key={shipment.id}
-                                            className="rounded-lg border bg-card p-4 cursor-pointer hover:border-primary/50 transition-colors"
-                                            onClick={() =>
-                                                router.push(
-                                                    `/dashboard/train-shipments/${shipment.id}`
-                                                )
-                                            }
-                                        >
-                                            {/* Header */}
-                                            <div className="flex items-start justify-between mb-3">
-                                                <div>
-                                                    <p className="font-mono text-sm text-muted-foreground">
-                                                        {shipment.referenceCode}
-                                                    </p>
-                                                    <h3 className="font-semibold truncate">
-                                                        {shipment.packageName}
-                                                    </h3>
-                                                </div>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={STATUS_COLORS[shipment.status]}
-                                                >
-                                                    {shipment.status.replace(/_/g, " ")}
-                                                </Badge>
-                                            </div>
-
-                                            {/* Train info */}
-                                            <div className="flex items-center gap-2 mb-3">
-                                                <div className="flex size-8 items-center justify-center rounded bg-amber-500/10">
-                                                    <IconTrain className="size-4 text-amber-500" />
-                                                </div>
-                                                <div className="text-sm">
-                                                    <p className="font-medium">{shipment.trainName}</p>
-                                                    <p className="text-muted-foreground font-mono">
-                                                        {shipment.trainNumber}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {/* Route */}
-                                            <div className="flex items-center gap-2 text-sm mb-3">
-                                                <span className="font-medium">
-                                                    {shipment.fromStationCode}
-                                                </span>
-                                                <span className="flex-1 border-t border-dashed border-muted-foreground/30" />
-                                                <span className="font-medium">
-                                                    {shipment.toStationCode}
-                                                </span>
-                                            </div>
-
-                                            {/* Details */}
-                                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                                <span>{formatDate(shipment.journeyDate)}</span>
-                                                <span>
-                                                    {formatTime(shipment.scheduledDep)} →{" "}
-                                                    {formatTime(shipment.scheduledArr)}
-                                                </span>
-                                                <span>{shipment.weightKg} kg</span>
-                                            </div>
-
-                                            {/* Delay indicator */}
-                                            {shipment.delayMinutes !== null &&
-                                                shipment.delayMinutes > 0 && (
-                                                    <div className="mt-2 text-xs text-orange-500">
-                                                        ⚠️ Delayed by {shipment.delayMinutes} min
-                                                    </div>
-                                                )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        <Link href="/dashboard/train-shipments/new">
+                            <button className="win7-btn flex items-center gap-1">
+                                <IconPlus className="size-3.5" />
+                                Create Shipment
+                            </button>
+                        </Link>
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+
+                {/* Shipments Grid */}
+                {isLoading ? (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {[1, 2, 3, 4, 5, 6].map((i) => (
+                            <Skeleton key={i} className="h-40 rounded bg-white shadow-sm border border-gray-300" />
+                        ))}
+                    </div>
+                ) : shipments.length === 0 ? (
+                    <div className="win7-groupbox p-8 text-center bg-white">
+                        <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
+                            <div className="bg-gray-100 p-3 rounded-full border border-gray-200">
+                                <IconTrain className="size-8 opacity-50" />
+                            </div>
+                            <h3 className="font-bold text-sm text-black">No train shipments yet</h3>
+                            <p className="text-xs">Create your first shipment to start tracking.</p>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {shipments.map((shipment) => (
+                            <div
+                                key={shipment.id}
+                                className="group relative bg-white border border-[#707070] p-3 shadow-sm hover:border-[#3399ff] hover:shadow-md cursor-pointer transition-all duration-200 select-none"
+                                onClick={() =>
+                                    router.push(
+                                        `/dashboard/train-shipments/${shipment.id}`
+                                    )
+                                }
+                            >
+                                {/* Active Selection Border Overlay (optional) */}
+
+                                {/* Header */}
+                                <div className="flex items-start justify-between mb-2 pb-2 border-b border-gray-100/50">
+                                    <div className="min-w-0 pr-2">
+                                        <div className="font-mono text-[10px] text-gray-500 mb-0.5">
+                                            {shipment.referenceCode}
+                                        </div>
+                                        <h3 className="font-bold text-sm text-[#0066cc] truncate group-hover:underline">
+                                            {shipment.packageName}
+                                        </h3>
+                                    </div>
+                                    <span className="inline-block px-1.5 py-0.5 text-[9px] font-bold uppercase border border-gray-300 bg-gray-50 text-gray-600 rounded-sm">
+                                        {STATUS_LABELS[shipment.status] || shipment.status}
+                                    </span>
+                                </div>
+
+                                {/* Train Details */}
+                                <div className="flex items-center gap-2 mb-2 bg-[#f5f5f5] p-1.5 rounded border border-gray-200">
+                                    <IconTrain className="size-4 text-amber-600 shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-xs font-bold text-black truncate">{shipment.trainName}</p>
+                                        <p className="text-[10px] text-gray-500 font-mono truncate">{shipment.trainNumber}</p>
+                                    </div>
+                                </div>
+
+                                {/* Route */}
+                                <div className="flex items-center gap-2 text-xs mb-2 px-1">
+                                    <span className="font-bold text-black">{shipment.fromStationCode}</span>
+                                    <span className="flex-1 border-t border-dashed border-gray-300" />
+                                    <span className="font-bold text-black">{shipment.toStationCode}</span>
+                                </div>
+
+                                {/* Footer Stats */}
+                                <div className="flex items-center justify-between text-[10px] text-gray-500 mt-2 pt-2 border-t border-gray-100">
+                                    <span>{formatDate(shipment.journeyDate)}</span>
+                                    <span>{formatTime(shipment.scheduledDep)} - {formatTime(shipment.scheduledArr)}</span>
+                                    <span className="font-medium text-black">{shipment.weightKg} kg</span>
+                                </div>
+
+                                {/* Delay Warning */}
+                                {shipment.delayMinutes !== null && shipment.delayMinutes > 0 && (
+                                    <div className="absolute top-2 right-2 flex animate-pulse">
+                                        <span className="flex h-2 w-2 rounded-full bg-red-500"></span>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </DashboardShell>
     );
 }

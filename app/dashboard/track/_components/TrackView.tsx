@@ -14,9 +14,7 @@ import { useDriverLocation } from "../_hooks/useDriverLocation";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 
 interface TrackViewProps {
     initialDeliveries: Delivery[];
@@ -62,8 +60,7 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                     { lat: selectedDelivery.destination.lat, lng: selectedDelivery.destination.lng }
                 );
 
-                // Fetch Gas Stations near Pickup (can be improved to search along route or midpoint later)
-                // We dynamically import the server action to avoid client-side bundling issues if any
+                // Fetch Gas Stations near Pickup
                 const { searchNearbyPlaces } = await import("@/app/dashboard/jobs/_server/mapboxGeocoding");
                 const stationsPromise = searchNearbyPlaces(
                     { lat: selectedDelivery.origin.lat, lng: selectedDelivery.origin.lng },
@@ -77,7 +74,6 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
 
             } catch (error) {
                 console.error("Failed to fetch data:", error);
-                // Keep partial data if possible, or reset
                 setRouteGeoJson(current => current ?? null);
             }
         };
@@ -110,56 +106,45 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     };
 
     return (
-        <SidebarProvider
-            className="h-svh w-full overflow-hidden"
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset className="h-svh overflow-hidden flex flex-col">
-                <SiteHeader title="Tracking" />
+        <DashboardShell title="Logix Dashboard - Tracking" itemCount={filteredDeliveries.length}>
+            {/* Main Content - Split Layout */}
+            <div className="flex w-full h-full relative" style={{ height: 'calc(100vh - 120px)' }}> {/* Adjusted height for window chrome */}
 
-                {/* Main Content - Split Layout */}
-                <div className="flex flex-1 overflow-hidden">
-
-                    {/* Left Panel - Cards */}
-                    <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 flex flex-col border-r border-border bg-background">
-                        {/* Search */}
-                        <div className="p-4 pb-2">
-                            <SearchBar value={searchQuery} onChange={setSearchQuery} />
-                        </div>
-
-                        {/* Scrollable Cards */}
-                        <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2 space-y-3">
-                            {filteredDeliveries.map((delivery) => (
-                                <DeliveryCard
-                                    key={delivery.id}
-                                    delivery={delivery}
-                                    isHovered={hoveredCard === delivery.id}
-                                    isSelected={selectedDelivery?.id === delivery.id}
-                                    onHover={setHoveredCard}
-                                    onClick={() => handleDeliveryClick(delivery)}
-                                />
-                            ))}
-
-                            {filteredDeliveries.length === 0 && (
-                                <div className="text-center py-12 text-muted-foreground">
-                                    <MapPin className="size-10 mx-auto mb-2 opacity-50" />
-                                    <p className="text-sm">No deliveries found</p>
-                                    <p className="text-xs mt-1">Try adjusting your search</p>
-                                </div>
-                            )}
-                        </div>
+                {/* Left Panel - Cards */}
+                <div className="w-full md:w-[340px] lg:w-[380px] shrink-0 flex flex-col border-r border-[#898c95] bg-[#ece9d8]">
+                    {/* Search */}
+                    <div className="p-3 pb-2">
+                        <SearchBar value={searchQuery} onChange={setSearchQuery} />
                     </div>
 
-                    {/* Right Panel - Map */}
-                    <div className="flex-1 overflow-hidden relative">
-                        {selectedDelivery ? (
-                            <>
+                    {/* Scrollable Cards */}
+                    <div className="flex-1 overflow-y-auto px-3 pb-3 pt-1 space-y-2">
+                        {filteredDeliveries.map((delivery) => (
+                            <DeliveryCard
+                                key={delivery.id}
+                                delivery={delivery}
+                                isHovered={hoveredCard === delivery.id}
+                                isSelected={selectedDelivery?.id === delivery.id}
+                                onHover={setHoveredCard}
+                                onClick={() => handleDeliveryClick(delivery)}
+                            />
+                        ))}
+
+                        {filteredDeliveries.length === 0 && (
+                            <div className="text-center py-12 text-gray-500">
+                                <MapPin className="size-10 mx-auto mb-2 opacity-50" />
+                                <p className="text-sm">No deliveries found</p>
+                                <p className="text-xs mt-1">Try adjusting your search</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Panel - Map */}
+                <div className="flex-1 overflow-hidden relative bg-[#808080]"> {/* Map container */}
+                    {selectedDelivery ? (
+                        <>
+                            <div className="absolute inset-0">
                                 <TrackingMap
                                     pickup={{
                                         lat: selectedDelivery.origin.lat,
@@ -182,36 +167,37 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                         lng: p.longitude,
                                     }))}
                                 />
-                                {/* Live indicator */}
-                                {isLiveConnected && (
-                                    <div className="absolute top-4 left-4 flex items-center gap-2 bg-emerald-500/90 text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg">
-                                        <Radio className="size-3 animate-pulse" />
-                                        LIVE
-                                    </div>
-                                )}
-                                {/* Map Overlays */}
-                                <MapStatusBar
-                                    status={selectedDelivery.status}
-                                    lastUpdated={driverLocation?.updatedAt}
-                                    isLive={isLiveConnected}
-                                />
-                                <DriverInfoPanel delivery={selectedDelivery} />
-                            </>
-                        ) : (
-                            <div className="flex flex-col items-center justify-center h-full bg-muted/10 text-muted-foreground p-6 text-center">
-                                <div className="bg-muted/20 p-4 rounded-full mb-4">
-                                    <MapPin className="size-8 opacity-50" />
-                                </div>
-                                <h3 className="font-semibold mb-1">Select a Delivery</h3>
-                                <p className="text-sm max-w-[250px]">
-                                    Click on a delivery card to view its route on the map
-                                </p>
                             </div>
-                        )}
-                    </div>
 
+                            {/* Live indicator */}
+                            {isLiveConnected && (
+                                <div className="absolute top-4 left-4 flex items-center gap-2 bg-emerald-500/90 text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-lg z-10 border border-emerald-700">
+                                    <Radio className="size-3 animate-pulse" />
+                                    LIVE
+                                </div>
+                            )}
+                            {/* Map Overlays */}
+                            <MapStatusBar
+                                status={selectedDelivery.status}
+                                lastUpdated={driverLocation?.updatedAt}
+                                isLive={isLiveConnected}
+                            />
+                            <DriverInfoPanel delivery={selectedDelivery} />
+                        </>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center h-full bg-[#ece9d8] text-gray-600 p-6 text-center">
+                            <div className="bg-white/50 p-4 rounded-full mb-4 border border-[#898c95]">
+                                <MapPin className="size-8 opacity-50" />
+                            </div>
+                            <h3 className="font-bold text-lg mb-1 font-sans">Select a Delivery</h3>
+                            <p className="text-sm max-w-[250px]">
+                                Click on a delivery card to view its route on the map
+                            </p>
+                        </div>
+                    )}
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+
+            </div>
+        </DashboardShell>
     );
 }

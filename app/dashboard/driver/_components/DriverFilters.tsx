@@ -1,11 +1,9 @@
 "use client"
 
 import { IconSearch } from "@tabler/icons-react"
-
 import type { DriverStatus } from "../_types"
 import type { DriverStats } from "../_server/driverActions"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
 
 interface DriverFiltersProps {
     stats: DriverStats
@@ -31,44 +29,44 @@ export function DriverFilters({
 }: DriverFiltersProps) {
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl w-fit order-2 sm:order-1">
+            {/* Filter Tabs using Win7 Tab styling */}
+            <div role="tablist" style={{ display: 'flex' }}>
                 {filters.map((filter) => (
                     <button
+                        role="tab"
+                        aria-selected={activeFilter === filter.key}
                         key={filter.key}
                         onClick={() => onFilterChange(filter.key)}
                         className={cn(
-                            "px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200",
-                            "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                            "px-3 py-1 text-xs select-none focus:outline-none -mb-[1px] border border-b-0 rounded-t-[3px]",
                             activeFilter === filter.key
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:bg-background/50"
+                                ? "bg-white border-[#898c95] z-10" // Active tab
+                                : "bg-[#f0f0f0] border-transparent text-gray-500 hover:text-black mt-[2px]" // Inactive tab
                         )}
+                        style={{
+                            minWidth: 80,
+                            position: 'relative'
+                        }}
                     >
-                        {filter.label}
-                        <span
-                            className={cn(
-                                "ml-2 px-2 py-0.5 text-[0.65rem] font-semibold rounded-full transition-colors",
-                                activeFilter === filter.key
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted-foreground/15 text-muted-foreground"
-                            )}
-                        >
-                            {stats[filter.statKey]}
-                        </span>
+                        {filter.label} ({stats[filter.statKey]})
                     </button>
                 ))}
             </div>
 
             {/* Search */}
-            <div className="relative w-full sm:w-72 order-1 sm:order-2">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-                <Input
+            <div className="relative w-full sm:w-72">
+                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500 pointer-events-none" />
+                <input
                     type="search"
-                    placeholder="Search by name, phone, or job..."
+                    placeholder="Search drivers..."
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-9 h-9"
+                    className="pl-9 pr-2 h-8 w-full border border-[#8e8f8f] text-sm focus:border-blue-500 outline-none"
+                    style={{
+                        background: '#fff',
+                        borderRadius: 0,
+                        boxShadow: 'inset 0 0 0 1px #fff', // mimic bevel highlight
+                    }}
                 />
             </div>
         </div>
