@@ -448,43 +448,43 @@ export function AirTrackingMap({
             const planeRotation = (heading || 0) - 90; // Adjust for SVG default orientation
             el.innerHTML = `
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                    <!-- Flight Info Box - always horizontal -->
-                    <div style="background: rgba(17,24,39,0.97); backdrop-filter: blur(12px); border-radius: 10px; padding: 10px 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); border: 1px solid rgba(75,85,99,0.4); min-width: 170px;">
+                    <!-- Flight Info Box - uses theme variables -->
+                    <div style="background: var(--card); backdrop-filter: blur(var(--glass-blur, 12px)) saturate(var(--glass-saturation, 180%)); border-radius: 10px; padding: 10px 14px; box-shadow: 0 8px 32px var(--glass-shadow, rgba(0,0,0,0.25)); border: 1px solid var(--glass-border, rgba(255,255,255,0.1)); min-width: 170px;">
                         <!-- Status Badge -->
                         <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                             <div style="display: flex; align-items: center; gap: 6px;">
                                 <div class="status-dot" style="width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; box-shadow: 0 0 8px ${statusColor};"></div>
                                 <span class="status-text" style="font-size: 9px; color: ${statusColor}; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">${statusText}</span>
                             </div>
-                            <span style="font-size: 9px; color: #6b7280;">${flightInfo.carrier || ''}</span>
+                            <span style="font-size: 9px; color: var(--muted-foreground);">${flightInfo.carrier || ''}</span>
                         </div>
                         <!-- Flight Number -->
-                        <div class="flight-number" style="font-family: 'SF Mono', Monaco, monospace; font-weight: bold; font-size: 16px; color: white; margin-bottom: 6px;">${flightInfo.flightNumber || 'N/A'}</div>
+                        <div class="flight-number" style="font-family: 'SF Mono', Monaco, monospace; font-weight: bold; font-size: 16px; color: var(--card-foreground); margin-bottom: 6px;">${flightInfo.flightNumber || 'N/A'}</div>
                         <!-- Route -->
-                        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: #e5e7eb; margin-bottom: 8px;">
+                        <div style="display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--card-foreground); margin-bottom: 8px;">
                             <span style="font-weight: 600;">${flightInfo.fromIcao || '???'}</span>
                             <div style="flex: 1; height: 2px; background: linear-gradient(90deg, ${statusColor}, transparent, ${statusColor}); border-radius: 1px;"></div>
                             <span style="font-weight: 600;">${flightInfo.toIcao || '???'}</span>
                         </div>
                         <!-- Progress Bar -->
-                        <div style="height: 6px; background: #1f2937; border-radius: 3px; overflow: hidden; margin-bottom: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);">
-                            <div class="progress-bar" style="height: 100%; background: linear-gradient(90deg, #f59e0b, #22c55e); border-radius: 3px; width: ${flightInfo.progress || 0}%; transition: width 0.5s ease-out; box-shadow: 0 0 8px rgba(245,158,11,0.5);"></div>
+                        <div style="height: 6px; background: var(--muted); border-radius: 3px; overflow: hidden; margin-bottom: 8px; box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);">
+                            <div class="progress-bar" style="height: 100%; background: var(--gradient-gold, linear-gradient(90deg, #f59e0b, #22c55e)); border-radius: 3px; width: ${flightInfo.progress || 0}%; transition: width 0.5s ease-out; box-shadow: 0 0 8px var(--glow-primary, rgba(245,158,11,0.5));"></div>
                         </div>
                         <!-- Time Info -->
                         <div style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px;">${timeLabel}</div>
+                                <div style="font-size: 9px; color: var(--muted-foreground); margin-bottom: 2px;">${timeLabel}</div>
                                 <div class="countdown-text" style="font-size: 14px; font-weight: 600; color: ${statusColor}; font-family: 'SF Mono', Monaco, monospace;">${flightInfo.remainingFormatted || 'N/A'}</div>
                             </div>
                             <div style="text-align: right;">
-                                <div style="font-size: 9px; color: #6b7280; margin-bottom: 2px;">ETA</div>
-                                <div class="eta-time" style="font-size: 12px; font-weight: 500; color: #e5e7eb;">${flightInfo.etaFormatted || 'N/A'}</div>
+                                <div style="font-size: 9px; color: var(--muted-foreground); margin-bottom: 2px;">ETA</div>
+                                <div class="eta-time" style="font-size: 12px; font-weight: 500; color: var(--card-foreground);">${flightInfo.etaFormatted || 'N/A'}</div>
                             </div>
                         </div>
                     </div>
                     <!-- Plane Icon - rotates based on heading -->
-                    <div class="plane-icon" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: ${statusColor}; border: 3px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.3), 0 0 20px ${statusColor}40; transform: rotate(${planeRotation}deg); transition: transform 1s ease-out, background 0.5s ease;">
-                        <svg style="width: 22px; height: 22px; color: white;" viewBox="0 0 24 24" fill="currentColor">
+                    <div class="plane-icon" style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: ${statusColor}; border: 3px solid var(--background); box-shadow: 0 4px 15px rgba(0,0,0,0.3), 0 0 20px ${statusColor}40; transform: rotate(${planeRotation}deg); transition: transform 1s ease-out, background 0.5s ease;">
+                        <svg style="width: 22px; height: 22px; color: var(--primary-foreground);" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
                         </svg>
                     </div>
