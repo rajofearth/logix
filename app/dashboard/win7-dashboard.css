@@ -43,6 +43,11 @@
   --w7-li-bd-hl: #aaddfa;
   --w7-li-bg-hl: linear-gradient(#fff9, #e6ecf5cc 90%, #fffc);
 
+  /* Link colors from _typography.scss */
+  --w7-link-c: #0066cc;
+  --w7-link-c-h: #3399ff;
+  --w7-title-c: #003399;
+
   /* Window variables */
   --w7-w-space: 6px;
   --w7-w-bd: #000000b3;
@@ -703,7 +708,8 @@
 
 .win7-groupbox>legend {
   font-weight: 400;
-  color: #0046d5;
+  font-size: 12pt;
+  color: #003399;
   padding: 0 4px;
 }
 
@@ -766,6 +772,41 @@
   border-radius: 4px;
   padding: 12px;
   box-shadow: 2px 2px 4px -1px #00000030;
+}
+
+/* Win7 Aero Glass Card - uses window styling from _window.scss */
+.win7-aero-card {
+  font: var(--w7-font);
+  position: relative;
+  background: var(--w7-surface);
+  border: 1px solid var(--w7-w-bd);
+  border-radius: var(--w7-w-bdr);
+  padding: 0;
+  box-shadow:
+    2px 2px 10px 1px rgba(0, 0, 0, 0.3),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.7);
+  overflow: hidden;
+}
+
+/* Aero header/title bar */
+.win7-aero-card-header {
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.4), rgba(0, 0, 0, 0.1), rgba(255, 255, 255, 0.2)), var(--w7-w-bg);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 1px 0 0 rgba(255, 255, 255, 0.9), inset -1px 0 0 rgba(255, 255, 255, 0.9);
+  padding: 6px 12px;
+  color: #000;
+  text-shadow: 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Aero body - content area */
+.win7-aero-card-body {
+  background: var(--w7-surface);
+  border-top: 1px solid var(--w7-w-bd);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.6);
+  padding: 12px;
 }
 
 .win7-card-header {
@@ -1116,14 +1157,25 @@
 
 /* Override Input styling */
 .win7-desktop input,
-.win7-desktop [data-slot="input"] {
-  font: var(--w7-font);
-  padding: 3px 4px 5px;
-  border: 1px solid #abadb3;
-  border-radius: 2px;
-  background-color: #fff;
-  height: 23px;
-  color: #000;
+.win7-desktop [data-slot="input"],
+.win7-desktop textarea {
+  font: var(--w7-font) !important;
+  font-size: 9pt !important;
+  padding: 3px 4px 5px !important;
+  border: 1px solid #abadb3 !important;
+  border-radius: 2px !important;
+  background-color: #fff !important;
+  min-height: 23px !important;
+  color: #000 !important;
+}
+
+/* Datetime inputs need special handling */
+.win7-desktop input[type="datetime-local"],
+.win7-desktop input[type="date"],
+.win7-desktop input[type="time"] {
+  padding: 2px 4px !important;
+  font-size: 9pt !important;
+  color: #000 !important;
 }
 
 .win7-desktop input:focus,
@@ -1131,6 +1183,28 @@
   outline: none;
   border-color: #3d7bad;
   box-shadow: none;
+}
+
+/* Override Label styling - Windows 7 readable font */
+.win7-desktop label,
+.win7-desktop [data-slot="label"] {
+  font: var(--w7-font) !important;
+  font-size: 11px !important;
+  font-weight: 400 !important;
+  color: #000 !important;
+  opacity: 1 !important;
+}
+
+/* Muted text should still be readable */
+.win7-desktop .text-muted-foreground {
+  color: #444 !important;
+}
+
+/* Override separator */
+.win7-desktop [data-slot="separator"],
+.win7-desktop hr {
+  background: #cfcfcf !important;
+  border-color: #cfcfcf !important;
 }
 
 /* Override Select styling */
@@ -1221,12 +1295,49 @@
 
 /* Override Avatar styling */
 .win7-desktop [data-slot="avatar"] {
-  border: 1px solid #888;
-  box-shadow: none;
+  border: 1px solid #888 !important;
+  box-shadow: none !important;
 }
 
 .win7-desktop [data-slot="avatar"]:hover {
-  box-shadow: none;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Remove all orange ring colors from any element */
+.win7-desktop .ring-emerald-500,
+.win7-desktop .ring-blue-500,
+.win7-desktop .ring-gray-400,
+.win7-desktop .ring-orange-500,
+.win7-desktop .ring-accent {
+  --tw-ring-color: #888 !important;
+}
+
+.win7-desktop .ring-2,
+.win7-desktop .ring-1,
+.win7-desktop .ring-4 {
+  --tw-ring-color: #888 !important;
+}
+
+/* Override ring-offset to use white instead of accent */
+.win7-desktop .ring-offset-2 {
+  --tw-ring-offset-color: #fff !important;
+}
+
+.win7-desktop .ring-offset-background {
+  --tw-ring-offset-color: #f0f0f0 !important;
+}
+
+/* Override any glow/accent animations */
+.win7-desktop [class*="glow"] {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+/* Global override for all elements with ring classes */
+.win7-desktop [class*="ring-"] {
+  --tw-ring-color: #888 !important;
+  --tw-ring-offset-color: #fff !important;
 }
 
 /* Override Dropdown styling */
@@ -1329,4 +1440,43 @@
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   📝 FONT SIZE OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* Override Tailwind text-xs to be more readable */
+.win7-desktop .text-xs {
+  font-size: 11px !important;
+}
+
+.win7-desktop .text-sm {
+  font-size: 12px !important;
+}
+
+/* Ensure span elements are visible */
+.win7-desktop span {
+  color: inherit;
+}
+
+/* Ensure form field containers have proper text color */
+.win7-desktop .flex.flex-col.gap-2 span,
+.win7-desktop .grid span {
+  color: #000 !important;
+}
+
+/* Make sure all text in window-body is readable */
+.win7-desktop .window-body {
+  color: #000;
+}
+
+.win7-desktop .window-body * {
+  color: inherit;
+}
+
+/* Override specific utility classes that might hide text */
+.win7-desktop .text-muted-foreground {
+  color: #444 !important;
+  opacity: 1 !important;
 }

@@ -28,24 +28,29 @@ export function DriverFilters({
     onSearchChange,
 }: DriverFiltersProps) {
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Filter Tabs using Win7 Tab styling */}
-            <div role="tablist" style={{ display: 'flex' }}>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            {/* Windows 7 Tab styling */}
+            <div
+                className="flex"
+                style={{
+                    borderBottom: '1px solid var(--w7-el-bd)',
+                    paddingBottom: '0',
+                }}
+            >
                 {filters.map((filter) => (
                     <button
-                        role="tab"
-                        aria-selected={activeFilter === filter.key}
                         key={filter.key}
                         onClick={() => onFilterChange(filter.key)}
                         className={cn(
-                            "px-3 py-1 text-xs select-none focus:outline-none -mb-[1px] border border-b-0 rounded-t-[3px]",
+                            "relative px-3 py-1.5 text-xs font-medium select-none transition-colors",
+                            "-mb-[1px] border rounded-t-[3px]",
                             activeFilter === filter.key
-                                ? "bg-white border-[#898c95] z-10" // Active tab
-                                : "bg-[#f0f0f0] border-transparent text-gray-500 hover:text-black mt-[2px]" // Inactive tab
+                                ? "bg-white border-[var(--w7-el-bd)] border-b-white z-10"
+                                : "bg-[var(--w7-el-grad)] border-transparent hover:bg-[#e5e5e5] text-[#555]"
                         )}
                         style={{
-                            minWidth: 80,
-                            position: 'relative'
+                            font: 'var(--w7-font)',
+                            minWidth: '70px',
                         }}
                     >
                         {filter.label} ({stats[filter.statKey]})
@@ -53,19 +58,35 @@ export function DriverFilters({
                 ))}
             </div>
 
-            {/* Search */}
+            {/* Windows 7 Search box */}
             <div className="relative w-full sm:w-72">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-gray-500 pointer-events-none" />
+                <IconSearch
+                    className="absolute left-2 top-1/2 -translate-y-1/2 size-4 pointer-events-none"
+                    style={{ color: '#666' }}
+                />
                 <input
                     type="search"
                     placeholder="Search drivers..."
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-9 pr-2 h-8 w-full border border-[#8e8f8f] text-sm focus:border-blue-500 outline-none"
                     style={{
+                        font: 'var(--w7-font)',
+                        fontSize: '9pt',
+                        width: '100%',
+                        height: '23px',
+                        paddingLeft: '28px',
+                        paddingRight: '8px',
+                        border: '1px solid #abadb3',
+                        borderRadius: '2px',
                         background: '#fff',
-                        borderRadius: 0,
-                        boxShadow: 'inset 0 0 0 1px #fff', // mimic bevel highlight
+                        color: '#000',
+                        outline: 'none',
+                    }}
+                    onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#3d7bad'
+                    }}
+                    onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#abadb3'
                     }}
                 />
             </div>
