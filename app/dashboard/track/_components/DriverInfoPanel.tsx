@@ -54,7 +54,7 @@ export function DriverInfoPanel({ delivery, topRightDock }: DriverInfoPanelProps
     return (
         <div className="absolute bottom-3 left-3 right-3 z-10">
             {topRightDock ? (
-                <div className="absolute bottom-full right-0 mb-3 pointer-events-auto">
+                <div className="absolute bottom-full left-0 mb-3 pointer-events-auto">
                     {topRightDock}
                 </div>
             ) : null}
