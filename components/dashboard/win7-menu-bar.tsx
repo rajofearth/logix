@@ -121,10 +121,7 @@ export function Win7MenuBar() {
                     key={item.title}
                     role="menuitem"
                     tabIndex={0}
-                    style={{
-                        background: item.url && isActive(item.url) ? "#3399ff" : undefined,
-                        color: item.url && isActive(item.url) ? "#fff" : undefined,
-                    }}
+                    className={item.url && isActive(item.url) ? "is-active" : undefined}
                 >
                     {item.url && !item.submenu ? (
                         <Link href={item.url}>{item.title}</Link>
@@ -152,10 +149,7 @@ export function Win7MenuBar() {
                     key={item.title}
                     role="menuitem"
                     tabIndex={0}
-                    style={{
-                        background: isActive(item.url) ? "#3399ff" : undefined,
-                        color: isActive(item.url) ? "#fff" : undefined,
-                    }}
+                    className={isActive(item.url) ? "is-active" : undefined}
                 >
                     <Link href={item.url}>{item.title}</Link>
                 </li>
