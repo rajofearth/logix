@@ -832,6 +832,115 @@
    📜 SCROLLBAR (for window-body)
    ═══════════════════════════════════════════════════════════════════════════════ */
 
+.win7-desktop {
+  /* Firefox */
+  scrollbar-width: auto;
+  scrollbar-color: var(--w7-el-bd) var(--w7-surface);
+}
+
+.win7-desktop * {
+  /* Firefox (nested scrollers) */
+  scrollbar-width: auto;
+  scrollbar-color: var(--w7-el-bd) var(--w7-surface);
+}
+
+/* WebKit (Chrome/Edge/Safari) - Dashboard-only */
+.win7-desktop ::-webkit-scrollbar {
+  width: 16px;
+}
+
+.win7-desktop ::-webkit-scrollbar:horizontal {
+  height: 17px;
+}
+
+.win7-desktop ::-webkit-scrollbar-button {
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--w7-el-bd);
+  border-radius: var(--w7-el-bdr);
+  box-shadow: var(--w7-el-sd);
+  background: var(--w7-el-grad);
+}
+
+/* Vertical arrows */
+.win7-desktop ::-webkit-scrollbar-button:single-button:vertical:decrement {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7' viewBox='0 0 7 7'%3E%3Cpath fill='%23000' d='M3.5 1L6 4H1z'/%3E%3C/svg%3E") no-repeat center,
+    var(--w7-el-grad);
+}
+
+.win7-desktop ::-webkit-scrollbar-button:single-button:vertical:increment {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7' viewBox='0 0 7 7'%3E%3Cpath fill='%23000' d='M1 3l5 0-2.5 3z'/%3E%3C/svg%3E") no-repeat center,
+    var(--w7-el-grad);
+}
+
+/* Horizontal arrows */
+.win7-desktop ::-webkit-scrollbar-button:single-button:horizontal:decrement {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7' viewBox='0 0 7 7'%3E%3Cpath fill='%23000' d='M1 3.5L4 1v5z'/%3E%3C/svg%3E") no-repeat center,
+    var(--w7-el-grad);
+}
+
+.win7-desktop ::-webkit-scrollbar-button:single-button:horizontal:increment {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='7' viewBox='0 0 7 7'%3E%3Cpath fill='%23000' d='M3 1l3 2.5L3 6z'/%3E%3C/svg%3E") no-repeat center,
+    var(--w7-el-grad);
+}
+
+.win7-desktop ::-webkit-scrollbar-button:hover {
+  border-color: var(--w7-el-bd-h);
+  background: var(--w7-el-grad-h);
+}
+
+.win7-desktop ::-webkit-scrollbar-button:active {
+  border-color: var(--w7-el-bd-a);
+  background: var(--w7-el-grad-a);
+}
+
+.win7-desktop ::-webkit-scrollbar-corner {
+  background: var(--w7-el-bg);
+}
+
+.win7-desktop ::-webkit-scrollbar-track:vertical {
+  background:
+    linear-gradient(to right, #e5e5e5, var(--w7-surface) 20%),
+    var(--w7-sb-y);
+}
+
+.win7-desktop ::-webkit-scrollbar-track:horizontal {
+  background:
+    linear-gradient(to bottom, #e5e5e5, var(--w7-surface) 20%),
+    var(--w7-sb-x);
+}
+
+.win7-desktop ::-webkit-scrollbar-thumb {
+  border: 1px solid var(--w7-el-bd);
+  border-radius: var(--w7-el-bdr);
+  box-shadow: var(--w7-el-sd);
+  background-color: var(--w7-el-bg);
+}
+
+.win7-desktop ::-webkit-scrollbar-thumb:vertical {
+  background: linear-gradient(to right, var(--w7-el-bg) 45%, var(--w7-el-bg-s-1) 45%, var(--w7-el-bg-s-2));
+}
+
+.win7-desktop ::-webkit-scrollbar-thumb:horizontal {
+  background: linear-gradient(to bottom, var(--w7-el-bg) 45%, var(--w7-el-bg-s-1) 45%, var(--w7-el-bg-s-2));
+}
+
+.win7-desktop ::-webkit-scrollbar-thumb:hover {
+  border-color: var(--w7-el-bd-h);
+}
+
+.win7-desktop ::-webkit-scrollbar-thumb:hover:vertical {
+  background: linear-gradient(to right, var(--w7-sb-grad-h-1) 45%, var(--w7-sb-grad-h-2) 45%);
+}
+
+.win7-desktop ::-webkit-scrollbar-thumb:hover:horizontal {
+  background: linear-gradient(to bottom, var(--w7-sb-grad-h-1) 45%, var(--w7-sb-grad-h-2) 45%);
+}
+
 .window-body::-webkit-scrollbar {
   width: 16px;
 }

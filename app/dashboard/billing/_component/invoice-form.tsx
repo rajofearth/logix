@@ -102,7 +102,15 @@ export function InvoiceForm({ initialData, onSubmit }: { initialData?: FormData,
 
             {/* Preview Modal */}
             {showPreview && (
-                <div className="fixed inset-0 flex items-center justify-center z-50" style={{ zIndex: 1000, backdropFilter: 'blur(4px)', backgroundColor: 'rgba(0, 0, 0, 0.3)' }}>
+                <div
+                    className="fixed inset-0 flex items-center justify-center z-50"
+                    style={{
+                        zIndex: 1000,
+                        backdropFilter: 'blur(6px)',
+                        WebkitBackdropFilter: 'blur(6px)',
+                        backgroundColor: 'rgba(0, 0, 0, 0.25)',
+                    }}
+                >
                     <div className="bg-white border-2 border-gray-400 shadow-xl max-w-4xl w-full max-h-[90vh] overflow-auto">
                         <div className="flex items-center justify-between p-2 bg-gray-100 border-b border-gray-400">
                             <h3 className="font-bold text-sm" style={{ font: 'var(--w7-font)' }}>Invoice Preview</h3>
