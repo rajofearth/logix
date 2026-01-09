@@ -69,6 +69,7 @@ interface AddProductForm {
     name: string;
     sku: string;
     quantity: string;
+    averageWeeklySales: string;
     boughtAt: string;
     currentPrice: string;
     category: ProductCategory;
@@ -100,6 +101,7 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
         name: "",
         sku: "",
         quantity: "",
+        averageWeeklySales: "",
         boughtAt: "",
         currentPrice: "",
         category: "other",
@@ -167,6 +169,9 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                 name: addProductForm.name,
                 quantity: parseInt(addProductForm.quantity),
                 category: addProductForm.category,
+                averageWeeklySales: addProductForm.averageWeeklySales
+                    ? parseInt(addProductForm.averageWeeklySales)
+                    : null,
                 boughtAt: parseFloat(addProductForm.boughtAt),
                 currentPrice: parseFloat(addProductForm.currentPrice),
             });
@@ -176,6 +181,7 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                 name: "",
                 sku: "",
                 quantity: "",
+                averageWeeklySales: "",
                 boughtAt: "",
                 currentPrice: "",
                 category: "other",
@@ -612,6 +618,21 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                                 />
                             </div>
                             <div className="space-y-2">
+                                <Label htmlFor="product-weekly-sales">Avg Weekly Sales</Label>
+                                <Input
+                                    id="product-weekly-sales"
+                                    type="number"
+                                    placeholder="e.g., 25"
+                                    value={addProductForm.averageWeeklySales}
+                                    onChange={(e) =>
+                                        setAddProductForm((prev) => ({
+                                            ...prev,
+                                            averageWeeklySales: e.target.value,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
                                 <Label htmlFor="product-bought">Bought At (per unit)</Label>
                                 <Input
                                     id="product-bought"
@@ -626,21 +647,21 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                                     }
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="product-current">Current Price (per unit)</Label>
-                                <Input
-                                    id="product-current"
-                                    type="number"
-                                    placeholder="0.00"
-                                    value={addProductForm.currentPrice}
-                                    onChange={(e) =>
-                                        setAddProductForm((prev) => ({
-                                            ...prev,
-                                            currentPrice: e.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="product-current">Current Price (per unit)</Label>
+                            <Input
+                                id="product-current"
+                                type="number"
+                                placeholder="0.00"
+                                value={addProductForm.currentPrice}
+                                onChange={(e) =>
+                                    setAddProductForm((prev) => ({
+                                        ...prev,
+                                        currentPrice: e.target.value,
+                                    }))
+                                }
+                            />
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="category">Category</Label>

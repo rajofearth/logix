@@ -502,6 +502,7 @@ model Product {
   sku          String          @unique
   name         String
   quantity     Int
+  averageWeeklySales Int?      @map("average_weekly_sales")
   category     ProductCategory
   boughtAt     Decimal         @map("bought_at") @db.Decimal(10, 2)
   currentPrice Decimal         @map("current_price") @db.Decimal(10, 2)
