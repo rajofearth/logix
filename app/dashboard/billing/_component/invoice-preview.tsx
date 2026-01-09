@@ -77,26 +77,26 @@ export function InvoicePreview({ invoice }: { invoice: Invoice }) {
 
             {/* Line Items */}
             <div className="flex-1">
-                <table className="w-full text-xs">
+                <table className="win7-table w-full text-xs print:win7-table" style={{ font: 'var(--w7-font)' }}>
                     <thead>
-                        <tr className="bg-zinc-800 text-white uppercase text-[10px]">
-                            <th className="px-2 py-2 text-left w-8">#</th>
-                            <th className="px-2 py-2 text-left">Description</th>
-                            <th className="px-2 py-2 text-center w-20">HSN/SAC</th>
-                            <th className="px-2 py-2 text-center w-12">Qty</th>
-                            <th className="px-2 py-2 text-right w-24">Rate</th>
-                            <th className="px-2 py-2 text-right w-28">Amount</th>
+                        <tr>
+                            <th style={{ width: '32px' }}>#</th>
+                            <th>Description</th>
+                            <th style={{ width: '80px', textAlign: 'center' }}>HSN/SAC</th>
+                            <th style={{ width: '48px', textAlign: 'center' }}>Qty</th>
+                            <th style={{ width: '96px', textAlign: 'right' }}>Rate</th>
+                            <th style={{ width: '112px', textAlign: 'right' }}>Amount</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y border-x border-b">
+                    <tbody>
                         {invoice.lineItems.map((item, i: number) => (
                             <tr key={i}>
-                                <td className="px-2 py-2 text-center">{i + 1}</td>
-                                <td className="px-2 py-2">{item.description}</td>
-                                <td className="px-2 py-2 text-center font-mono">{item.hsnCode}</td>
-                                <td className="px-2 py-2 text-center">{item.quantity}</td>
-                                <td className="px-2 py-2 text-right">{Number(item.rate).toLocaleString()}</td>
-                                <td className="px-2 py-2 text-right font-bold">{Number(item.taxableValue).toLocaleString()}</td>
+                                <td style={{ textAlign: 'center' }}>{i + 1}</td>
+                                <td>{item.description}</td>
+                                <td style={{ textAlign: 'center', fontFamily: 'monospace' }}>{item.hsnCode}</td>
+                                <td style={{ textAlign: 'center' }}>{item.quantity}</td>
+                                <td style={{ textAlign: 'right' }}>{Number(item.rate).toLocaleString()}</td>
+                                <td style={{ textAlign: 'right', fontWeight: 600 }}>{Number(item.taxableValue).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
