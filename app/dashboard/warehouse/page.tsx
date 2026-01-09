@@ -13,6 +13,7 @@ import { AddWarehouseDialog } from "./_components/add-warehouse-dialog";
 import { AddFloorDialog } from "./_components/add-floor-dialog";
 import { AddBlockDialog } from "./_components/add-block-dialog";
 import { Button } from "@/components/ui/button";
+import { RestockAiPanel } from "./_components/restock-ai-panel";
 
 export default function WarehousePage() {
   // Loading and error states
@@ -87,6 +88,10 @@ export default function WarehousePage() {
   const selectedWarehouse = selectedWarehouseId ? warehouses.get(selectedWarehouseId) : null;
   const selectedFloor = selectedWarehouse?.floors.find((f) => f.id === selectedFloorId) ||
     selectedWarehouse?.floors[0];
+
+  const availableCategories = selectedFloor
+    ? Array.from(new Set(selectedFloor.blocks.map((b) => b.category)))
+    : [];
 
   // Refresh current warehouse data
   const refreshWarehouse = useCallback(async () => {
@@ -275,6 +280,21 @@ export default function WarehousePage() {
             <WarehouseFooterStats floor={selectedFloor || placeholderFloor} />
           </div>
         </div>
+
+        {/* AI Restock */}
+        {selectedWarehouseId && selectedFloor && (
+          <div className="win7-groupbox">
+            <legend>AI</legend>
+            <div className="win7-p-2">
+              <RestockAiPanel
+                warehouseId={selectedWarehouseId}
+                floorId={selectedFloor.id}
+                floorName={selectedFloor.name}
+                categories={availableCategories}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <AddWarehouseDialog
