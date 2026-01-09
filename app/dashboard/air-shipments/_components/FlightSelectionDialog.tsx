@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { format } from "date-fns";
-import { IconPlaneDeparture, IconPlaneArrival, IconClock, IconSearch, IconPlane } from "@tabler/icons-react";
+import { IconPlaneDeparture, IconPlaneArrival, IconClock, IconPlane } from "@tabler/icons-react";
 
 import {
     Dialog,
@@ -104,11 +104,12 @@ export function FlightSelectionDialog({
                                     const durationMins = flight.totalDuration % 60;
 
                                     return (
-                                        <div
+                                        <button
                                             key={index}
+                                            type="button"
                                             onClick={() => setSelectedFlightIndex(index)}
                                             className={`
-                          cursor-pointer rounded-xl border p-4 transition-all
+                          cursor-pointer rounded-xl border p-4 transition-all w-full text-left
                           hover:bg-muted/50
                           ${isSelected
                                                     ? "border-primary bg-primary/5 shadow-sm ring-1 ring-primary"
@@ -194,7 +195,7 @@ export function FlightSelectionDialog({
                                                     </span>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </button>
                                     );
                                 })}
                             </div>

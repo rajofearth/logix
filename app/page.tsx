@@ -1,21 +1,22 @@
-import { Navbar } from "@/components/layout/Navbar";
+import { Grain } from "@/components/ui/grain";
+import { LandingNav } from "@/components/sections/LandingNav";
 import { Hero } from "@/components/sections/Hero";
-import { TruckDisplay } from "@/components/sections/TruckDisplay";
+import { Marquee } from "@/components/sections/Marquee";
 import { Features } from "@/components/sections/Features";
-import { Results } from "@/components/sections/Results";
-import { Solutions } from "@/components/sections/Solutions";
-import { News } from "@/components/sections/News";
+import { Footer } from "@/components/sections/Footer";
+import { SmoothScroll } from "@/components/layout/SmoothScroll";
 
 export default function Page() {
     return (
-        <main className="min-h-screen bg-background text-foreground selection:bg-foreground selection:text-background">
-            <Navbar />
-            <Hero />
-            <TruckDisplay />
-            <Solutions />
-            <Features />
-            <Results />
-            <News />
-        </main>
+        <SmoothScroll>
+            <main className="min-h-screen w-full bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary">
+                <Grain />
+                <LandingNav />
+                <Hero />
+                <Marquee />
+                <Features />
+                <Footer />
+            </main>
+        </SmoothScroll>
     );
 }

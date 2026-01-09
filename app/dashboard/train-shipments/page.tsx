@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import {
     IconPlus,
     IconRefresh,
@@ -48,7 +48,7 @@ function formatTime(date: Date): string {
 }
 
 export default function TrainShipmentsPage() {
-    const router = useRouter();
+
     const [shipments, setShipments] = React.useState<TrainShipmentListItem[]>([]);
     const [total, setTotal] = React.useState(0);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -171,14 +171,10 @@ export default function TrainShipmentsPage() {
                             ) : (
                                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                                     {shipments.map((shipment) => (
-                                        <div
+                                        <Link
                                             key={shipment.id}
-                                            className="rounded-lg border bg-card p-4 cursor-pointer hover:border-primary/50 transition-colors"
-                                            onClick={() =>
-                                                router.push(
-                                                    `/dashboard/train-shipments/${shipment.id}`
-                                                )
-                                            }
+                                            href={`/dashboard/train-shipments/${shipment.id}`}
+                                            className="rounded-lg border bg-card p-4 block hover:border-primary/50 transition-colors"
                                         >
                                             {/* Header */}
                                             <div className="flex items-start justify-between mb-3">
@@ -239,7 +235,7 @@ export default function TrainShipmentsPage() {
                                                         ⚠️ Delayed by {shipment.delayMinutes} min
                                                     </div>
                                                 )}
-                                        </div>
+                                        </Link>
                                     ))}
                                 </div>
                             )}
