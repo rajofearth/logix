@@ -25,24 +25,45 @@ export function DeliveryCard({
             onMouseLeave={() => onHover(null)}
             onClick={onClick}
             className={cn(
-                "transition-all duration-100 cursor-pointer p-2 border",
-                isSelected
-                    ? "bg-[#316ac5] border-[#000080] text-white" // Win7 Selected Item Blue
-                    : "bg-white border-transparent hover:bg-[#eef1ff] hover:border-[#a8a8a8]", // Hover state
-                "group relative select-none"
+                "transition-all duration-100 cursor-pointer p-2 border select-none",
+                "font-[var(--w7-font)]"
             )}
+            style={{
+                font: 'var(--w7-font)',
+                fontSize: '9pt',
+                background: isSelected
+                    ? 'linear-gradient(#3399ff 45%, #1c78cc 45%, #0056b3)' // Win7 selection blue gradient
+                    : isHovered
+                        ? 'linear-gradient(rgba(255,255,255,0.6), rgba(230,236,245,0.8) 90%, rgba(255,255,255,0.8))' // Win7 hover
+                        : '#fff',
+                border: isSelected
+                    ? '1px solid #003399'
+                    : isHovered
+                        ? '1px solid #aaddfa' // Win7 hover border
+                        : '1px solid #cdd7db',
+                borderRadius: 'var(--w7-el-bdr)',
+                boxShadow: isSelected
+                    ? 'inset 0 0 0 1px rgba(255,255,255,0.3)'
+                    : 'inset 0 0 0 1px #fff',
+                color: isSelected ? '#fff' : '#000',
+            }}
         >
-            {/* Dotted focus outline simulation if needed, but simple selection is fine */}
-
             {/* Header Section */}
             <div className="flex items-start justify-between pb-1">
-                <p className={cn(
-                    "text-xs font-bold font-sans",
-                    isSelected ? "text-white" : "text-black"
-                )}>
+                <p
+                    className="text-xs font-bold"
+                    style={{ color: isSelected ? '#fff' : '#000' }}
+                >
                     {delivery.type}
                 </p>
-                {isSelected && <span className="text-[10px] text-white opacity-80">Selected</span>}
+                {isSelected && (
+                    <span
+                        className="text-[10px]"
+                        style={{ color: 'rgba(255,255,255,0.8)' }}
+                    >
+                        Selected
+                    </span>
+                )}
             </div>
 
             {/* Route Section - Compact */}
@@ -50,10 +71,16 @@ export function DeliveryCard({
                 {/* Origin */}
                 <div className="flex items-start gap-2">
                     <div className="w-3 flex justify-center pt-1">
-                        <div className={cn("size-1.5 rounded-full", isSelected ? "bg-white" : "bg-green-600")} />
+                        <div
+                            className="size-1.5 rounded-full"
+                            style={{ background: isSelected ? '#fff' : '#0066cc' }}
+                        />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className={cn("text-[11px] truncate leading-tight", isSelected ? "text-white" : "text-black")}>
+                        <p
+                            className="text-[11px] truncate leading-tight"
+                            style={{ color: isSelected ? '#fff' : '#000' }}
+                        >
                             {delivery.origin.address}
                         </p>
                     </div>
@@ -62,10 +89,16 @@ export function DeliveryCard({
                 {/* Destination */}
                 <div className="flex items-start gap-2">
                     <div className="w-3 flex justify-center pt-1">
-                        <div className={cn("size-1.5 rounded-sm", isSelected ? "bg-white" : "bg-red-600")} />
+                        <div
+                            className="size-1.5 rounded-sm"
+                            style={{ background: isSelected ? '#fff' : '#cc0000' }}
+                        />
                     </div>
                     <div className="flex-1 min-w-0">
-                        <p className={cn("text-[11px] truncate leading-tight", isSelected ? "text-white" : "text-black")}>
+                        <p
+                            className="text-[11px] truncate leading-tight"
+                            style={{ color: isSelected ? '#fff' : '#000' }}
+                        >
                             {delivery.destination.address}
                         </p>
                     </div>
@@ -73,19 +106,38 @@ export function DeliveryCard({
             </div>
 
             {/* Driver Section - Compact */}
-            <div className={cn(
-                "flex items-center gap-2 pt-1 border-t",
-                isSelected ? "border-white/30" : "border-gray-200"
-            )}>
-                <Avatar className="size-6 ring-1 ring-black/10">
+            <div
+                className="flex items-center gap-2 pt-1"
+                style={{
+                    borderTop: isSelected ? '1px solid rgba(255,255,255,0.3)' : '1px solid #e0e0e0'
+                }}
+            >
+                <Avatar
+                    className="size-6"
+                    style={{ border: '1px solid #8e8f8f' }}
+                >
                     <AvatarImage src={delivery.driver.avatar} alt={delivery.driver.name} />
-                    <AvatarFallback className="text-[9px] text-black">{delivery.driver.name.charAt(0)}</AvatarFallback>
+                    <AvatarFallback
+                        className="text-[9px]"
+                        style={{
+                            background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                            color: '#333'
+                        }}
+                    >
+                        {delivery.driver.name.charAt(0)}
+                    </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0">
-                    <p className={cn("text-[11px] font-medium truncate", isSelected ? "text-white" : "text-black")}>
+                    <p
+                        className="text-[11px] font-medium truncate"
+                        style={{ color: isSelected ? '#fff' : '#000' }}
+                    >
                         {delivery.driver.name}
                     </p>
-                    <p className={cn("text-[9px] truncate", isSelected ? "text-white/80" : "text-gray-500")}>
+                    <p
+                        className="text-[9px] truncate"
+                        style={{ color: isSelected ? 'rgba(255,255,255,0.8)' : '#666' }}
+                    >
                         {delivery.driver.role}
                     </p>
                 </div>

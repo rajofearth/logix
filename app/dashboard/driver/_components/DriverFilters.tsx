@@ -58,36 +58,38 @@ export function DriverFilters({
                 ))}
             </div>
 
-            {/* Windows 7 Search box */}
+            {/* Windows 7 Search box - from _searchbox.scss */}
             <div className="relative w-full sm:w-72">
-                <IconSearch
-                    className="absolute left-2 top-1/2 -translate-y-1/2 size-4 pointer-events-none"
-                    style={{ color: '#666' }}
-                />
                 <input
                     type="search"
                     placeholder="Search drivers..."
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
+                    className="win7-search"
                     style={{
                         font: 'var(--w7-font)',
                         fontSize: '9pt',
                         width: '100%',
-                        height: '23px',
-                        paddingLeft: '28px',
-                        paddingRight: '8px',
-                        border: '1px solid #abadb3',
+                        height: '24px',
+                        padding: '3px 28px 3px 8px',
+                        border: '1px solid transparent',
                         borderRadius: '2px',
                         background: '#fff',
                         color: '#000',
+                        boxShadow: 'inset 1px 1px 0 #8e8f8f, inset -1px -1px 0 #ccc',
                         outline: 'none',
+                        minWidth: '180px',
                     }}
                     onFocus={(e) => {
-                        e.currentTarget.style.borderColor = '#3d7bad'
+                        e.currentTarget.style.boxShadow = 'inset 1px 1px 0 #3d7bad, inset -1px -1px 0 #a5d1e9'
                     }}
                     onBlur={(e) => {
-                        e.currentTarget.style.borderColor = '#abadb3'
+                        e.currentTarget.style.boxShadow = 'inset 1px 1px 0 #8e8f8f, inset -1px -1px 0 #ccc'
                     }}
+                />
+                <IconSearch
+                    className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 pointer-events-none"
+                    style={{ color: '#666' }}
                 />
             </div>
         </div>

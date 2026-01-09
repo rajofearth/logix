@@ -400,7 +400,7 @@
   [data-slot="select-item"]:focus,
   [data-slot="select-item"][data-highlighted],
   [data-slot="select-item"][data-selected] {
-    background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(230,236,245,0.8) 90%, rgba(255,255,255,0.8)) !important;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(230, 236, 245, 0.8) 90%, rgba(255, 255, 255, 0.8)) !important;
     border: 1px solid #aaddfa !important;
     box-shadow: 0 0 0 1px #b3d3f9 !important;
     color: #222 !important;
@@ -621,19 +621,6 @@
   .animate-glow {
     animation: glow-pulse 3s ease-in-out infinite;
   }
-
-  /* Animate Shimmer */
-  .animate-shimmer {
-    background: linear-gradient(90deg, transparent 0%, oklch(1 0 0 / 20%) 50%, transparent 100%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-  }
-
-  /* Float In Animation */
-  .animate-float-in {
-    animation: float-in 400ms var(--transition-liquid) forwards;
-  }
-
   /* Gradient Background */
   .bg-gradient-gold {
     background: var(--gradient-gold);

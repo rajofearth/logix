@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { listShipments, type ShipmentListItem } from "./_server/actions";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -142,13 +142,14 @@ export default function AirShipmentsPage() {
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={i}>
-                                        <td colSpan={6} className="py-2">
-                                            <Skeleton className="h-4 w-full" />
-                                        </td>
-                                    </tr>
-                                ))
+                                <tr>
+                                    <td colSpan={6} className="h-32 text-center align-middle">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <div role="progressbar" className="marquee w-64" />
+                                            <span className="text-xs text-gray-500 font-sans">Loading shipments...</span>
+                                        </div>
+                                    </td>
+                                </tr>
                             ) : shipments.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="h-32 text-center text-gray-500">
