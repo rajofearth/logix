@@ -323,7 +323,7 @@ export function JobsTable({
             {jobs.length} {jobs.length === 1 ? "job" : "jobs"} found
           </p>
         </div>
-        <Link href="/dashboard/jobs/new">
+        <Link href="/dashboard/jobs/create">
           <button className="win7-btn flex items-center justify-center">
             <span className="flex items-center gap-1">
               <IconPlus className="size-3" /> New Job
