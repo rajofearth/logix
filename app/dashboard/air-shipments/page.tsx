@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import { listShipments, type ShipmentListItem } from "./_server/actions";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -143,9 +143,30 @@ export default function AirShipmentsPage() {
                         <tbody>
                             {isLoading ? (
                                 Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={i}>
-                                        <td colSpan={6} className="py-2">
-                                            <Skeleton className="h-4 w-full" />
+                                    <tr key={i} className="border-b border-gray-100 last:border-0">
+                                        <td className="py-2 pr-2">
+                                            <div className="h-4 w-16 bg-gray-200 animate-pulse rounded" />
+                                        </td>
+                                        <td className="py-2 pr-2">
+                                            <div className="space-y-1">
+                                                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
+                                                <div className="h-3 w-12 bg-gray-200 animate-pulse rounded" />
+                                            </div>
+                                        </td>
+                                        <td className="py-2 pr-2">
+                                            <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
+                                        </td>
+                                        <td className="py-2 pr-2">
+                                            <div className="space-y-1">
+                                                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
+                                                <div className="h-3 w-16 bg-gray-200 animate-pulse rounded" />
+                                            </div>
+                                        </td>
+                                        <td className="py-2 pr-2">
+                                            <div className="h-4 w-32 bg-gray-200 animate-pulse rounded" />
+                                        </td>
+                                        <td className="py-2">
+                                            <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
                                         </td>
                                     </tr>
                                 ))
