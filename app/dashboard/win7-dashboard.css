@@ -1154,10 +1154,19 @@
   font: var(--w7-font);
   padding: 4px 8px;
   border-radius: 3px;
+  border: 1px solid transparent;
+  color: #222;
 }
 
-.win7-desktop [data-slot="select-item"]:hover {
-  background: var(--w7-li-bg-hl);
+.win7-desktop [data-slot="select-item"]:hover,
+.win7-desktop [data-slot="select-item"]:focus,
+.win7-desktop [data-slot="select-item"][data-highlighted],
+.win7-desktop [data-slot="select-item"][data-selected] {
+  background: var(--w7-li-bg-hl) !important;
+  border-color: var(--w7-li-bd-hl) !important;
+  box-shadow: 0 0 0 1px #b3d3f9 !important;
+  color: #222 !important;
+  outline: none !important;
 }
 
 /* Override Checkbox styling */

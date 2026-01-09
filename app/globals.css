@@ -390,10 +390,20 @@
   }
 
   [data-slot="dropdown-menu-item"]:hover,
-  [data-slot="select-item"]:hover,
   [data-slot="sidebar-menu-button"]:hover {
     background: var(--accent);
     color: var(--accent-foreground);
+  }
+
+  /* Windows 7 theme for select items - subtle gradient hover with light blue border */
+  [data-slot="select-item"]:hover,
+  [data-slot="select-item"]:focus,
+  [data-slot="select-item"][data-highlighted],
+  [data-slot="select-item"][data-selected] {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.6), rgba(230,236,245,0.8) 90%, rgba(255,255,255,0.8)) !important;
+    border: 1px solid #aaddfa !important;
+    box-shadow: 0 0 0 1px #b3d3f9 !important;
+    color: #222 !important;
   }
 
   [data-slot="sidebar-menu-button"]:hover {
