@@ -44,25 +44,33 @@ export function ThreatDetectionOverlay({
         };
     }, [result]);
 
-    if (isLoading) {
-        return (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="win7-aero-card bg-white/90 backdrop-blur-sm">
-                    <div className="win7-aero-card-body p-3 flex items-center gap-2">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-[#3c7fb1]" />
-                        <span className="text-[11px]">Analyzing frame...</span>
-                    </div>
+    // Show loading indicator in corner while analyzing, but keep previous result visible
+    const loadingIndicator = isLoading ? (
+        <div className="absolute top-2 right-2 z-30 pointer-events-none">
+            <div className="win7-aero-card bg-white/90 backdrop-blur-sm">
+                <div className="win7-aero-card-body p-2 flex items-center gap-2">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#3c7fb1]" />
+                    <span className="text-[10px]">Analyzing...</span>
                 </div>
             </div>
-        );
+        </div>
+    ) : null;
+
+    // If no result and not loading, show nothing
+    if (!result) {
+        return loadingIndicator;
     }
 
-    if (!result || !result.hasThreat) {
-        return null;
+    // If result exists but no threat, only show loading indicator if analyzing
+    if (!result.hasThreat) {
+        return loadingIndicator;
     }
 
     return (
         <>
+            {/* Loading indicator overlay (shown while analyzing new frame) */}
+            {loadingIndicator}
+
             {/* Bounding box overlay for threat location */}
             {boundingBoxStyle && (
                 <div

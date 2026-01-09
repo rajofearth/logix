@@ -9,6 +9,9 @@ export interface CameraFeedProps {
     title?: string;
     className?: string;
     autoStart?: boolean;
+    onThreatDetected?: (result: ThreatDetectionResult | null) => void;
+    onAnalysisStateChange?: (isAnalyzing: boolean) => void;
+    onLastScanTimeChange?: (time: Date | null) => void;
 }
 
 function getMediaErrorMessage(error: unknown): string {
@@ -16,7 +19,14 @@ function getMediaErrorMessage(error: unknown): string {
     return "Unable to access camera.";
 }
 
-export function CameraFeed({ title = "Camera", className, autoStart = true }: CameraFeedProps) {
+export function CameraFeed({
+    title = "Camera",
+    className,
+    autoStart = true,
+    onThreatDetected,
+    onAnalysisStateChange,
+    onLastScanTimeChange,
+}: CameraFeedProps) {
     const videoRef = React.useRef<HTMLVideoElement | null>(null);
     const streamRef = React.useRef<MediaStream | null>(null);
     const isRequestingRef = React.useRef(false);
@@ -111,6 +121,7 @@ export function CameraFeed({ title = "Camera", className, autoStart = true }: Ca
 
         try {
             setIsAnalyzing(true);
+            onAnalysisStateChange?.(true);
             
             // Create canvas for frame capture
             const canvas = canvasRef.current || document.createElement("canvas");
@@ -166,14 +177,20 @@ export function CameraFeed({ title = "Camera", className, autoStart = true }: Ca
 
             const result = (await response.json()) as ThreatDetectionResult;
             setThreatResult(result);
-            setLastScanTime(new Date());
+            const scanTime = new Date();
+            setLastScanTime(scanTime);
+            
+            // Notify parent component
+            onThreatDetected?.(result);
+            onLastScanTimeChange?.(scanTime);
         } catch (error) {
             console.error("Threat detection error:", error);
             // Don't show error to user, just log it
         } finally {
             setIsAnalyzing(false);
+            onAnalysisStateChange?.(false);
         }
-    }, [status, isAnalyzing]);
+    }, [status, isAnalyzing, onThreatDetected, onAnalysisStateChange, onLastScanTimeChange]);
 
     // Set up interval for frame capture (every 3 seconds)
     React.useEffect(() => {
@@ -251,15 +268,29 @@ export function CameraFeed({ title = "Camera", className, autoStart = true }: Ca
                                 }}
                             />
                             
-                            {/* Threat Detection Overlay */}
-                            {status === "ready" && (
-                                <ThreatDetectionOverlay
-                                    result={threatResult}
-                                    isLoading={isAnalyzing}
-                                    videoWidth={videoDimensions.width}
-                                    videoHeight={videoDimensions.height}
-                                    onDismiss={() => setThreatResult(null)}
+                            {/* Minimal Threat Detection Overlay - only bounding boxes */}
+                            {status === "ready" && threatResult?.hasThreat && threatResult.boundingBox && (
+                                <div
+                                    className="absolute border-2 border-red-500 bg-red-500/20 pointer-events-none z-10"
+                                    style={{
+                                        left: `${threatResult.boundingBox.x * 100}%`,
+                                        top: `${threatResult.boundingBox.y * 100}%`,
+                                        width: `${threatResult.boundingBox.width * 100}%`,
+                                        height: `${threatResult.boundingBox.height * 100}%`,
+                                    }}
                                 />
+                            )}
+                            
+                            {/* Small loading indicator in corner */}
+                            {status === "ready" && isAnalyzing && (
+                                <div className="absolute top-2 right-2 z-10 pointer-events-none">
+                                    <div className="win7-aero-card bg-white/90 backdrop-blur-sm">
+                                        <div className="win7-aero-card-body p-1.5 flex items-center gap-1.5">
+                                            <div className="animate-spin rounded-full h-2.5 w-2.5 border-b-2 border-[#3c7fb1]" />
+                                            <span className="text-[9px]">Analyzing...</span>
+                                        </div>
+                                    </div>
+                                </div>
                             )}
 
                             {status !== "ready" && (
@@ -278,18 +309,6 @@ export function CameraFeed({ title = "Camera", className, autoStart = true }: Ca
                             )}
                         </div>
 
-                        {/* Status indicator showing last scan time */}
-                        {status === "ready" && lastScanTime && (
-                            <div className="absolute bottom-2 left-2 z-10">
-                                <div className="win7-aero-card bg-white/90">
-                                    <div className="win7-aero-card-body p-1.5">
-                                        <span className="text-[9px] text-gray-700">
-                                            Last scan: {lastScanTime.toLocaleTimeString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             </div>

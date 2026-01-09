@@ -11,6 +11,8 @@ import { TrackingMap } from "./TrackingMap";
 import { MapStatusBar } from "./MapStatusBar";
 import { DriverInfoPanel } from "./DriverInfoPanel";
 import { CameraFeed } from "./CameraFeed";
+import { ThreatDetectionPanel } from "./ThreatDetectionPanel";
+import type { ThreatDetectionResult } from "./ThreatDetectionOverlay";
 import { useDriverLocation } from "../_hooks/useDriverLocation";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
@@ -29,6 +31,11 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
     const [routeGeoJson, setRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
     const [pickupRouteGeoJson, setPickupRouteGeoJson] = useState<GeoJsonFeature<LineStringGeometry> | null>(null);
     const [fuelStations, setFuelStations] = useState<Array<{ name: string; address?: string; distance?: number; coord: LngLat }>>([]);
+    
+    // Threat detection state
+    const [threatResult, setThreatResult] = useState<ThreatDetectionResult | null>(null);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [lastScanTime, setLastScanTime] = useState<Date | null>(null);
 
     // Real-time driver location tracking
     const { current: driverLocation, path: driverPath, isConnected: isLiveConnected } = useDriverLocation(
@@ -185,7 +192,23 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                             />
                             <DriverInfoPanel
                                 delivery={selectedDelivery}
-                                topRightDock={<CameraFeed className="w-[320px]" title="Camera Feed" />}
+                                topRightDock={
+                                    <CameraFeed
+                                        className="w-[320px]"
+                                        title="Camera Feed"
+                                        onThreatDetected={setThreatResult}
+                                        onAnalysisStateChange={setIsAnalyzing}
+                                        onLastScanTimeChange={setLastScanTime}
+                                    />
+                                }
+                                threatDetectionPanel={
+                                    <ThreatDetectionPanel
+                                        result={threatResult}
+                                        isLoading={isAnalyzing}
+                                        lastScanTime={lastScanTime}
+                                        onDismiss={() => setThreatResult(null)}
+                                    />
+                                }
                             />
                         </>
                     ) : (
