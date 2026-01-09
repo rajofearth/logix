@@ -86,14 +86,14 @@ export default function SignUp() {
 				</div>
 			</div>
 			<div className="window-body has-space">
-				<p style={{ marginBottom: "16px", color: "#000" }}>
+				<p style={{ marginBottom: "16px" }}>
 					Enter your information to create an account
 				</p>
 
 				{/* Name fields - side by side */}
 				<div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
 					<div className="group" style={{ flex: 1 }}>
-						<label htmlFor="first-name" style={{ color: "#000" }}>First name:</label>
+						<label htmlFor="first-name">First name:</label>
 						<input
 							id="first-name"
 							type="text"
@@ -101,11 +101,11 @@ export default function SignUp() {
 							required
 							onChange={(e) => setFirstName(e.target.value)}
 							value={firstName}
-							style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+							style={{ width: "100%", boxSizing: "border-box" }}
 						/>
 					</div>
 					<div className="group" style={{ flex: 1 }}>
-						<label htmlFor="last-name" style={{ color: "#000" }}>Last name:</label>
+						<label htmlFor="last-name">Last name:</label>
 						<input
 							id="last-name"
 							type="text"
@@ -113,13 +113,13 @@ export default function SignUp() {
 							required
 							onChange={(e) => setLastName(e.target.value)}
 							value={lastName}
-							style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+							style={{ width: "100%", boxSizing: "border-box" }}
 						/>
 					</div>
 				</div>
 
 				<div className="group" style={{ marginBottom: "12px" }}>
-					<label htmlFor="email" style={{ color: "#000" }}>Email:</label>
+					<label htmlFor="email">Email:</label>
 					<input
 						id="email"
 						type="text"
@@ -127,12 +127,12 @@ export default function SignUp() {
 						required
 						onChange={(e) => setEmail(e.target.value)}
 						value={email}
-						style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+						style={{ width: "100%", boxSizing: "border-box" }}
 					/>
 				</div>
 
 				<div className="group" style={{ marginBottom: "12px" }}>
-					<label htmlFor="password" style={{ color: "#000" }}>Password:</label>
+					<label htmlFor="password">Password:</label>
 					<input
 						id="password"
 						type="password"
@@ -140,12 +140,12 @@ export default function SignUp() {
 						autoComplete="new-password"
 						value={password}
 						onChange={(e) => setPassword(e.target.value)}
-						style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+						style={{ width: "100%", boxSizing: "border-box" }}
 					/>
 				</div>
 
 				<div className="group" style={{ marginBottom: "12px" }}>
-					<label htmlFor="password_confirmation" style={{ color: "#000" }}>Confirm Password:</label>
+					<label htmlFor="password_confirmation">Confirm Password:</label>
 					<input
 						id="password_confirmation"
 						type="password"
@@ -153,13 +153,13 @@ export default function SignUp() {
 						autoComplete="new-password"
 						value={passwordConfirmation}
 						onChange={(e) => setPasswordConfirmation(e.target.value)}
-						style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+						style={{ width: "100%", boxSizing: "border-box" }}
 					/>
 				</div>
 
 				{/* Profile Image */}
 				<fieldset style={{ marginBottom: "12px" }}>
-					<legend style={{ color: "#000" }}>Profile Image (optional)</legend>
+					<legend>Profile Image (optional)</legend>
 					<div style={{ display: "flex", alignItems: "flex-end", gap: "12px" }}>
 						{imagePreview && (
 							<div style={{
@@ -178,7 +178,7 @@ export default function SignUp() {
 								/>
 							</div>
 						)}
-						<div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, color: "#000" }}>
+						<div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
 							<input
 								id="image"
 								type="file"
@@ -218,7 +218,7 @@ export default function SignUp() {
 					</button>
 				</section>
 
-				<div style={{ textAlign: "center", marginTop: "16px", fontSize: "12px", color: "#000" }}>
+				<div style={{ textAlign: "center", marginTop: "16px", fontSize: "12px" }}>
 					<p>
 						Already have an account?{" "}
 						<Link href="/auth/sign-in">

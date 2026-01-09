@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import "7.css/dist/7.scoped.css";
+import "./auth.css";
 
 export default function AuthLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
@@ -12,7 +14,9 @@ export default function AuthLayout({ children }: Readonly<{ children: ReactNode 
         padding: "24px",
       }}
     >
-      {children}
+      <div className="win7">
+        {children}
+      </div>
     </div>
   );
 }

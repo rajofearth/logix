@@ -29,12 +29,12 @@ export default function SignIn({ from }: Readonly<{ from?: string }>) {
         </div>
       </div>
       <div className="window-body has-space">
-        <p style={{ marginBottom: "16px", color: "#000" }}>
+        <p style={{ marginBottom: "16px" }}>
           Enter your email below to login to your account
         </p>
 
         <div className="group" style={{ marginBottom: "12px" }}>
-          <label htmlFor="email" style={{ color: "#000" }}>Email:</label>
+          <label htmlFor="email">Email:</label>
           <input
             id="email"
             type="text"
@@ -44,12 +44,12 @@ export default function SignIn({ from }: Readonly<{ from?: string }>) {
               setEmail(e.target.value);
             }}
             value={email}
-            style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
 
         <div className="group" style={{ marginBottom: "12px" }}>
-          <label htmlFor="password" style={{ color: "#000" }}>Password:</label>
+          <label htmlFor="password">Password:</label>
           <input
             id="password"
             type="password"
@@ -57,7 +57,7 @@ export default function SignIn({ from }: Readonly<{ from?: string }>) {
             autoComplete="current-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{ width: "100%", boxSizing: "border-box", color: "#000", background: "#fff" }}
+            style={{ width: "100%", boxSizing: "border-box" }}
           />
         </div>
 
@@ -96,7 +96,7 @@ export default function SignIn({ from }: Readonly<{ from?: string }>) {
           </button>
         </section>
 
-        <div style={{ textAlign: "center", marginTop: "16px", fontSize: "12px", color: "#000" }}>
+        <div style={{ textAlign: "center", marginTop: "16px", fontSize: "12px" }}>
           <p>
             Don&apos;t have an account?{" "}
             <Link href="/auth/sign-up">
