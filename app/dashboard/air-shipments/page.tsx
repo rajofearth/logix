@@ -142,34 +142,14 @@ export default function AirShipmentsPage() {
                         </thead>
                         <tbody>
                             {isLoading ? (
-                                Array.from({ length: 5 }).map((_, i) => (
-                                    <tr key={i} className="border-b border-gray-100 last:border-0">
-                                        <td className="py-2 pr-2">
-                                            <div className="h-4 w-16 bg-gray-200 animate-pulse rounded" />
-                                        </td>
-                                        <td className="py-2 pr-2">
-                                            <div className="space-y-1">
-                                                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
-                                                <div className="h-3 w-12 bg-gray-200 animate-pulse rounded" />
-                                            </div>
-                                        </td>
-                                        <td className="py-2 pr-2">
-                                            <div className="h-4 w-20 bg-gray-200 animate-pulse rounded" />
-                                        </td>
-                                        <td className="py-2 pr-2">
-                                            <div className="space-y-1">
-                                                <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
-                                                <div className="h-3 w-16 bg-gray-200 animate-pulse rounded" />
-                                            </div>
-                                        </td>
-                                        <td className="py-2 pr-2">
-                                            <div className="h-4 w-32 bg-gray-200 animate-pulse rounded" />
-                                        </td>
-                                        <td className="py-2">
-                                            <div className="h-4 w-24 bg-gray-200 animate-pulse rounded" />
-                                        </td>
-                                    </tr>
-                                ))
+                                <tr>
+                                    <td colSpan={6} className="h-32 text-center align-middle">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <div role="progressbar" className="marquee w-64" />
+                                            <span className="text-xs text-gray-500 font-sans">Loading shipments...</span>
+                                        </div>
+                                    </td>
+                                </tr>
                             ) : shipments.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="h-32 text-center text-gray-500">

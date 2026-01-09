@@ -13,6 +13,12 @@
   --w7-font: 9pt "Segoe UI", "SegoeUI", "Noto Sans", sans-serif;
   --w7-surface: #f0f0f0;
 
+  /* Progress Bar Colors */
+  --w7-pg-bg: #0bd82c;
+  --w7-pg-bg-paused: #e6df1b;
+  --w7-pg-bg-error: #ef0000;
+
+
   /* Element Base */
   --w7-el-bg: #f2f2f2;
   --w7-el-bg-d: #f4f4f4;
@@ -1475,8 +1481,87 @@
   color: inherit;
 }
 
-/* Override specific utility classes that might hide text */
-.win7-desktop .text-muted-foreground {
-  color: #444 !important;
-  opacity: 1 !important;
+/* ═══════════════════════════════════════════════════════════════════════════════
+   📊 PROGRESS BAR (Windows 7 Native Style)
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.win7-desktop [role="progressbar"] {
+  height: 15px;
+  border: 1px solid var(--w7-el-bd);
+  border-radius: var(--w7-el-bdr);
+  box-shadow: inset 0 0 0 1px #f3f3f388, 0 0 0 1px #eaeaea88;
+  margin: 2px 0;
+  overflow: hidden;
+  position: relative;
+  background: radial-gradient(circle at 0 50%, #0000001f 10px, transparent 30px),
+    radial-gradient(circle at 100% 50%, #0000001f 10px, transparent 30px),
+    linear-gradient(to bottom,
+      #f3f3f3af,
+      #fcfcfcaf 3px,
+      #dbdbdbaf 6px,
+      #cacacaaf 6px,
+      #d5d5d5af),
+    #ddd;
+}
+
+.win7-desktop [role="progressbar"]>div {
+  overflow: hidden;
+  height: 100%;
+  box-shadow: inset 0 0 0 1px #ffffff1f;
+  background-color: var(--w7-pg-bg);
+  background-image: linear-gradient(to bottom,
+      #f3f3f3af,
+      #fcfcfcaf 3px,
+      #dbdbdbaf 6px,
+      transparent 6px),
+    radial-gradient(circle at 0 50%, #0000002f 10px, transparent 30px),
+    radial-gradient(circle at 100% 50%, #0000002f 10px, transparent 30px),
+    linear-gradient(to bottom, transparent 65%, #ffffff55),
+    linear-gradient(to bottom, transparent 6px, #cacaca33 6px, #d5d5d533);
+}
+
+.win7-desktop [role="progressbar"].paused>div {
+  background-color: var(--w7-pg-bg-paused);
+}
+
+.win7-desktop [role="progressbar"].error>div {
+  background-color: var(--w7-pg-bg-error);
+}
+
+.win7-desktop [role="progressbar"].animate>div::before,
+.win7-desktop [role="progressbar"].marquee::before {
+  content: "";
+  animation: win7-progressbar 3s linear infinite;
+  display: block;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to right,
+      transparent,
+      #ffffff80,
+      transparent 40%);
+}
+
+.win7-desktop [role="progressbar"].marquee::before {
+  opacity: 0.5;
+  background: linear-gradient(to right,
+      transparent,
+      var(--w7-pg-bg),
+      transparent 35%);
+}
+
+@keyframes win7-progressbar {
+  0% {
+    transform: translateX(-40%);
+  }
+
+  60% {
+    transform: translateX(100%);
+  }
+
+  100% {
+    transform: translateX(100%);
+  }
 }
