@@ -182,14 +182,7 @@ export default function WarehousePage() {
 
   if (isLoading && warehouseList.length === 0) {
     return (
-      <DashboardShell title="Warehouse Management">
-        <div className="flex h-full items-center justify-center bg-[#ece9d8]">
-          <div className="flex flex-col items-center gap-2">
-            <Loader2 className="animate-spin text-gray-500" />
-            <p className="text-sm text-gray-600">Loading warehouses...</p>
-          </div>
-        </div>
-      </DashboardShell>
+      <WarehouseSkeleton />
     );
   }
 
@@ -321,6 +314,52 @@ export default function WarehousePage() {
           onSuccess={refreshWarehouse}
         />
       )}
+    </DashboardShell>
+  );
+}
+
+function WarehouseSkeleton() {
+  return (
+    <DashboardShell title="Warehouse Management">
+      <div className="flex flex-col gap-3 p-3 h-full bg-[#ece9d8]">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center p-2 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+          <div className="h-8 w-48 bg-gray-200 animate-pulse border border-[#7f9db9]"></div>
+          <div className="h-8 w-32 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
+        </div>
+
+        {/* Controls Skeleton */}
+        <div className="flex items-center justify-between gap-4 p-1 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+          <div className="flex gap-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-6 w-16 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
+            ))}
+          </div>
+          <div className="h-6 w-24 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
+        </div>
+
+        {/* Main Grid Skeleton */}
+        <div className="flex-1 border border-[#898c95] bg-white min-h-0 overflow-hidden relative shadow-inner flex items-center justify-center">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}></div>
+          <div className="z-10 bg-white/80 p-4 border border-gray-300 shadow-sm flex flex-col items-center gap-2">
+            <Loader2 className="animate-spin text-gray-400 size-8" />
+            <span className="text-gray-500 font-bold">Loading Warehouse...</span>
+          </div>
+        </div>
+
+        {/* Footer Stats Skeleton */}
+        <div className="win7-groupbox">
+          <legend>Statistics</legend>
+          <div className="win7-p-2 flex gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-10 w-24 bg-gray-100 animate-pulse border border-gray-200"></div>
+            ))}
+          </div>
+        </div>
+      </div>
     </DashboardShell>
   );
 }

@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import {
     listTrainShipments,
     type TrainShipmentListItem,
@@ -114,11 +114,7 @@ export default function TrainShipmentsPage() {
 
                 {/* Shipments Grid */}
                 {isLoading ? (
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {[1, 2, 3, 4, 5, 6].map((i) => (
-                            <Skeleton key={i} className="h-40 rounded bg-white shadow-sm border border-gray-300" />
-                        ))}
-                    </div>
+                    <TrainListSkeleton />
                 ) : shipments.length === 0 ? (
                     <div className="win7-groupbox p-8 text-center bg-white">
                         <div className="flex flex-col items-center justify-center gap-2 text-gray-500">
@@ -193,5 +189,45 @@ export default function TrainShipmentsPage() {
                 )}
             </div>
         </DashboardShell>
+    );
+}
+
+function TrainListSkeleton() {
+    return (
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="bg-white border border-[#707070] p-3 shadow-sm h-[180px] flex flex-col">
+                    {/* Header Skeleton */}
+                    <div className="flex justify-between mb-2 pb-2 border-b border-gray-100/50">
+                        <div className="space-y-1">
+                            <div className="h-2 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                            <div className="h-4 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
+                        </div>
+                        <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                    </div>
+
+                    {/* Train Info Skeleton */}
+                    <div className="flex items-center gap-2 mb-2 bg-[#f5f5f5] p-1.5 rounded border border-gray-200 h-10">
+                        <div className="size-4 bg-gray-300 animate-pulse rounded-sm"></div>
+                        <div className="space-y-1 flex-1">
+                            <div className="h-3 w-32 bg-gray-200 animate-pulse rounded-sm"></div>
+                        </div>
+                    </div>
+
+                    {/* Route Skeleton */}
+                    <div className="flex items-center justify-between px-1 mt-1">
+                        <div className="h-3 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                        <div className="h-px w-20 bg-gray-200"></div>
+                        <div className="h-3 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                    </div>
+
+                    {/* Footer Skeleton */}
+                    <div className="flex items-center justify-between mt-auto pt-2 border-t border-gray-100">
+                        <div className="h-2 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                        <div className="h-2 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                    </div>
+                </div>
+            ))}
+        </div>
     );
 }

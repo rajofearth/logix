@@ -80,7 +80,7 @@ export default function AirShipmentsPage() {
                                 <IconSearch className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-500 pointer-events-none" />
                                 <input
                                     placeholder="Search reference..."
-                                    className="pl-7 pr-2 h-7 w-full border border-[#7f9db9] text-xs outline-none"
+                                    className="pl-7 pr-2 h-7 w-full border border-[#7f9db9] text-xs outline-none search-input-with-icon"
                                     value={search}
                                     onChange={(e) => setSearch(e.target.value)}
                                     style={{ background: '#fff' }}
