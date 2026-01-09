@@ -10,6 +10,7 @@ import { SearchBar } from "./SearchBar";
 import { TrackingMap } from "./TrackingMap";
 import { MapStatusBar } from "./MapStatusBar";
 import { DriverInfoPanel } from "./DriverInfoPanel";
+import { CameraFeed } from "./CameraFeed";
 import { useDriverLocation } from "../_hooks/useDriverLocation";
 import { getDirections } from "@/app/dashboard/jobs/_server/mapboxDirections";
 import type { GeoJsonFeature, LineStringGeometry, LngLat } from "@/app/dashboard/jobs/_types";
@@ -182,7 +183,10 @@ export function TrackView({ initialDeliveries }: TrackViewProps) {
                                 lastUpdated={driverLocation?.updatedAt}
                                 isLive={isLiveConnected}
                             />
-                            <DriverInfoPanel delivery={selectedDelivery} />
+                            <DriverInfoPanel
+                                delivery={selectedDelivery}
+                                topRightDock={<CameraFeed className="w-[320px]" title="Camera Feed" />}
+                            />
                         </>
                     ) : (
                         <div className="flex flex-col items-center justify-center h-full bg-[#ece9d8] text-gray-600 p-6 text-center">
