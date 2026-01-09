@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 
 import { buildRestockPrompt, type RestockInventoryRow, type RestockScope } from "../_prompt";
 import { sseEncode, streamLmstudioChatCompletions } from "../_lmstudioStream";
+import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +43,7 @@ type WarehouseGraph = {
         quantity: number;
         category: string;
         currentPrice: unknown;
+        averageWeeklySales?: number | null;
       }>;
     }>;
   }>;
@@ -68,7 +70,13 @@ function decimalToNumber(val: unknown): number | undefined {
 function aggregateRows(blocks: WarehouseGraph["floors"][number]["blocks"]): RestockInventoryRow[] {
   const bySku = new Map<
     string,
-    { product: string; currentStock: number; category: string; currentPrice?: number }
+    {
+      product: string;
+      currentStock: number;
+      category: string;
+      currentPrice?: number;
+      averageWeeklySales?: number | null;
+    }
   >();
 
   for (const b of blocks) {
@@ -80,11 +88,15 @@ function aggregateRows(blocks: WarehouseGraph["floors"][number]["blocks"]): Rest
           product: p.name,
           currentStock: p.quantity,
           category: p.category,
+          averageWeeklySales: p.averageWeeklySales ?? null,
           ...(price != null ? { currentPrice: price } : {}),
         });
       } else {
         existing.currentStock += p.quantity;
         if (existing.currentPrice == null && price != null) existing.currentPrice = price;
+        if (existing.averageWeeklySales == null && p.averageWeeklySales != null) {
+          existing.averageWeeklySales = p.averageWeeklySales;
+        }
       }
     }
   }
@@ -120,6 +132,8 @@ export async function GET(
       return jsonError("floorId is required when scope=floor", 400);
     }
 
+    const hasWeekly = await hasAverageWeeklySalesColumn();
+
     const warehouse = (await prisma.warehouse.findUnique({
       where: { id: warehouseId },
       select: {
@@ -144,6 +158,7 @@ export async function GET(
                     quantity: true,
                     category: true,
                     currentPrice: true,
+                    ...(hasWeekly ? { averageWeeklySales: true } : {}),
                   },
                 },
               },
@@ -170,7 +185,9 @@ export async function GET(
       ? blocks.filter((b) => b.category === categoryFilter)
       : blocks;
 
-    const rows = aggregateRows(filteredBlocks).slice(0, 100);
+    const rows = aggregateRows(filteredBlocks).slice(0, 100) as Array<
+      RestockInventoryRow & { averageWeeklySales?: number | null }
+    >;
 
     const sectionLabel = parsed.data.category
       ? parsed.data.category.replace(/-/g, " ")
@@ -180,7 +197,13 @@ export async function GET(
       scope,
       floorName,
       sectionLabel,
-      rows,
+      rows: rows.map((r) => ({
+        product: r.product,
+        currentStock: r.currentStock,
+        category: r.category,
+        currentPrice: r.currentPrice,
+        averageWeeklySales: r.averageWeeklySales ?? null,
+      })),
     });
 
     const baseUrl = process.env.LMSTUDIO_BASE_URL ?? "http://10.19.85.63:1234";

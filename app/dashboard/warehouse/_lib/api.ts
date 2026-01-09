@@ -112,6 +112,7 @@ export interface CreateProductData {
     name: string;
     quantity: number;
     category: string;
+    averageWeeklySales?: number | null;
     boughtAt: number;
     currentPrice: number;
     expiryDate?: string;
@@ -231,6 +232,8 @@ function transformProduct(p: Record<string, unknown>): Product {
         name: p.name as string,
         quantity: p.quantity as number,
         category: p.category as Product["category"],
+        averageWeeklySales:
+            (p.averageWeeklySales as number | null | undefined) ?? null,
         boughtAt: p.boughtAt as number,
         currentPrice: p.currentPrice as number,
         expiryDate: p.expiryDate ? new Date(p.expiryDate as string) : undefined,

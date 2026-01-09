@@ -1,5 +1,3 @@
-"use client";
-
 import {
     Monitor,
     UtensilsCrossed,
@@ -20,6 +18,7 @@ export interface Product {
     name: string;
     quantity: number;
     category: ProductCategory;
+    averageWeeklySales?: number | null;
     boughtAt: number; // Purchase price per unit
     currentPrice: number; // Current market price per unit
     expiryDate?: Date;

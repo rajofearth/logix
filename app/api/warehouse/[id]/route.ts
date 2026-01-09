@@ -1,5 +1,6 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
+import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 
@@ -32,19 +33,53 @@ export async function GET(
     try {
         const { id } = await params;
 
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+
         const warehouse = await prisma.warehouse.findUnique({
             where: { id },
-            include: {
+            select: {
+                id: true,
+                name: true,
+                code: true,
+                address: true,
+                city: true,
+                workers: true,
+                updatedAt: true,
                 floors: {
-                    include: {
+                    orderBy: { level: "asc" },
+                    select: {
+                        id: true,
+                        name: true,
+                        level: true,
                         blocks: {
-                            include: {
-                                products: true,
-                            },
                             orderBy: [{ row: "asc" }, { column: "asc" }],
+                            select: {
+                                id: true,
+                                name: true,
+                                row: true,
+                                column: true,
+                                capacity: true,
+                                category: true,
+                                temperature: true,
+                                humidity: true,
+                                updatedAt: true,
+                                products: {
+                                    select: {
+                                        id: true,
+                                        sku: true,
+                                        name: true,
+                                        quantity: true,
+                                        category: true,
+                                        boughtAt: true,
+                                        currentPrice: true,
+                                        expiryDate: true,
+                                        updatedAt: true,
+                                        ...(hasWeekly ? { averageWeeklySales: true } : {}),
+                                    },
+                                },
+                            },
                         },
                     },
-                    orderBy: { level: "asc" },
                 },
             },
         });
@@ -98,6 +133,7 @@ export async function GET(
                             name: p.name,
                             quantity: p.quantity,
                             category: p.category.replace("_", "-"),
+                            averageWeeklySales: "averageWeeklySales" in p ? (p.averageWeeklySales ?? null) : null,
                             boughtAt: decimalToNumber(p.boughtAt),
                             currentPrice: decimalToNumber(p.currentPrice),
                             expiryDate: p.expiryDate?.toISOString(),

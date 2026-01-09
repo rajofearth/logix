@@ -1,6 +1,7 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
 import { ProductCategory } from "@prisma/client";
+import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 
@@ -25,7 +26,12 @@ export async function PUT(
     try {
         const { id: warehouseId, floorId, blockId, productId } = await params;
         const body = await req.json();
-        const { name, quantity, category, boughtAt, currentPrice, expiryDate } = body;
+        const { name, quantity, category, boughtAt, currentPrice, expiryDate, averageWeeklySales } = body;
+
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+        if (averageWeeklySales !== undefined && !hasWeekly) {
+            return jsonError("Weekly sales column missing in DB. Run `pnpm prisma db push`.", 400);
+        }
 
         // Verify the full chain
         const existing = await prisma.product.findFirst({
@@ -51,9 +57,22 @@ export async function PUT(
                 ...(name && { name }),
                 ...(quantity !== undefined && { quantity }),
                 ...(dbCategory && { category: dbCategory }),
+                ...(hasWeekly && averageWeeklySales !== undefined && { averageWeeklySales }),
                 ...(boughtAt !== undefined && { boughtAt }),
                 ...(currentPrice !== undefined && { currentPrice }),
                 ...(expiryDate !== undefined && { expiryDate: expiryDate ? new Date(expiryDate) : null }),
+            },
+            select: {
+                id: true,
+                sku: true,
+                name: true,
+                quantity: true,
+                category: true,
+                boughtAt: true,
+                currentPrice: true,
+                expiryDate: true,
+                updatedAt: true,
+                ...(hasWeekly ? { averageWeeklySales: true } : {}),
             },
         });
 
@@ -63,6 +82,7 @@ export async function PUT(
             name: product.name,
             quantity: product.quantity,
             category: product.category.replace("_", "-"),
+            averageWeeklySales: "averageWeeklySales" in product ? (product.averageWeeklySales ?? null) : null,
             boughtAt: decimalToNumber(product.boughtAt),
             currentPrice: decimalToNumber(product.currentPrice),
             expiryDate: product.expiryDate?.toISOString(),

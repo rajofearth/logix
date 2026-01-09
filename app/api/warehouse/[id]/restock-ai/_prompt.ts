@@ -5,6 +5,7 @@ export type RestockInventoryRow = {
   currentStock: number;
   category: string;
   currentPrice?: number;
+  averageWeeklySales?: number | null;
 };
 
 export type RestockPromptInput = {
@@ -43,20 +44,25 @@ export function buildRestockPrompt(input: RestockPromptInput): string {
   const tableRows =
     input.rows.length === 0
       ? ["| (none) | 0 | ? |"]
-      : input.rows.map((r) => `| ${r.product} | ${fmtNumber(r.currentStock)} | ? |`);
+      : input.rows.map((r) => {
+          const weekly =
+            r.averageWeeklySales == null ? "?" : fmtNumber(r.averageWeeklySales);
+          return `| ${r.product} | ${fmtNumber(r.currentStock)} | ${weekly} |`;
+        });
 
   const contextLines = [
     "",
-    "Average Weekly Sales is unknown in the database. You must estimate an integer weekly sales value for each product using the context below, then apply the rules.",
+    "If Average Weekly Sales is shown as '?' in the table, estimate an integer weekly sales value for that product. If a number is provided, use it as-is.",
     "",
     "Hard constraints:",
     "- Only mention products that appear in the inventory table. Do not invent new products.",
     "- In output lines, the (current: <C>) value must match the Current Stock from the table.",
     "",
-    "Context (category and current price may help estimate demand; currentPrice is NOT stock):",
+    "Context (use stock signals; do not use price):",
     ...input.rows.map((r) => {
-      const price = r.currentPrice != null ? `, currentPrice=${r.currentPrice}` : "";
-      return `- ${r.product}: category=${r.category}${price}`;
+      const weekly =
+        r.averageWeeklySales == null ? ", averageWeeklySales=?" : `, averageWeeklySales=${fmtNumber(r.averageWeeklySales)}`;
+      return `- ${r.product}: category=${r.category}, currentStock=${fmtNumber(r.currentStock)}${weekly}`;
     }),
     "",
     "Provide recommendations:",

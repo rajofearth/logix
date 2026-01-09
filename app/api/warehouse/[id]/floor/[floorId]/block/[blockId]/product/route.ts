@@ -1,6 +1,7 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
 import { ProductCategory } from "@prisma/client";
+import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 
@@ -38,9 +39,23 @@ export async function GET(
             return jsonError("Block not found", 404);
         }
 
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+
         const products = await prisma.product.findMany({
             where: { blockId },
             orderBy: { name: "asc" },
+            select: {
+                id: true,
+                sku: true,
+                name: true,
+                quantity: true,
+                category: true,
+                boughtAt: true,
+                currentPrice: true,
+                expiryDate: true,
+                updatedAt: true,
+                ...(hasWeekly ? { averageWeeklySales: true } : {}),
+            },
         });
 
         const dto = products.map((p) => ({
@@ -49,6 +64,7 @@ export async function GET(
             name: p.name,
             quantity: p.quantity,
             category: p.category.replace("_", "-"),
+            averageWeeklySales: "averageWeeklySales" in p ? (p.averageWeeklySales ?? null) : null,
             boughtAt: decimalToNumber(p.boughtAt),
             currentPrice: decimalToNumber(p.currentPrice),
             expiryDate: p.expiryDate?.toISOString(),
@@ -71,7 +87,7 @@ export async function POST(
     try {
         const { id: warehouseId, floorId, blockId } = await params;
         const body = await req.json();
-        const { sku, name, quantity, category, boughtAt, currentPrice, expiryDate } = body;
+        const { sku, name, quantity, category, boughtAt, currentPrice, expiryDate, averageWeeklySales } = body;
 
         if (!sku || !name || quantity === undefined || !category || boughtAt === undefined || currentPrice === undefined) {
             return jsonError(
@@ -99,6 +115,11 @@ export async function POST(
             return jsonError(`Product with SKU '${sku}' already exists`, 409);
         }
 
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+        if (averageWeeklySales !== undefined && !hasWeekly) {
+            return jsonError("Weekly sales column missing in DB. Run `pnpm prisma db push`.", 400);
+        }
+
         // Convert category from frontend format
         const dbCategory = category.replace("-", "_") as ProductCategory;
 
@@ -108,10 +129,23 @@ export async function POST(
                 name,
                 quantity,
                 category: dbCategory,
+                ...(hasWeekly ? { averageWeeklySales: averageWeeklySales === undefined ? null : averageWeeklySales } : {}),
                 boughtAt,
                 currentPrice,
                 expiryDate: expiryDate ? new Date(expiryDate) : null,
                 blockId,
+            },
+            select: {
+                id: true,
+                sku: true,
+                name: true,
+                quantity: true,
+                category: true,
+                boughtAt: true,
+                currentPrice: true,
+                expiryDate: true,
+                updatedAt: true,
+                ...(hasWeekly ? { averageWeeklySales: true } : {}),
             },
         });
 
@@ -122,6 +156,7 @@ export async function POST(
                 name: product.name,
                 quantity: product.quantity,
                 category: product.category.replace("_", "-"),
+                averageWeeklySales: "averageWeeklySales" in product ? (product.averageWeeklySales ?? null) : null,
                 boughtAt: decimalToNumber(product.boughtAt),
                 currentPrice: decimalToNumber(product.currentPrice),
                 expiryDate: product.expiryDate?.toISOString(),
