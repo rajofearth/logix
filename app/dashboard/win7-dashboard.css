@@ -1175,6 +1175,11 @@
   color: #000 !important;
 }
 
+/* Specific override for search inputs with icons */
+.win7-desktop input.search-input-with-icon {
+  padding-left: 28px !important;
+}
+
 /* Datetime inputs need special handling */
 .win7-desktop input[type="datetime-local"],
 .win7-desktop input[type="date"],
@@ -1400,6 +1405,17 @@
 .win7-desktop .border-border,
 .win7-desktop .border {
   border-color: #c0c1cd !important;
+}
+
+/* Override selection color */
+.win7-desktop ::selection {
+  background: #3399ff !important;
+  color: #fff !important;
+}
+
+.win7-desktop ::-moz-selection {
+  background: #3399ff !important;
+  color: #fff !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════════

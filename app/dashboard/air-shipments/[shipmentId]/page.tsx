@@ -11,7 +11,7 @@ import {
 } from "@tabler/icons-react";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { Skeleton } from "@/components/ui/skeleton";
+
 import {
     getShipmentDetail,
     updateShipmentStatus,
@@ -77,12 +77,7 @@ export default function ShipmentDetailPage() {
 
     if (isLoading) {
         return (
-            <DashboardShell title="Loading Shipment Details...">
-                <div className="p-4 space-y-4">
-                    <Skeleton className="h-32 w-full" />
-                    <Skeleton className="h-48 w-full" />
-                </div>
-            </DashboardShell>
+            <ShipmentSkeleton />
         );
     }
 
@@ -269,6 +264,109 @@ export default function ShipmentDetailPage() {
                             toAirportIcao={airSegment?.toAirportIcao || null}
                             aircraftPosition={airPosition}
                         />
+                    </div>
+                </div>
+            </div>
+        </DashboardShell>
+    );
+}
+
+function ShipmentSkeleton() {
+    return (
+        <DashboardShell title="Loading Shipment...">
+            <div className="flex flex-col h-full bg-[#ece9d8]">
+                {/* Win7 Toolbar / Header Stub */}
+                <div className="flex items-center gap-2 p-2 border-b border-[#fff] shadow-[0_1px_0_#aca899] mb-1">
+                    <button className="win7-btn flex items-center gap-1 opacity-50 cursor-not-allowed">
+                        <IconArrowLeft className="size-3.5" /> Back
+                    </button>
+                    <div className="w-[1px] h-5 bg-[#aca899] mx-1 border-r border-white"></div>
+                    <button className="win7-btn flex items-center gap-1 opacity-50 cursor-not-allowed">
+                        <IconRefresh className="size-3.5" /> Refresh
+                    </button>
+                </div>
+
+                {/* Main Content Split */}
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Panel: Info (Scrollable) */}
+                    <div className="w-full lg:w-[450px] flex-col overflow-y-auto border-r border-[#898c95] bg-white p-4 space-y-4">
+
+                        {/* Status Block Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Status</legend>
+                            <div className="win7-p-4 flex justify-between items-start">
+                                <div className="space-y-2">
+                                    <div className="h-6 w-32 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-3 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                                <div className="h-6 w-20 bg-gray-200 animate-pulse border border-gray-300"></div>
+                            </div>
+                        </div>
+
+                        {/* Package Info Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Package Details</legend>
+                            <div className="win7-p-4 grid gap-2 text-sm">
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Flight Info Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Flight Information</legend>
+                            <div className="win7-p-4 grid gap-2 text-sm">
+                                <div className="h-10 w-full bg-[#eef1ff] border border-[#7f9db9] p-2 flex items-center gap-2">
+                                    <div className="size-4 bg-blue-200 rounded-full animate-pulse"></div>
+                                    <div className="h-4 w-32 bg-blue-200 animate-pulse rounded-sm"></div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4 mt-2">
+                                    <div className="space-y-1">
+                                        <div className="h-3 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        <div className="h-5 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    </div>
+                                    <div className="space-y-1">
+                                        <div className="h-3 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        <div className="h-5 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Timeline Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>History</legend>
+                            <div className="win7-p-4 space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="flex gap-3">
+                                        <div className="flex flex-col items-center">
+                                            <div className="size-3 rounded-full bg-gray-200 animate-pulse border border-gray-300"></div>
+                                            <div className="w-px h-full bg-gray-200 my-1"></div>
+                                        </div>
+                                        <div className="space-y-1 w-full">
+                                            <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded-sm"></div>
+                                            <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Right Panel: Map Skeleton */}
+                    <div className="flex-1 bg-[#808080] relative border-l border-white h-[400px] lg:h-auto flex items-center justify-center">
+                        <div className="text-white/50 flex flex-col items-center gap-2">
+                            <div className="size-10 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                            <span className="text-sm shadow-black drop-shadow-md">Loading Map...</span>
+                        </div>
                     </div>
                 </div>
             </div>
