@@ -120,7 +120,7 @@ export function RestockAiPanel({ warehouseId, floorId, floorName, categories }: 
       <CardHeader className="border-b border-[#7f9db9]">
         <CardTitle>AI Restock Recommendations</CardTitle>
         <div className="text-xs text-gray-600">
-          Uses LMStudio model <span className="font-mono">mygemma-inventorym</span> and estimates weekly sales.
+          Uses LMStudio model <span className="font-mono">google/gemma-3n-e4b</span> and estimates weekly sales.
           {scope === "floor" && floorName ? ` (Floor: ${floorName})` : ""}
         </div>
       </CardHeader>

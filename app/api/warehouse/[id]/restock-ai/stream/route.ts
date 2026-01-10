@@ -12,7 +12,7 @@ import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productW
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const MODEL_ID = "mygemma-inventorym";
+const MODEL_ID = "google/gemma-3n-e4b";
 
 const querySchema = z.object({
   scope: z.enum(["floor", "warehouse"]).optional(),
@@ -212,6 +212,37 @@ export async function GET(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 60_000);
 
+    // Build enhanced system message with quality requirements
+    const inventoryDataSummary = rows
+      .map((r) => {
+        const weekly = r.averageWeeklySales == null ? "?" : String(Math.trunc(r.averageWeeklySales));
+        return `- ${r.product}: currentStock=${Math.trunc(r.currentStock)}, averageWeeklySales=${weekly}, category=${r.category}`;
+      })
+      .join("\n");
+
+    const systemMessage = `Predict restock needs for NEXT WEEK. Use lead-time (2 weeks) + safety stock (1 week) = 3 weeks total.
+
+Logic:
+- Required stock = weekly_sales × 3
+- If current_stock >= (weekly_sales × 3): NO restock (enough for lead-time + safety)
+- If current_stock < weekly_sales: URGENT (will run out)
+- If current_stock < (weekly_sales × 3) AND sales > 0: RECOMMEND restock
+- Sales = 0/low AND stock high: NO restock (no demand)
+
+CRITICAL: ALL urgent items MUST also appear in recommended restocks. Product names must match EXACTLY from inventory (same spelling/capitalization).
+
+Order quantity: (weekly_sales × 3) - current_stock
+- If result <= 0: DO NOT order (already sufficient)
+- Round up to nearest 10
+
+Format: "Urgent low stock items:", "Recommended restocks:", "Summary:"
+Numbers must match inventory data exactly.
+
+Inventory reference:
+${inventoryDataSummary}
+
+Return ONLY the formatted response. No commentary.`;
+
     const stream = new ReadableStream({
       async start(streamController) {
         try {
@@ -227,8 +258,7 @@ export async function GET(
             messages: [
               {
                 role: "system",
-                content:
-                  "You are a helpful inventory assistant. Follow the user's formatting rules exactly. Only reference products present in the inventory table. Do not add extra commentary.",
+                content: systemMessage,
               },
               { role: "user", content: prompt },
             ],

@@ -88,6 +88,53 @@ export async function* streamLmstudioChatCompletions(
   }
 }
 
+export type LmstudioChatParams = {
+  baseUrl: string;
+  model: string;
+  temperature?: number;
+  messages: LmstudioChatMessage[];
+  signal?: AbortSignal;
+};
+
+type ChatCompletionResponse = {
+  choices?: Array<{
+    message?: { content?: string };
+    finish_reason?: string | null;
+  }>;
+};
+
+export async function lmstudioChatCompletions(
+  params: LmstudioChatParams
+): Promise<string> {
+  const url = `${normalizeBaseUrl(params.baseUrl)}/v1/chat/completions`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: params.model,
+      stream: false,
+      temperature: params.temperature ?? 0.2,
+      messages: params.messages,
+    }),
+    signal: params.signal,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`LMStudio error: ${res.status} ${res.statusText}${text ? ` - ${text}` : ""}`);
+  }
+
+  const data = (await res.json()) as ChatCompletionResponse;
+  const content = data.choices?.[0]?.message?.content;
+  
+  if (!content) {
+    throw new Error("LMStudio response has no content");
+  }
+
+  return content;
+}
+
 export function sseEncode(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
