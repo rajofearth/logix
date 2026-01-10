@@ -1,7 +1,9 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { History } from "lucide-react"
 
 import type { JobDTO } from "@/app/dashboard/jobs/_types"
 import { planFulfillment, selectFulfillmentOption } from "../_server/planActions"
@@ -26,6 +28,7 @@ type PlanState = {
 }
 
 export function FulfillmentPlanner() {
+  const router = useRouter()
   const [job, setJob] = React.useState<JobDTO | null>(null)
 
   const [objective, setObjective] = React.useState<Exclude<FulfillmentObjective, "revenue">>("balanced")
@@ -138,6 +141,16 @@ export function FulfillmentPlanner() {
 
   return (
     <div className="px-4 lg:px-6">
+      <div className="mb-4 flex items-center justify-end">
+        <Button
+          variant="outline"
+          onClick={() => router.push("/dashboard/fulfillment/history")}
+          className="gap-2"
+        >
+          <History className="h-4 w-4" />
+          View History
+        </Button>
+      </div>
       <div className="grid gap-4 lg:grid-cols-[420px_1fr]">
         <Card className="p-4">
           <div className="flex items-start justify-between gap-3">
