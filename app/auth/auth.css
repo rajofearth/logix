@@ -1,0 +1,36 @@
+/* Windows 7 Auth Pages - Text Color Fixes */
+/* Override global styles that might interfere with 7.css text colors */
+
+.win7 .window-body {
+  color: #000000;
+}
+
+.win7 .window-body p,
+.win7 .window-body label,
+.win7 .window-body legend,
+.win7 .window-body span {
+  color: #000000;
+}
+
+.win7 .window-body a {
+  color: #0066cc;
+  text-decoration: none;
+}
+
+.win7 .window-body a:hover,
+.win7 .window-body a:focus {
+  color: #3399ff;
+  text-decoration: underline;
+}
+
+.win7 .window-body input[type="text"],
+.win7 .window-body input[type="password"],
+.win7 .window-body input[type="email"],
+.win7 .window-body input[type="file"] {
+  color: #000000;
+  background-color: #ffffff;
+}
+
+.win7 .window-body button:not(.title-bar-controls button) {
+  color: #000000;
+}

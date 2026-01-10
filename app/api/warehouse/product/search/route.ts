@@ -1,5 +1,6 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
+import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 
@@ -27,6 +28,8 @@ export async function GET(req: Request) {
             return jsonOk([]);
         }
 
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+
         const products = await prisma.product.findMany({
             where: {
                 OR: [
@@ -34,12 +37,26 @@ export async function GET(req: Request) {
                     { sku: { contains: query, mode: "insensitive" } },
                 ],
             },
-            include: {
+            select: {
+                id: true,
+                sku: true,
+                name: true,
+                quantity: true,
+                category: true,
+                boughtAt: true,
+                currentPrice: true,
+                expiryDate: true,
+                updatedAt: true,
+                ...(hasWeekly ? { averageWeeklySales: true } : {}),
                 block: {
-                    include: {
+                    select: {
+                        id: true,
+                        name: true,
                         floor: {
-                            include: {
-                                warehouse: true,
+                            select: {
+                                id: true,
+                                name: true,
+                                warehouse: { select: { id: true, name: true } },
                             },
                         },
                     },
@@ -55,6 +72,7 @@ export async function GET(req: Request) {
             name: p.name,
             quantity: p.quantity,
             category: p.category.replace("_", "-"),
+            averageWeeklySales: "averageWeeklySales" in p ? (p.averageWeeklySales ?? null) : null,
             boughtAt: decimalToNumber(p.boughtAt),
             currentPrice: decimalToNumber(p.currentPrice),
             expiryDate: p.expiryDate?.toISOString(),

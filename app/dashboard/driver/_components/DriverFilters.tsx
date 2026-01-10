@@ -1,11 +1,9 @@
 "use client"
 
 import { IconSearch } from "@tabler/icons-react"
-
 import type { DriverStatus } from "../_types"
 import type { DriverStats } from "../_server/driverActions"
 import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
 
 interface DriverFiltersProps {
     stats: DriverStats
@@ -30,45 +28,68 @@ export function DriverFilters({
     onSearchChange,
 }: DriverFiltersProps) {
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            {/* Filter Tabs */}
-            <div className="flex items-center gap-1 p-1 bg-muted/50 rounded-xl w-fit order-2 sm:order-1">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+            {/* Windows 7 Tab styling */}
+            <div
+                className="flex"
+                style={{
+                    borderBottom: '1px solid var(--w7-el-bd)',
+                    paddingBottom: '0',
+                }}
+            >
                 {filters.map((filter) => (
                     <button
                         key={filter.key}
                         onClick={() => onFilterChange(filter.key)}
                         className={cn(
-                            "px-4 py-2 text-xs font-medium rounded-lg transition-all duration-200",
-                            "hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50",
+                            "relative px-3 py-1.5 text-xs font-medium select-none transition-colors",
+                            "-mb-[1px] border rounded-t-[3px]",
                             activeFilter === filter.key
-                                ? "bg-background text-foreground shadow-sm"
-                                : "text-muted-foreground hover:bg-background/50"
+                                ? "bg-white border-[var(--w7-el-bd)] border-b-white z-10"
+                                : "bg-[var(--w7-el-grad)] border-transparent hover:bg-[#e5e5e5] text-[#555]"
                         )}
+                        style={{
+                            font: 'var(--w7-font)',
+                            minWidth: '70px',
+                        }}
                     >
-                        {filter.label}
-                        <span
-                            className={cn(
-                                "ml-2 px-2 py-0.5 text-[0.65rem] font-semibold rounded-full transition-colors",
-                                activeFilter === filter.key
-                                    ? "bg-primary text-primary-foreground"
-                                    : "bg-muted-foreground/15 text-muted-foreground"
-                            )}
-                        >
-                            {stats[filter.statKey]}
-                        </span>
+                        {filter.label} ({stats[filter.statKey]})
                     </button>
                 ))}
             </div>
 
-            {/* Search */}
-            <div className="relative w-full sm:w-72 order-1 sm:order-2">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
-                <Input
+            {/* Windows 7 Search box - from _searchbox.scss */}
+            <div className="relative w-full sm:w-72">
+                <input
                     type="search"
-                    placeholder="Search by name, phone, or job..."
+                    placeholder="Search drivers..."
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-9 h-9"
+                    className="win7-search"
+                    style={{
+                        font: 'var(--w7-font)',
+                        fontSize: '9pt',
+                        width: '100%',
+                        height: '24px',
+                        padding: '3px 28px 3px 8px',
+                        border: '1px solid transparent',
+                        borderRadius: '2px',
+                        background: '#fff',
+                        color: '#000',
+                        boxShadow: 'inset 1px 1px 0 #8e8f8f, inset -1px -1px 0 #ccc',
+                        outline: 'none',
+                        minWidth: '180px',
+                    }}
+                    onFocus={(e) => {
+                        e.currentTarget.style.boxShadow = 'inset 1px 1px 0 #3d7bad, inset -1px -1px 0 #a5d1e9'
+                    }}
+                    onBlur={(e) => {
+                        e.currentTarget.style.boxShadow = 'inset 1px 1px 0 #8e8f8f, inset -1px -1px 0 #ccc'
+                    }}
+                />
+                <IconSearch
+                    className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 pointer-events-none"
+                    style={{ color: '#666' }}
                 />
             </div>
         </div>

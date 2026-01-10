@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import type { ReactNode } from "react";
 
 import { auth } from "@/lib/auth";
+import "./win7-dashboard.css";
 
 // Increase timeout for server actions that do route calculations (Mapbox API can be slow)
 export const maxDuration = 60; // 60 seconds

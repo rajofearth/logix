@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import {
     IconArrowLeft,
     IconCircleFilled,
@@ -13,12 +12,8 @@ import {
     IconClock,
 } from "@tabler/icons-react";
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+
 import {
     getTrainShipmentDetail,
     updateTrainShipmentStatus,
@@ -27,15 +22,6 @@ import {
 } from "../_server/actions";
 import { TrainTimeline } from "../_components/TrainTimeline";
 import { TrainTrackingMap } from "../_components/TrainTrackingMap";
-
-const STATUS_COLORS: Record<string, string> = {
-    created: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    waiting_for_train: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-    in_transit: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    at_station: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    delivered: "bg-green-500/10 text-green-500 border-green-500/20",
-    cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
-};
 
 function formatDate(date: Date): string {
     return new Intl.DateTimeFormat("en-IN", {
@@ -139,343 +125,351 @@ export default function TrainShipmentDetailPage() {
 
     if (isLoading) {
         return (
-            <SidebarProvider
-                style={
-                    {
-                        "--sidebar-width": "calc(var(--spacing) * 72)",
-                        "--header-height": "calc(var(--spacing) * 12)",
-                    } as React.CSSProperties
-                }
-            >
-                <AppSidebar variant="inset" />
-                <SidebarInset>
-                    <SiteHeader title="Shipment Details" />
-                    <div className="flex flex-1 p-6">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full">
-                            <div className="space-y-4">
-                                <Skeleton className="h-32 w-full" />
-                                <Skeleton className="h-48 w-full" />
-                                <Skeleton className="h-64 w-full" />
-                            </div>
-                            <Skeleton className="h-[500px] w-full" />
-                        </div>
-                    </div>
-                </SidebarInset>
-            </SidebarProvider>
+            <TrainShipmentSkeleton />
         );
     }
 
     if (!shipment) {
         return (
-            <SidebarProvider
-                style={
-                    {
-                        "--sidebar-width": "calc(var(--spacing) * 72)",
-                        "--header-height": "calc(var(--spacing) * 12)",
-                    } as React.CSSProperties
-                }
-            >
-                <AppSidebar variant="inset" />
-                <SidebarInset>
-                    <SiteHeader title="Shipment Not Found" />
-                    <div className="flex flex-1 flex-col items-center justify-center p-6">
-                        <IconPackage className="size-16 text-muted-foreground mb-4" />
-                        <h2 className="text-xl font-semibold mb-2">Shipment Not Found</h2>
-                        <p className="text-muted-foreground mb-4">
-                            The shipment you&apos;re looking for doesn&apos;t exist.
-                        </p>
-                        <Link href="/dashboard/train-shipments">
-                            <Button>Back to Shipments</Button>
-                        </Link>
-                    </div>
-                </SidebarInset>
-            </SidebarProvider>
+            <DashboardShell title="Shipment Not Found">
+                <div className="flex flex-col items-center justify-center p-8 text-center bg-white border border-[#7f9db9] m-4">
+                    <IconPackage className="size-16 text-gray-400 mb-4" />
+                    <h2 className="text-xl font-bold mb-2">Shipment Not Found</h2>
+                    <p className="text-gray-500 mb-4">
+                        The shipment you&apos;re looking for doesn&apos;t exist.
+                    </p>
+                    <button
+                        onClick={() => router.push("/dashboard/train-shipments")}
+                        className="win7-btn"
+                    >
+                        Back to Shipments
+                    </button>
+                </div>
+            </DashboardShell>
         );
     }
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title={shipment.referenceCode} />
-                <div className="flex flex-1 flex-col overflow-hidden">
-                    <div className="@container/main flex flex-1 overflow-hidden">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 w-full h-full">
-                            {/* Left Panel - Details & Timeline */}
-                            <div className="flex flex-col overflow-y-auto border-r">
-                                <div className="p-4 lg:p-6 space-y-6">
-                                    {/* Back button and header */}
-                                    <div className="flex items-start gap-4">
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() => router.push("/dashboard/train-shipments")}
-                                        >
-                                            <IconArrowLeft className="size-4" />
-                                        </Button>
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3">
-                                                <h1 className="text-xl font-bold">
-                                                    {shipment.referenceCode}
-                                                </h1>
-                                                <Badge
-                                                    variant="outline"
-                                                    className={STATUS_COLORS[shipment.status]}
-                                                >
-                                                    {shipment.status.replace(/_/g, " ")}
-                                                </Badge>
-                                            </div>
-                                            <p className="text-sm text-muted-foreground">
-                                                Created {formatDateTime(shipment.createdAt)}
-                                            </p>
-                                        </div>
-                                        <div className="flex items-center gap-2">
-                                            {shipment.status === "in_transit" && (
-                                                <div className="flex items-center gap-1 text-xs text-amber-500">
-                                                    <IconCircleFilled className="size-2 animate-pulse" />
-                                                    Live
-                                                </div>
-                                            )}
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                onClick={handleRefresh}
-                                                disabled={isRefreshing}
-                                            >
-                                                <IconRefresh
-                                                    className={`size-4 ${isRefreshing ? "animate-spin" : ""}`}
-                                                />
-                                            </Button>
-                                        </div>
+        <DashboardShell title={`Train Shipment: ${shipment.referenceCode}`}>
+            <div className="flex flex-col h-full bg-[#ece9d8]">
+                {/* Toolbar */}
+                <div className="flex items-center gap-2 p-2 border-b border-[#fff] shadow-[0_1px_0_#aca899] mb-1">
+                    <button
+                        className="win7-btn flex items-center gap-1"
+                        onClick={() => router.push("/dashboard/train-shipments")}
+                    >
+                        <IconArrowLeft className="size-3.5" /> Back
+                    </button>
+                    <div className="w-[1px] h-5 bg-[#aca899] mx-1 border-r border-white"></div>
+                    <button
+                        className="win7-btn flex items-center gap-1"
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                    >
+                        <IconRefresh className={`size-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+                        Refresh
+                    </button>
+                    {shipment.status === "in_transit" && (
+                        <div className="flex items-center gap-1 text-[10px] text-amber-600 font-bold uppercase ml-2">
+                            <IconCircleFilled className="size-2 animate-pulse" /> Live
+                        </div>
+                    )}
+                </div>
+
+                {/* Main Content Split */}
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Panel: Info (Scrollable) */}
+                    <div className="w-full lg:w-[450px] flex-col overflow-y-auto border-r border-[#898c95] bg-white p-4 space-y-4">
+
+                        {/* Header Status */}
+                        <div className="win7-groupbox">
+                            <legend>Status</legend>
+                            <div className="win7-p-4 flex justify-between items-start">
+                                <div>
+                                    <h1 className="text-lg font-bold text-black">{shipment.referenceCode}</h1>
+                                    <p className="text-xs text-gray-500">Created {formatDateTime(shipment.createdAt)}</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="inline-block px-2 py-0.5 border border-gray-400 bg-gray-100 text-xs font-bold uppercase">
+                                        {shipment.status.replace(/_/g, " ")}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Status Note */}
+                        {statusNote && (
+                            <div className="win7-groupbox border-amber-500/50">
+                                <legend className="text-amber-600">Update</legend>
+                                <div className="win7-p-4 bg-amber-50 rounded-sm">
+                                    <p className="text-sm text-amber-700 font-sans">
+                                        {statusNote}
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Package Info */}
+                        <div className="win7-groupbox">
+                            <legend>Package Details</legend>
+                            <div className="win7-p-4 grid gap-2 text-sm">
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <span className="text-gray-500">Name</span>
+                                    <span className="font-bold">{shipment.packageName}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <span className="text-gray-500">Weight</span>
+                                    <span className="font-bold">{shipment.weightKg} kg</span>
+                                </div>
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <span className="text-gray-500">Packages</span>
+                                    <span className="font-medium">{shipment.packageCount}</span>
+                                </div>
+                                {shipment.description && (
+                                    <div className="text-gray-600 italic text-xs pt-1">
+                                        {shipment.description}
                                     </div>
+                                )}
+                            </div>
+                        </div>
 
-                                    {/* Status Note */}
-                                    {statusNote && (
-                                        <div className="rounded-lg border border-amber-500/20 bg-amber-500/5 p-3">
-                                            <p className="text-sm text-amber-600 dark:text-amber-400">
-                                                {statusNote}
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    {/* Package Info */}
-                                    <div className="rounded-lg border bg-card p-4">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                                                <IconPackage className="size-5 text-primary" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold">Package Details</h3>
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-3">
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Name</span>
-                                                <span className="font-medium">{shipment.packageName}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Weight</span>
-                                                <span className="font-medium">{shipment.weightKg} kg</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Packages</span>
-                                                <span className="font-medium">{shipment.packageCount}</span>
-                                            </div>
-                                            {shipment.description && (
-                                                <div className="pt-2 border-t">
-                                                    <span className="text-sm text-muted-foreground">
-                                                        {shipment.description}
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
+                        {/* Train Info */}
+                        <div className="win7-groupbox">
+                            <legend>Train Information</legend>
+                            <div className="win7-p-4 grid gap-2 text-sm">
+                                <div className="flex items-center gap-2 mb-2 bg-[#fffde7] border border-[#d4af37] p-2">
+                                    <IconTrain className="size-4 text-amber-600" />
+                                    <div className="font-bold text-amber-900">
+                                        {shipment.trainName} ({shipment.trainNumber})
                                     </div>
+                                </div>
 
-                                    {/* Train Info */}
-                                    <div className="rounded-lg border bg-card p-4">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="flex size-10 items-center justify-center rounded-lg bg-amber-500/10">
-                                                <IconTrain className="size-5 text-amber-500" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold">Train Information</h3>
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-3">
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Train</span>
-                                                <span className="font-medium">{shipment.trainName}</span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Number</span>
-                                                <span className="font-medium font-mono">
-                                                    {shipment.trainNumber}
-                                                </span>
-                                            </div>
-                                            {shipment.coachType && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">Coach</span>
-                                                    <span className="font-medium">{shipment.coachType}</span>
-                                                </div>
-                                            )}
-                                            {shipment.pnr && (
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">PNR</span>
-                                                    <span className="font-medium font-mono">{shipment.pnr}</span>
-                                                </div>
-                                            )}
-                                            {shipment.delayMinutes !== null && shipment.delayMinutes > 0 && (
-                                                <div className="flex justify-between text-orange-500">
-                                                    <span>Delay</span>
-                                                    <span className="font-medium">
-                                                        {shipment.delayMinutes} min
-                                                    </span>
-                                                </div>
-                                            )}
-                                        </div>
+                                {shipment.coachType && (
+                                    <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                        <span className="text-gray-500">Coach</span>
+                                        <span className="font-mono">{shipment.coachType}</span>
                                     </div>
-
-                                    {/* Route Info */}
-                                    <div className="rounded-lg border bg-card p-4">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="flex size-10 items-center justify-center rounded-lg bg-blue-500/10">
-                                                <IconMapPin className="size-5 text-blue-500" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold">Route</h3>
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-3">
-                                            <div>
-                                                <p className="text-xs text-muted-foreground">From</p>
-                                                <p className="font-medium">
-                                                    {shipment.fromStationName}{" "}
-                                                    <span className="text-muted-foreground">
-                                                        ({shipment.fromStationCode})
-                                                    </span>
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <p className="text-xs text-muted-foreground">To</p>
-                                                <p className="font-medium">
-                                                    {shipment.toStationName}{" "}
-                                                    <span className="text-muted-foreground">
-                                                        ({shipment.toStationCode})
-                                                    </span>
-                                                </p>
-                                            </div>
-                                            {shipment.currentStation && (
-                                                <div className="pt-2 border-t">
-                                                    <p className="text-xs text-muted-foreground">Current Station</p>
-                                                    <p className="font-medium text-amber-500">
-                                                        {shipment.currentStation}
-                                                    </p>
-                                                </div>
-                                            )}
-                                        </div>
+                                )}
+                                {shipment.pnr && (
+                                    <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                        <span className="text-gray-500">PNR</span>
+                                        <span className="font-mono">{shipment.pnr}</span>
                                     </div>
-
-                                    {/* Timing Info */}
-                                    <div className="rounded-lg border bg-card p-4">
-                                        <div className="flex items-center gap-3 mb-4">
-                                            <div className="flex size-10 items-center justify-center rounded-lg bg-purple-500/10">
-                                                <IconClock className="size-5 text-purple-500" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold">Timing</h3>
-                                            </div>
-                                        </div>
-                                        <div className="grid gap-3">
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Journey Date</span>
-                                                <span className="font-medium">
-                                                    {formatDate(shipment.journeyDate)}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Departure</span>
-                                                <span className="font-medium">
-                                                    {formatTime(shipment.scheduledDep)}
-                                                    {shipment.actualDep && (
-                                                        <span className="text-muted-foreground ml-2">
-                                                            (Actual: {formatTime(shipment.actualDep)})
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between">
-                                                <span className="text-muted-foreground">Arrival</span>
-                                                <span className="font-medium">
-                                                    {formatTime(shipment.scheduledArr)}
-                                                    {shipment.actualArr && (
-                                                        <span className="text-muted-foreground ml-2">
-                                                            (Actual: {formatTime(shipment.actualArr)})
-                                                        </span>
-                                                    )}
-                                                </span>
-                                            </div>
-                                            {shipment.lastTrackedAt && (
-                                                <div className="pt-2 border-t text-xs text-muted-foreground">
-                                                    Last updated: {formatDateTime(shipment.lastTrackedAt)}
-                                                </div>
-                                            )}
-                                        </div>
+                                )}
+                                {shipment.delayMinutes !== null && shipment.delayMinutes > 0 && (
+                                    <div className="flex justify-between text-red-600 bg-red-50 p-1 border border-red-200">
+                                        <span className="font-bold">Delay</span>
+                                        <span className="font-bold">{shipment.delayMinutes} min</span>
                                     </div>
+                                )}
+                            </div>
+                        </div>
 
-                                    {/* Quick Actions */}
-                                    {shipment.status !== "delivered" &&
-                                        shipment.status !== "cancelled" && (
-                                            <div className="flex gap-2">
-                                                {(shipment.status === "created" ||
-                                                    shipment.status === "waiting_for_train") && (
-                                                        <Button
-                                                            onClick={() => handleStatusUpdate("in_transit")}
-                                                            disabled={isUpdating}
-                                                            className="flex-1"
-                                                        >
-                                                            Mark In Transit
-                                                        </Button>
-                                                    )}
-                                                {shipment.status === "in_transit" && (
-                                                    <Button
-                                                        onClick={() => handleStatusUpdate("delivered")}
-                                                        disabled={isUpdating}
-                                                        className="flex-1"
-                                                    >
-                                                        Mark Delivered
-                                                    </Button>
-                                                )}
-                                            </div>
-                                        )}
+                        {/* Route & Timing (Combined for compactness) */}
+                        <div className="win7-groupbox">
+                            <legend>Route & Timing</legend>
+                            <div className="win7-p-4 space-y-2">
+                                <div className="grid grid-cols-2 gap-2 text-sm">
+                                    <div className="bg-[#f5f5f5] p-2 border border-gray-200">
+                                        <p className="text-[10px] text-gray-500 uppercase">From</p>
+                                        <p className="font-bold">{shipment.fromStationCode}</p>
+                                        <p className="text-[10px]">{shipment.fromStationName}</p>
+                                        <p className="text-xs font-mono mt-1 text-black">{formatTime(shipment.scheduledDep)}</p>
+                                        {shipment.actualDep && <p className="text-[10px] text-gray-500">Act: {formatTime(shipment.actualDep)}</p>}
+                                    </div>
+                                    <div className="bg-[#f5f5f5] p-2 border border-gray-200">
+                                        <p className="text-[10px] text-gray-500 uppercase">To</p>
+                                        <p className="font-bold">{shipment.toStationCode}</p>
+                                        <p className="text-[10px]">{shipment.toStationName}</p>
+                                        <p className="text-xs font-mono mt-1 text-black">{formatTime(shipment.scheduledArr)}</p>
+                                        {shipment.actualArr && <p className="text-[10px] text-gray-500">Act: {formatTime(shipment.actualArr)}</p>}
+                                    </div>
+                                </div>
 
-                                    {/* Timeline */}
-                                    <div>
-                                        <h3 className="font-semibold mb-4">Tracking History</h3>
-                                        <TrainTimeline events={shipment.events} />
+                                {shipment.currentStation && (
+                                    <div className="p-2 border border-[#3399ff] bg-[#eef1ff] flex justify-between items-center text-xs">
+                                        <span className="text-[#0066cc] font-bold">Current Station:</span>
+                                        <span className="font-mono font-bold text-black">{shipment.currentStation}</span>
+                                    </div>
+                                )}
+
+                                {shipment.lastTrackedAt && (
+                                    <div className="text-[9px] text-gray-400 text-right">
+                                        Last updated: {formatDateTime(shipment.lastTrackedAt)}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Actions */}
+                        {shipment.status !== "delivered" && shipment.status !== "cancelled" && (
+                            <div className="flex gap-2 p-1 bg-[#ece9d8] border border-white shadow-[1px_1px_0_#aca899] rounded">
+                                {(shipment.status === "created" || shipment.status === "waiting_for_train") && (
+                                    <button
+                                        onClick={() => handleStatusUpdate("in_transit")}
+                                        disabled={isUpdating}
+                                        className="win7-btn w-full"
+                                    >
+                                        Mark In Transit
+                                    </button>
+                                )}
+                                {shipment.status === "in_transit" && (
+                                    <button
+                                        onClick={() => handleStatusUpdate("delivered")}
+                                        disabled={isUpdating}
+                                        className="win7-btn w-full"
+                                    >
+                                        Mark Delivered
+                                    </button>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Timeline */}
+                        <div className="win7-groupbox">
+                            <legend>History</legend>
+                            <div className="win7-p-4">
+                                <TrainTimeline events={shipment.events} />
+                            </div>
+                        </div>
+
+                    </div>
+
+                    {/* Right Panel: Map */}
+                    <div className="flex-1 bg-[#808080] relative border-l border-white h-[400px] lg:h-auto">
+                        <TrainTrackingMap
+                            fromStationCode={shipment.fromStationCode}
+                            toStationCode={shipment.toStationCode}
+                            currentStationCode={shipment.currentStation}
+                            positions={shipment.positions}
+                        />
+                    </div>
+                </div>
+            </div>
+        </DashboardShell>
+    );
+}
+
+function TrainShipmentSkeleton() {
+    return (
+        <DashboardShell title="Loading Train Shipment...">
+            <div className="flex flex-col h-full bg-[#ece9d8]">
+                {/* Toolbar Stub */}
+                <div className="flex items-center gap-2 p-2 border-b border-[#fff] shadow-[0_1px_0_#aca899] mb-1">
+                    <button className="win7-btn flex items-center gap-1 opacity-50 cursor-not-allowed">
+                        <IconArrowLeft className="size-3.5" /> Back
+                    </button>
+                    <div className="w-[1px] h-5 bg-[#aca899] mx-1 border-r border-white"></div>
+                    <button className="win7-btn flex items-center gap-1 opacity-50 cursor-not-allowed">
+                        <IconRefresh className="size-3.5" /> Refresh
+                    </button>
+                </div>
+
+                {/* Main Content Split */}
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Panel: Info (Scrollable) */}
+                    <div className="w-full lg:w-[450px] flex-col overflow-y-auto border-r border-[#898c95] bg-white p-4 space-y-4">
+
+                        {/* Status Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Status</legend>
+                            <div className="win7-p-4 flex justify-between items-start">
+                                <div className="space-y-2">
+                                    <div className="h-6 w-32 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-3 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                                <div className="h-6 w-20 bg-gray-200 animate-pulse border border-gray-300"></div>
+                            </div>
+                        </div>
+
+                        {/* Package Details Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Package Details</legend>
+                            <div className="win7-p-4 grid gap-2 text-sm">
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Train Information Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Train Information</legend>
+                            <div className="win7-p-4 grid gap-2 text-sm">
+                                <div className="h-10 w-full bg-[#fffde7] border border-[#d4af37] p-2 flex items-center gap-2">
+                                    <div className="size-4 bg-amber-200 rounded-full animate-pulse"></div>
+                                    <div className="h-4 w-32 bg-amber-200 animate-pulse rounded-sm"></div>
+                                </div>
+
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1 mt-2">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-20 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                                <div className="flex justify-between border-b border-dotted border-gray-300 pb-1">
+                                    <div className="h-4 w-12 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    <div className="h-4 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Route & Timing Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>Route & Timing</legend>
+                            <div className="win7-p-4 space-y-2">
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-1 bg-gray-50 p-2 border border-gray-200">
+                                        <div className="h-3 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        <div className="h-4 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        <div className="h-3 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
+                                    </div>
+                                    <div className="space-y-1 bg-gray-50 p-2 border border-gray-200">
+                                        <div className="h-3 w-8 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        <div className="h-4 w-16 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        <div className="h-3 w-24 bg-gray-200 animate-pulse rounded-sm"></div>
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Right Panel - Map */}
-                            <div className="h-[400px] lg:h-full">
-                                <TrainTrackingMap
-                                    fromStationCode={shipment.fromStationCode}
-                                    toStationCode={shipment.toStationCode}
-                                    currentStationCode={shipment.currentStation}
-                                    positions={shipment.positions}
-                                />
+                        {/* History Skeleton */}
+                        <div className="win7-groupbox">
+                            <legend>History</legend>
+                            <div className="win7-p-4 space-y-4">
+                                {[1, 2, 3].map((i) => (
+                                    <div key={i} className="flex gap-3">
+                                        <div className="flex flex-col items-center">
+                                            <div className="size-3 rounded-full bg-gray-200 animate-pulse border border-gray-300"></div>
+                                            <div className="w-px h-full bg-gray-200 my-1"></div>
+                                        </div>
+                                        <div className="space-y-1 w-full">
+                                            <div className="h-4 w-3/4 bg-gray-200 animate-pulse rounded-sm"></div>
+                                            <div className="h-3 w-1/2 bg-gray-200 animate-pulse rounded-sm"></div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
+                        </div>
+
+                    </div>
+
+                    {/* Right Panel: Map Skeleton */}
+                    <div className="flex-1 bg-[#808080] relative border-l border-white h-[400px] lg:h-auto flex items-center justify-center">
+                        <div className="text-white/50 flex flex-col items-center gap-2">
+                            <div className="size-10 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                            <span className="text-sm shadow-black drop-shadow-md">Loading Map...</span>
                         </div>
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        </DashboardShell>
     );
 }

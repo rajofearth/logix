@@ -4,14 +4,12 @@ import * as React from "react"
 import {
   IconChevronDown,
   IconChevronUp,
-  IconSelector,
   IconDotsVertical,
   IconEdit,
   IconMapPin,
   IconPlus,
   IconRoute,
   IconTrash,
-  IconTruck,
   IconUser,
   IconUserPlus,
 } from "@tabler/icons-react"
@@ -34,7 +32,6 @@ import { planFulfillment } from "@/app/dashboard/fulfillment/_server/planActions
 import { executeFulfillmentPlan } from "@/app/dashboard/fulfillment/_server/executeActions"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -45,14 +42,6 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from "@/components/ui/dropdown-menu"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import Link from "next/link"
 
 function formatKm(distanceMeters: number): string {
@@ -62,7 +51,6 @@ function formatKm(distanceMeters: number): string {
 function formatDateTime(iso: string): string {
   const d = new Date(iso)
   if (Number.isNaN(d.getTime())) return iso
-  // Compact format: "Jan 3, 2:30 PM"
   return d.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
@@ -73,17 +61,16 @@ function formatDateTime(iso: string): string {
 }
 
 function getStatusBadge(status: JobStatus) {
-  const variants: Record<JobStatus, { variant: "default" | "secondary" | "destructive" | "outline"; label: string }> = {
-    pending: { variant: "secondary", label: "Pending" },
-    in_progress: { variant: "default", label: "Active" },
-    completed: { variant: "outline", label: "Done" },
-    cancelled: { variant: "destructive", label: "Cancelled" },
+  const labels: Record<JobStatus, string> = {
+    pending: "Pending",
+    in_progress: "Active",
+    completed: "Done",
+    cancelled: "Cancelled",
   }
-  const { variant, label } = variants[status]
-  return <Badge variant={variant} className="text-xs px-1.5 py-0">{label}</Badge>
+  return <span className="text-xs">{labels[status]}</span>
 }
 
-// Compact sortable header
+// Win7 Sortable Header (clickable text/area, not a button element to avoid double-styling)
 function SortableHeader({
   column,
   title,
@@ -93,23 +80,14 @@ function SortableHeader({
 }) {
   const sorted = column.getIsSorted()
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="-ml-2 h-7 px-2 text-xs font-medium hover:bg-muted/60 group"
+    <div
+      className="flex items-center gap-1 cursor-pointer select-none h-full"
       onClick={() => column.toggleSorting(sorted === "asc")}
     >
       {title}
-      <span className="ml-1 flex flex-col">
-        {sorted === "asc" ? (
-          <IconChevronUp className="size-3.5 text-orange-500" />
-        ) : sorted === "desc" ? (
-          <IconChevronDown className="size-3.5 text-orange-500" />
-        ) : (
-          <IconSelector className="size-3.5 opacity-40 group-hover:opacity-70" />
-        )}
-      </span>
-    </Button>
+      {sorted === "asc" && <IconChevronUp className="size-3" />}
+      {sorted === "desc" && <IconChevronDown className="size-3" />}
+    </div>
   )
 }
 
@@ -178,10 +156,8 @@ export function JobsTable({
         accessorKey: "title",
         header: ({ column }) => <SortableHeader column={column} title="Job" />,
         cell: ({ row }) => (
-          <div className="max-w-[140px]">
-            <span className="font-medium text-sm truncate block" title={row.original.title}>
-              {row.original.title}
-            </span>
+          <div className="max-w-[140px] truncate" title={row.original.title}>
+            {row.original.title}
           </div>
         ),
         size: 140,
@@ -202,20 +178,19 @@ export function JobsTable({
         cell: ({ row }) => {
           const job = row.original
           return job.driverName ? (
-            <div className="flex items-center gap-1 max-w-[100px]">
+            <div className="flex items-center gap-1 max-w-[100px] truncate" title={job.driverName}>
               <IconUser className="size-3 text-muted-foreground shrink-0" />
-              <span className="truncate text-sm" title={job.driverName}>
-                {job.driverName}
-              </span>
+              {job.driverName}
             </div>
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger
-                render={<Button variant="ghost" size="sm" className="h-6 text-xs px-1.5 text-orange-500 hover:text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-950/30" />}
-                onPointerEnter={fetchAvailableDrivers}
-              >
-                <IconUserPlus className="size-3 mr-0.5" />
-                Assign
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="win7-btn-ghost text-xs text-blue-600 hover:underline flex items-center gap-0.5"
+                  onPointerEnter={fetchAvailableDrivers}
+                >
+                  <IconUserPlus className="size-3" /> Assign
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="start" className="w-44">
                 {loadingDrivers ? (
@@ -225,7 +200,7 @@ export function JobsTable({
                 ) : (
                   availableDrivers.map((driver) => (
                     <DropdownMenuItem key={driver.id} onClick={() => handleAssignDriver(job, driver.id)}>
-                      <IconUser className="size-3.5" />
+                      <IconUser className="size-3.5 mr-2" />
                       {driver.name}
                     </DropdownMenuItem>
                   ))
@@ -244,11 +219,7 @@ export function JobsTable({
       {
         accessorKey: "pickupAt",
         header: ({ column }) => <SortableHeader column={column} title="Pickup" />,
-        cell: ({ row }) => (
-          <span className="text-xs text-muted-foreground whitespace-nowrap">
-            {formatDateTime(row.original.pickupAt)}
-          </span>
-        ),
+        cell: ({ row }) => formatDateTime(row.original.pickupAt),
         sortingFn: (rowA, rowB) => {
           return new Date(rowA.original.pickupAt).getTime() - new Date(rowB.original.pickupAt).getTime()
         },
@@ -256,18 +227,18 @@ export function JobsTable({
       },
       {
         id: "route",
-        header: () => <span className="text-xs font-medium">Route</span>,
+        header: () => "Route",
         cell: ({ row }) => (
           <div className="flex flex-col gap-0.5 max-w-[180px]">
-            <div className="flex items-center gap-1">
-              <IconMapPin className="size-3 text-green-500 shrink-0" />
-              <span className="text-xs truncate" title={row.original.pickupAddress}>
+            <div className="flex items-center gap-1 w-full">
+              <IconMapPin className="size-3 text-green-600 shrink-0" />
+              <span className="truncate" title={row.original.pickupAddress}>
                 {row.original.pickupAddress.split(",")[0]}
               </span>
             </div>
-            <div className="flex items-center gap-1">
-              <IconRoute className="size-3 text-red-500 shrink-0" />
-              <span className="text-xs truncate" title={row.original.dropAddress}>
+            <div className="flex items-center gap-1 w-full">
+              <IconRoute className="size-3 text-red-600 shrink-0" />
+              <span className="truncate" title={row.original.dropAddress}>
                 {row.original.dropAddress.split(",")[0]}
               </span>
             </div>
@@ -278,14 +249,14 @@ export function JobsTable({
       {
         accessorKey: "distanceMeters",
         header: ({ column }) => (
-          <div className="text-right">
+          <div className="text-right w-full">
             <SortableHeader column={column} title="Dist" />
           </div>
         ),
         cell: ({ row }) => (
-          <span className="text-right tabular-nums text-xs text-muted-foreground block">
+          <div className="text-right">
             {formatKm(row.original.distanceMeters)}
-          </span>
+          </div>
         ),
         size: 60,
       },
@@ -296,20 +267,22 @@ export function JobsTable({
           const job = row.original
           return (
             <DropdownMenu>
-              <DropdownMenuTrigger render={<Button variant="ghost" size="icon" className="size-7" />}>
-                <IconDotsVertical className="size-3.5" />
-                <span className="sr-only">Actions</span>
+              <DropdownMenuTrigger asChild>
+                <button className="win7-btn-ghost size-6 -my-1 h-5 w-5 flex items-center justify-center">
+                  <IconDotsVertical className="size-3.5" />
+                  <span className="sr-only">Actions</span>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-44">
                 <DropdownMenuItem onClick={() => router.push(`/dashboard/jobs/${job.id}/edit`)}>
-                  <IconEdit className="size-3.5" />
+                  <IconEdit className="size-3.5 mr-2" />
                   Edit
                 </DropdownMenuItem>
 
                 {job.status === "pending" && (
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger onPointerEnter={fetchAvailableDrivers}>
-                      <IconUserPlus className="size-3.5" />
+                      <IconUserPlus className="size-3.5 mr-2" />
                       {job.driverName ? "Reassign" : "Assign Driver"}
                     </DropdownMenuSubTrigger>
                     <DropdownMenuSubContent className="w-44">
@@ -347,7 +320,7 @@ export function JobsTable({
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem variant="destructive" onClick={() => onDelete(job)}>
-                  <IconTrash className="size-3.5" />
+                  <IconTrash className="size-3.5 mr-2" />
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -370,90 +343,73 @@ export function JobsTable({
     getSortedRowModel: getSortedRowModel(),
   })
 
+  // Win7 styling setup
   return (
-    <div className="flex flex-col gap-4">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4 px-4 lg:px-6">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center size-10 rounded-lg bg-orange-500/10 text-orange-500">
-            <IconTruck className="size-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold">Delivery Jobs</h2>
-            <p className="text-xs text-muted-foreground">
-              Manage pickups, deliveries & driver assignments • <span className="tabular-nums font-medium">{jobs.length}</span> {jobs.length === 1 ? "job" : "jobs"}
-            </p>
-          </div>
+    <div className="flex flex-col gap-2">
+      {/* Header Actions */}
+      <div className="flex items-center justify-between mb-2">
+        <div>
+          <h2 className="text-base font-bold text-[#003399]">Delivery Jobs</h2>
+          <p className="text-xs text-gray-600">
+            {jobs.length} {jobs.length === 1 ? "job" : "jobs"} found
+          </p>
         </div>
-        <Button asChild size="sm" className="h-8 shadow-sm">
-          <Link href="/dashboard/jobs/new">
-            <IconPlus className="size-4" />
-            New Job
-          </Link>
-        </Button>
+        <Link href="/dashboard/jobs/create">
+          <button className="win7-btn flex items-center justify-center">
+            <span className="flex items-center gap-1">
+              <IconPlus className="size-3" /> New Job
+            </span>
+          </button>
+        </Link>
       </div>
 
-      {/* Table */}
-      <div className="px-4 lg:px-6">
-        <div className="rounded-lg border bg-card">
-          <Table className="w-full">
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className="hover:bg-transparent border-b">
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      className="h-9 px-2 first:pl-3 last:pr-3"
-                      style={{ width: header.getSize() }}
-                    >
-                      {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
-                    </TableHead>
-                  ))}
-                </TableRow>
+      {/* Win7 Table */}
+      <table className="win7-table w-full">
+        <thead>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  style={{ width: header.getSize() !== 150 ? header.getSize() : undefined }}
+                >
+                  {header.isPlaceholder
+                    ? null
+                    : flexRender(header.column.columnDef.header, header.getContext())}
+                </th>
               ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows.length === 0 ? (
-                <TableRow className="hover:bg-transparent">
-                  <TableCell colSpan={columns.length} className="py-12 text-center">
-                    <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                      <IconPlus className="size-6 opacity-40" />
-                      <span className="text-sm">No jobs yet</span>
-                      <Button asChild variant="outline" size="sm" className="mt-1">
-                        <Link href="/dashboard/jobs/new">Create your first job</Link>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="group hover:bg-muted/40 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/dashboard/jobs/${row.original.id}/edit`)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className="py-2 px-2 first:pl-3 last:pr-3"
-                        style={{ width: cell.column.getSize() }}
-                        onClick={(e) => {
-                          // Prevent row click when clicking on interactive elements
-                          if ((e.target as HTMLElement).closest("button, [role='menuitem']")) {
-                            e.stopPropagation()
-                          }
-                        }}
-                      >
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-      </div>
+            </tr>
+          ))}
+        </thead>
+        <tbody>
+          {table.getRowModel().rows.length === 0 ? (
+            <tr>
+              <td colSpan={columns.length} className="text-center py-8 text-gray-500">
+                No jobs found.
+              </td>
+            </tr>
+          ) : (
+            table.getRowModel().rows.map((row) => (
+              <tr
+                key={row.id}
+                className="hover:bg-blue-50"
+                onClick={(e) => {
+                  // Basic row click handling
+                  if (!(e.target as HTMLElement).closest("button, a, [role='menuitem'], [role='button']")) {
+                    router.push(`/dashboard/jobs/${row.original.id}/edit`)
+                  }
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <td key={cell.id}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
     </div>
   )
 }

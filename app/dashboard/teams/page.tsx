@@ -3,13 +3,6 @@
 import * as React from "react"
 import { toast } from "sonner"
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import {
-    SidebarInset,
-    SidebarProvider,
-} from "@/components/ui/sidebar"
-
 import { TeamsFilterBar } from "./_components/TeamsFilterBar"
 import { TeamsTable } from "./_components/TeamsTable"
 import { TeamAlertBanner } from "./_components/TeamAlertBanner"
@@ -24,6 +17,8 @@ import {
     type Team,
     type TeamAlert,
 } from "./_server/teamsData"
+
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export default function TeamsPage() {
     // Filter state
@@ -113,73 +108,67 @@ export default function TeamsPage() {
     }
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader />
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                            {/* Page Header */}
-                            <div className="flex items-center justify-between px-4 lg:px-6">
-                                <div>
-                                    <h1 className="text-2xl font-semibold">Teams</h1>
-                                    <p className="text-sm text-muted-foreground">
-                                        Monitor team progress and performance
-                                    </p>
-                                </div>
-                            </div>
+        <DashboardShell title="Team Management and Monitoring">
+            <div className="flex flex-col gap-4 bg-[#ece9d8]">
+                <div className="flex flex-col gap-4 p-4">
+                    {/* Page Header */}
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <h1 className="text-xl font-bold font-sans">Teams</h1>
+                            <p className="text-xs text-gray-500">
+                                Monitor team progress and performance
+                            </p>
+                        </div>
+                    </div>
 
-                            {/* Alert Banner */}
-                            <div className="px-4 lg:px-6">
-                                <TeamAlertBanner
-                                    alerts={alerts}
-                                    onResolve={handleResolveAlert}
-                                    onDismiss={handleDismissAlert}
-                                />
-                            </div>
+                    {/* Alert Banner */}
+                    <div className="win7-groupbox border-red-500">
+                        <legend className="text-red-500">Alerts</legend>
+                        <div className="win7-p-4">
+                            <TeamAlertBanner
+                                alerts={alerts}
+                                onResolve={handleResolveAlert}
+                                onDismiss={handleDismissAlert}
+                            />
+                        </div>
+                    </div>
 
-                            {/* Filter Bar */}
-                            <div className="px-4 lg:px-6">
-                                <TeamsFilterBar
-                                    searchQuery={searchQuery}
-                                    onSearchChange={setSearchQuery}
-                                    departmentFilter={departmentFilter}
-                                    onDepartmentChange={setDepartmentFilter}
-                                    statusFilter={statusFilter}
-                                    onStatusChange={setStatusFilter}
-                                    onAddTeam={() => setAddModalOpen(true)}
-                                    visibleColumns={visibleColumns}
-                                    onColumnVisibilityChange={handleColumnVisibilityChange}
-                                />
-                            </div>
+                    {/* Filter Bar */}
+                    <div className="win7-groupbox">
+                        <legend>Search and Filter</legend>
+                        <div className="win7-p-4 text-xs">
+                            <TeamsFilterBar
+                                searchQuery={searchQuery}
+                                onSearchChange={setSearchQuery}
+                                departmentFilter={departmentFilter}
+                                onDepartmentChange={setDepartmentFilter}
+                                statusFilter={statusFilter}
+                                onStatusChange={setStatusFilter}
+                                onAddTeam={() => setAddModalOpen(true)}
+                                visibleColumns={visibleColumns}
+                                onColumnVisibilityChange={handleColumnVisibilityChange}
+                            />
+                        </div>
+                    </div>
 
-                            {/* Teams Table */}
-                            <div className="px-4 lg:px-6">
-                                <TeamsTable
-                                    teams={filteredTeams}
-                                    visibleColumns={visibleColumns}
-                                    onView={handleViewTeam}
-                                    onComment={handleCommentClick}
-                                    onAddTeam={() => setAddModalOpen(true)}
-                                />
-                            </div>
+                    {/* Teams Table */}
+                    <TeamsTable
+                        teams={filteredTeams}
+                        visibleColumns={visibleColumns}
+                        onView={handleViewTeam}
+                        onComment={handleCommentClick}
+                        onAddTeam={() => setAddModalOpen(true)}
+                    />
 
-                            {/* Trend Chart */}
-                            <div className="px-4 lg:px-6">
-                                <TeamProgressTrendChart />
-                            </div>
+                    {/* Trend Chart */}
+                    <div className="win7-groupbox">
+                        <legend>Performance Trends</legend>
+                        <div className="win7-p-4">
+                            <TeamProgressTrendChart />
                         </div>
                     </div>
                 </div>
-            </SidebarInset>
+            </div>
 
             {/* Modals */}
             <AddTeamModal
@@ -202,6 +191,6 @@ export default function TeamsPage() {
                 onSend={handleSendComment}
                 triggerRef={commentTriggerRef}
             />
-        </SidebarProvider>
+        </DashboardShell>
     )
 }

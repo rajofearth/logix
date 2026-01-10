@@ -1,10 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { IconPackage, IconRefresh, IconLoader2 } from "@tabler/icons-react";
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { IconPackage, IconRefresh, IconLoader2, IconSearch, IconFilter } from "@tabler/icons-react";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -159,58 +157,97 @@ export default function PackageScansPage() {
     };
 
     return (
-        <SidebarProvider
-            style={{
-                "--sidebar-width": "calc(var(--spacing) * 72)",
-                "--header-height": "calc(var(--spacing) * 12)",
-            } as React.CSSProperties}
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader />
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                            {/* Page Header */}
-                            <div className="flex items-center justify-between px-4 lg:px-6">
-                                <div className="flex items-center gap-3">
-                                    <div className="flex items-center justify-center size-10 rounded-lg bg-primary/10">
-                                        <IconPackage className="size-5 text-primary" />
-                                    </div>
-                                    <div>
-                                        <h1 className="text-xl font-semibold">Package Scans</h1>
-                                        <p className="text-sm text-muted-foreground">
-                                            Monitor package condition verifications across all jobs
-                                        </p>
-                                    </div>
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleRefresh}
-                                    disabled={loading}
-                                >
-                                    {loading ? (
-                                        <IconLoader2 className="size-4 animate-spin" />
-                                    ) : (
-                                        <IconRefresh className="size-4" />
-                                    )}
-                                    <span className="ml-2 hidden sm:inline">Refresh</span>
-                                </Button>
-                            </div>
+        <DashboardShell title="Package Condition Monitor">
+            <div className="flex flex-col h-full bg-[#ece9d8]">
+                {/* Header Toolbar */}
+                <div className="flex items-center justify-between p-2 border-b border-[#fff] shadow-[0_1px_0_#aca899]">
+                    <div className="flex items-center gap-2">
+                        <IconPackage className="size-5 text-gray-500" />
+                        <span className="font-bold text-sm">Scan Verification Logs</span>
+                    </div>
+                    <button
+                        className="win7-btn text-xs flex items-center gap-1"
+                        onClick={handleRefresh}
+                        disabled={loading}
+                    >
+                        {loading ? <IconLoader2 className="size-3.5 animate-spin" /> : <IconRefresh className="size-3.5" />}
+                        Refresh
+                    </button>
+                </div>
 
-                            {/* Stats Cards */}
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Sidebar: Stats & Filters */}
+                    <div className="w-[350px] flex-shrink-0 border-r border-[#aca899] bg-[#f0f0f0] p-4 overflow-y-auto hidden lg:block">
+                        <div className="space-y-4">
+                            {/* Stats Section with Interactive Filtering */}
                             {loading ? (
-                                <div className="grid grid-cols-1 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+                                <div className="space-y-4">
                                     {[...Array(4)].map((_, i) => (
-                                        <Skeleton key={i} className="h-36 rounded-xl" />
+                                        <div
+                                            key={i}
+                                            className="h-24 animate-pulse"
+                                            style={{
+                                                background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                                                border: '1px solid #c0c1cd',
+                                                borderRadius: '3px',
+                                            }}
+                                        />
                                     ))}
                                 </div>
                             ) : data?.stats ? (
-                                <StatsCards stats={data.stats} />
+                                <div className="win7-groupbox">
+                                    <legend>System Statistics</legend>
+                                    <div className="win7-p-4 pl-0 pr-0">
+                                        <p className="px-4 text-xs text-gray-500 mb-2">
+                                            Click on cards to filter scans.
+                                        </p>
+                                        <StatsCards
+                                            stats={data.stats}
+                                            className="grid-cols-1 lg:grid-cols-1 @xl/main:grid-cols-1 @5xl/main:grid-cols-1 px-0 lg:px-0"
+                                            onFilterChange={(newPhase, newStatus) => {
+                                                setPhase(newPhase);
+                                                setPassed(newStatus);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
                             ) : null}
 
-                            {/* Filter Bar */}
+                            {/* Active Filters Display */}
+                            {(phase !== "all" || passed !== "all") && (
+                                <div className="win7-groupbox">
+                                    <legend>Active Filters</legend>
+                                    <div className="win7-p-4 flex flex-wrap gap-2">
+                                        {phase !== "all" && (
+                                            <div className="flex items-center gap-1 bg-white border border-[#7f9db9] px-2 py-1 rounded text-xs">
+                                                <span className="text-gray-500">Phase:</span>
+                                                <span className="font-bold capitalize">{phase}</span>
+                                                <button onClick={() => setPhase("all")} className="ml-1 hover:text-red-500"><IconFilter className="size-3" /></button>
+                                            </div>
+                                        )}
+                                        {passed !== "all" && (
+                                            <div className="flex items-center gap-1 bg-white border border-[#7f9db9] px-2 py-1 rounded text-xs">
+                                                <span className="text-gray-500">Status:</span>
+                                                <span className="font-bold capitalize">{passed === "true" ? "Passed" : "Failed"}</span>
+                                                <button onClick={() => setPassed("all")} className="ml-1 hover:text-red-500"><IconFilter className="size-3" /></button>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={handleClearFilters}
+                                            className="text-xs text-blue-600 hover:underline ml-auto"
+                                        >
+                                            Clear All
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Content: Scans Grid */}
+                    <div className="flex-1 flex flex-col min-w-0 bg-white">
+                        {/* Mobile Filters (visible only on small screens) */}
+                        <div className="lg:hidden p-4 border-b border-[#aca899] bg-[#f0f0f0]">
                             <FilterBar
                                 phase={phase}
                                 passed={passed}
@@ -218,76 +255,80 @@ export default function PackageScansPage() {
                                 onPassedChange={setPassed}
                                 onClearFilters={handleClearFilters}
                             />
+                        </div>
 
-                            {/* Scans Grid */}
-                            <div className="px-4 lg:px-6">
-                                {loading ? (
-                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                        {[...Array(8)].map((_, i) => (
-                                            <Skeleton key={i} className="h-80 rounded-xl" />
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {loading && !data ? (
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                    {[...Array(6)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="h-80 animate-pulse"
+                                            style={{
+                                                background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                                                border: '1px solid #c0c1cd',
+                                                borderRadius: 'var(--w7-el-bdr)',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : data?.verifications.length === 0 ? (
+                                <div className="win7-groupbox bg-white flex flex-col items-center justify-center p-8 text-center min-h-[300px]">
+                                    <IconPackage className="size-12 text-[#adaa9c] mb-4" />
+                                    <h3 className="text-lg font-bold mb-1">No package scans found</h3>
+                                    <p className="text-sm text-gray-500 mb-4 max-w-sm">
+                                        {phase !== "all" || passed !== "all"
+                                            ? "Try adjusting your filters to see more results."
+                                            : "Package verification data will appear here once drivers start scanning packages."}
+                                    </p>
+                                    {(phase !== "all" || passed !== "all") && (
+                                        <button
+                                            className="win7-btn"
+                                            onClick={handleClearFilters}
+                                        >
+                                            Clear filters
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                                        {data?.verifications.map((verification) => (
+                                            <div key={verification.id} className="win7-window p-1 bg-white">
+                                                <ScanCard verification={verification} />
+                                            </div>
                                         ))}
                                     </div>
-                                ) : data?.verifications.length === 0 ? (
-                                    <div className="flex flex-col items-center justify-center py-16 text-center">
-                                        <div className="flex items-center justify-center size-16 rounded-full bg-muted mb-4">
-                                            <IconPackage className="size-8 text-muted-foreground" />
-                                        </div>
-                                        <h3 className="text-lg font-medium mb-1">No package scans found</h3>
-                                        <p className="text-sm text-muted-foreground max-w-sm">
-                                            {phase !== "all" || passed !== "all"
-                                                ? "Try adjusting your filters to see more results."
-                                                : "Package verification data will appear here once drivers start scanning packages."}
-                                        </p>
-                                        {(phase !== "all" || passed !== "all") && (
-                                            <Button
-                                                variant="outline"
-                                                size="sm"
-                                                onClick={handleClearFilters}
-                                                className="mt-4"
+
+                                    {/* Load More */}
+                                    {data?.pagination.hasMore && (
+                                        <div className="flex justify-center mt-4">
+                                            <button
+                                                className="win7-btn min-w-[120px]"
+                                                onClick={handleLoadMore}
+                                                disabled={loadingMore}
                                             >
-                                                Clear filters
-                                            </Button>
-                                        )}
+                                                {loadingMore ? (
+                                                    <>
+                                                        <IconLoader2 className="size-3.5 mr-2 animate-spin inline" />
+                                                        Loading...
+                                                    </>
+                                                ) : (
+                                                    "Load more scans"
+                                                )}
+                                            </button>
+                                        </div>
+                                    )}
+
+                                    <div className="text-center text-xs text-gray-500 mt-2">
+                                        Showing {data?.verifications.length} of {data?.pagination.total} scans relative to filters
                                     </div>
-                                ) : (
-                                    <>
-                                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                            {data?.verifications.map((verification) => (
-                                                <ScanCard key={verification.id} verification={verification} />
-                                            ))}
-                                        </div>
-
-                                        {/* Load More */}
-                                        {data?.pagination.hasMore && (
-                                            <div className="flex justify-center mt-8">
-                                                <Button
-                                                    variant="outline"
-                                                    onClick={handleLoadMore}
-                                                    disabled={loadingMore}
-                                                >
-                                                    {loadingMore ? (
-                                                        <>
-                                                            <IconLoader2 className="size-4 mr-2 animate-spin" />
-                                                            Loading...
-                                                        </>
-                                                    ) : (
-                                                        <>Load more scans</>
-                                                    )}
-                                                </Button>
-                                            </div>
-                                        )}
-
-                                        {/* Results count */}
-                                        <div className="text-center text-sm text-muted-foreground mt-4">
-                                            Showing {data?.verifications.length} of {data?.pagination.total} scans
-                                        </div>
-                                    </>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        </DashboardShell>
     );
 }

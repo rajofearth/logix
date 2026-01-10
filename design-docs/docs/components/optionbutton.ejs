@@ -1,0 +1,56 @@
+<section class="component">
+  <h3 id="radio">OptionButton</h3>
+  <div>
+    <blockquote>
+      An <em>option button</em>, also referred to as a radio button, represents a single
+      choice within a limited set of mutually exclusive choices. That is, the user can choose only
+      one set of options.
+
+      <footer>&mdash; Microsoft Windows User Experience p. 164</footer>
+    </blockquote>
+
+    <p>
+      Option buttons can be used via the <code>radio</code> type on an input element.
+    </p>
+
+    <p>
+      Option buttons can be grouped by specifying a shared <code>name</code> attribute on each
+      input.
+    </p>
+
+    <%- example(`
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="first-example">
+          <label for="radio${getCurrentId()}">Yes</label>
+        </div>
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="first-example">
+          <label for="radio${getCurrentId()}">No</label>
+        </div>
+      </div>
+    `) %>
+
+    <p>
+      Option buttons can also be <code>checked</code> and <code>disabled</code> with their corresponding
+      HTML attributes.
+    </p>
+
+    <%- example(`
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <div>
+          <input id="radio${getNewId()}" type="radio" name="second-example">
+          <label for="radio${getCurrentId()}">Peanut butter should be smooth</label>
+        </div>
+        <div>
+          <input checked disabled id="radio${getNewId()}" type="radio" name="second-example">
+          <label for="radio${getCurrentId()}">I understand why people like crunchy peanut butter</label>
+        </div>
+        <div>
+          <input disabled id="radio${getNewId()}" type="radio" name="second-example">
+          <label for="radio${getCurrentId()}">Crunchy peanut butter is good</label>
+        </div>
+      </div>
+    `) %>
+  </div>
+</section>

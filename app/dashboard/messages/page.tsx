@@ -10,9 +10,7 @@ import { DriverList } from "./_components/DriverList"
 import { ConversationView } from "./_components/ConversationView"
 import { DriverInfoPanel } from "./_components/DriverInfoPanel"
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export default function MessagesPage() {
     const [drivers, setDrivers] = React.useState<DriverDTO[]>([])
@@ -144,22 +142,15 @@ export default function MessagesPage() {
         !!threadId
 
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Messages" />
-                <div className="flex flex-1 overflow-hidden">
-                    {/* Three-panel layout */}
-                    <div className="flex flex-1">
-                        {/* Left: Driver List */}
-                        <div className="w-72 shrink-0">
+        <DashboardShell title="Messenger Service">
+            <div className="flex flex-1 overflow-hidden bg-[#ece9d8] p-2">
+                <div className="flex w-full h-full border border-white shadow-[1px_1px_0_#aca899] bg-white">
+                    {/* Left: Driver List */}
+                    <div className="w-72 shrink-0 border-r border-[#aca899] flex flex-col">
+                        <div className="bg-[#ece9d8] p-1 border-b border-[#aca899]">
+                            <p className="text-xs text-gray-600">Active Drivers</p>
+                        </div>
+                        <div className="flex-1 overflow-y-auto bg-white">
                             <DriverList
                                 drivers={drivers}
                                 selectedDriverId={selectedDriver?.id ?? null}
@@ -167,24 +158,24 @@ export default function MessagesPage() {
                                 isLoading={isLoading}
                             />
                         </div>
+                    </div>
 
-                        {/* Center: Conversation View */}
-                        <div className="flex-1 min-w-0">
-                            <ConversationView
-                                driver={selectedDriver}
-                                messages={selectedDriver ? messages : []}
-                                onSendMessage={handleSendMessage}
-                                canSend={canSend}
-                            />
-                        </div>
+                    {/* Center: Conversation View */}
+                    <div className="flex-1 min-w-0 flex flex-col bg-[#eef1ff]">
+                        <ConversationView
+                            driver={selectedDriver}
+                            messages={selectedDriver ? messages : []}
+                            onSendMessage={handleSendMessage}
+                            canSend={canSend}
+                        />
+                    </div>
 
-                        {/* Right: Driver Info Panel */}
-                        <div className="w-72 shrink-0 hidden lg:block">
-                            <DriverInfoPanel driver={selectedDriver} />
-                        </div>
+                    {/* Right: Driver Info Panel */}
+                    <div className="w-72 shrink-0 hidden lg:block border-l border-[#aca899] bg-[#f0f0f0]">
+                        <DriverInfoPanel driver={selectedDriver} />
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+            </div>
+        </DashboardShell>
     )
 }

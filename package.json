@@ -16,6 +16,8 @@
     ]
   },
   "dependencies": {
+    "7.css": "^0.21.1",
+    "@openrouter/ai-sdk-provider": "latest",
     "@base-ui/react": "^1.0.0",
     "@better-auth/expo": "^1.4.9",
     "@dnd-kit/core": "^6.3.1",
@@ -43,6 +45,7 @@
     "@tanstack/react-table": "^8.21.3",
     "@uploadthing/react": "^7.3.3",
     "@vercel/analytics": "^1.6.1",
+    "ai": "^6.0.26",
     "better-auth": "^1.4.9",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

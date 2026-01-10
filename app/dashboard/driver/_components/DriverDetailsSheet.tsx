@@ -36,14 +36,12 @@ import {
     SheetDescription,
 } from "@/components/ui/sheet"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
     type ChartConfig,
 } from "@/components/ui/chart"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 // Mock shipment data for area chart
 const shipmentData = [
@@ -61,58 +59,45 @@ const shipmentData = [
     { month: "Dec", deliveries: 89 },
 ]
 
-// Mock delay reasons data for pie chart
+// Mock delay reasons data for pie chart - Win7 blue colors
 const delayReasonsData = [
-    { reason: "Misrouted", count: 18, fill: "var(--color-misrouted)" },
-    { reason: "Breakdown", count: 8, fill: "var(--color-breakdown)" },
-    { reason: "Accident", count: 6, fill: "var(--color-accident)" },
-    { reason: "Others", count: 8, fill: "var(--color-others)" },
+    { reason: "Misrouted", count: 18, fill: "#0066cc" },
+    { reason: "Breakdown", count: 8, fill: "#3399ff" },
+    { reason: "Accident", count: 6, fill: "#cc0000" },
+    { reason: "Others", count: 8, fill: "#888888" },
 ]
 
+// Win7 chart colors
 const shipmentChartConfig = {
     deliveries: {
         label: "Deliveries",
-        color: "oklch(0.646 0.222 41.116)",
+        color: "#0066cc", // Win7 blue
     },
 } satisfies ChartConfig
 
 const delayChartConfig = {
-    misrouted: {
-        label: "Misrouted",
-        color: "oklch(0.646 0.222 41.116)",
-    },
-    breakdown: {
-        label: "Breakdown",
-        color: "oklch(0.7 0.015 286.067)",
-    },
-    accident: {
-        label: "Accident",
-        color: "oklch(0.47 0.157 37.304)",
-    },
-    others: {
-        label: "Others",
-        color: "oklch(0.553 0.195 38.402)",
-    },
+    misrouted: { label: "Misrouted", color: "#0066cc" },
+    breakdown: { label: "Breakdown", color: "#3399ff" },
+    accident: { label: "Accident", color: "#cc0000" },
+    others: { label: "Others", color: "#888888" },
 } satisfies ChartConfig
 
+// Win7 status colors
 const statusConfig = {
     available: {
         label: "Available",
-        ringColor: "ring-emerald-500",
-        badgeClass: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-        dotColor: "bg-emerald-500",
+        badgeClass: "bg-[#e8f4fc] text-[#0066cc] border-[#3c7fb1]",
+        dotColor: "bg-[#0066cc]",
     },
     "on-route": {
         label: "On Route",
-        ringColor: "ring-primary",
-        badgeClass: "bg-primary/10 text-primary border-primary/20",
-        dotColor: "bg-primary",
+        badgeClass: "bg-[#d9edf7] text-[#31708f] border-[#bce8f1]",
+        dotColor: "bg-[#5bc0de]",
     },
     "off-duty": {
         label: "Off Duty",
-        ringColor: "ring-muted-foreground/50",
-        badgeClass: "bg-muted text-muted-foreground border-muted-foreground/20",
-        dotColor: "bg-muted-foreground",
+        badgeClass: "bg-[#f5f5f5] text-[#777] border-[#ddd]",
+        dotColor: "bg-[#999]",
     },
 }
 
@@ -154,36 +139,67 @@ export function DriverDetailsSheet({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto p-0">
-                {/* Header Section */}
-                <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b">
+            <SheetContent
+                side="right"
+                className="w-full sm:max-w-md overflow-y-auto p-0"
+                style={{
+                    background: 'var(--w7-surface)',
+                    borderLeft: '1px solid var(--w7-w-bd)',
+                    font: 'var(--w7-font)'
+                }}
+            >
+                {/* Win7 Aero Header */}
+                <div
+                    className="sticky top-0 z-10"
+                    style={{
+                        background: 'linear-gradient(to right, rgba(255,255,255,0.4), rgba(0,0,0,0.1), rgba(255,255,255,0.2)), var(--w7-w-bg)',
+                        borderBottom: '1px solid var(--w7-w-bd)',
+                        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.9)',
+                    }}
+                >
                     <SheetHeader className="p-4 pb-3">
                         <div className="flex items-center gap-3">
                             <Avatar
                                 size="lg"
-                                className={cn("ring-2 ring-offset-2 ring-offset-background", status.ringColor)}
+                                className="border-2 border-[rgba(0,0,0,0.5)] shadow-md"
                             >
                                 <AvatarImage src={driver.avatar ?? undefined} alt={driver.name} />
-                                <AvatarFallback className="text-sm font-semibold">{getInitials(driver.name)}</AvatarFallback>
+                                <AvatarFallback
+                                    className="text-sm font-semibold"
+                                    style={{ background: 'var(--w7-el-grad)', color: '#333' }}
+                                >
+                                    {getInitials(driver.name)}
+                                </AvatarFallback>
                             </Avatar>
                             <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2">
-                                    <SheetTitle className="text-base truncate">{driver.name}</SheetTitle>
-                                    <Badge
-                                        variant="outline"
-                                        className={cn("text-[0.6rem] px-1.5 h-5 shrink-0 border", status.badgeClass)}
+                                    <SheetTitle
+                                        className="text-base truncate"
+                                        style={{
+                                            color: '#000',
+                                            textShadow: '0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff'
+                                        }}
                                     >
+                                        {driver.name}
+                                    </SheetTitle>
+                                    <span className={cn(
+                                        "inline-flex items-center px-2 py-0.5 text-[10px] font-semibold uppercase rounded-[var(--w7-el-bdr)] border",
+                                        status.badgeClass
+                                    )}>
                                         <span className={cn("size-1.5 rounded-full mr-1", status.dotColor)} />
                                         {status.label}
-                                    </Badge>
-                                </div>
-                                <SheetDescription className="flex items-center gap-3 mt-0.5">
-                                    <span className="flex items-center gap-1">
-                                        <IconStar className="size-3 fill-amber-400 text-amber-400" />
-                                        <span className="font-medium text-foreground">{stats.rating}</span>
-                                        <span className="text-muted-foreground">({stats.reviews})</span>
                                     </span>
-                                    <span className="text-muted-foreground">•</span>
+                                </div>
+                                <SheetDescription
+                                    className="flex items-center gap-3 mt-0.5"
+                                    style={{ color: '#333', textShadow: '0 0 5px #fff' }}
+                                >
+                                    <span className="flex items-center gap-1">
+                                        <IconStar className="size-3 fill-[#f4a100]" style={{ color: '#f4a100' }} />
+                                        <span className="font-medium" style={{ color: '#000' }}>{stats.rating}</span>
+                                        <span style={{ color: '#555' }}>({stats.reviews})</span>
+                                    </span>
+                                    <span style={{ color: '#666' }}>•</span>
                                     <span>{stats.yearsExp}+ years exp</span>
                                 </SheetDescription>
                             </div>
@@ -194,178 +210,237 @@ export function DriverDetailsSheet({
                 <div className="p-4 space-y-4">
                     {/* Available Driver - Quick Actions */}
                     {isAvailable && (
-                        <Card className="bg-emerald-500/5 border-emerald-500/20">
-                            <CardContent className="p-3">
-                                <div className="flex items-center gap-3">
-                                    <div className="size-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                                        <IconTruck className="size-5 text-emerald-500" />
-                                    </div>
-                                    <div className="flex-1">
-                                        <p className="text-sm font-medium">Ready for Assignment</p>
-                                        <p className="text-xs text-muted-foreground">This driver is available for new jobs</p>
-                                    </div>
-                                    <Button size="sm" className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white">
-                                        Assign Job
-                                    </Button>
+                        <fieldset
+                            className="border rounded-[var(--w7-el-bdr)] p-3 m-0 mb-4"
+                            style={{
+                                borderColor: 'var(--w7-el-bd-h)',
+                                background: '#e8f4fc',
+                                boxShadow: 'inset 0 0 0 1px #fff'
+                            }}
+                        >
+                            <div className="flex items-center gap-3">
+                                <div
+                                    className="size-10 rounded-[var(--w7-el-bdr)] flex items-center justify-center"
+                                    style={{
+                                        background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                                        border: '1px solid #8e8f8f',
+                                        boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.8)'
+                                    }}
+                                >
+                                    <IconTruck className="size-5" style={{ color: '#0066cc' }} />
                                 </div>
-                            </CardContent>
-                        </Card>
+                                <div className="flex-1">
+                                    <p className="text-[11px] font-semibold" style={{ color: '#000' }}>Ready for Assignment</p>
+                                    <p className="text-[10px]" style={{ color: '#666' }}>This driver is available for new jobs</p>
+                                </div>
+                                <button
+                                    className="win7-btn px-3 h-7 text-[11px] flex items-center justify-center"
+                                    style={{
+                                        background: 'linear-gradient(#eaf6fd 45%, #bee6fd 45%, #a7d9f5)',
+                                        color: '#000',
+                                        borderColor: 'var(--w7-el-bd-h)',
+                                        fontWeight: 600
+                                    }}
+                                >
+                                    Assign Job
+                                </button>
+                            </div>
+                        </fieldset>
                     )}
 
                     {/* Active Job Card - Only for on-route drivers */}
                     {driver.currentJob && !isAvailable && (
-                        <Card className="overflow-hidden border-primary/20">
-                            <CardHeader className="p-3 pb-2 bg-primary/5">
+                        <fieldset
+                            className="border rounded-[var(--w7-el-bdr)] p-0 m-0 overflow-hidden"
+                            style={{ borderColor: 'var(--w7-el-bd)' }}
+                        >
+                            {/* Header */}
+                            <div
+                                className="p-3 pb-2"
+                                style={{ background: '#e8f4fc', borderBottom: '1px solid #bce8f1' }}
+                            >
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-2">
-                                        <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                                            <IconTruck className="size-4 text-primary" />
+                                        <div
+                                            className="size-8 rounded-[var(--w7-el-bdr)] flex items-center justify-center"
+                                            style={{ background: 'var(--w7-el-grad)', border: '1px solid var(--w7-el-bd)' }}
+                                        >
+                                            <IconTruck className="size-4" style={{ color: 'var(--w7-link-c)' }} />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-sm">{driver.currentJob}</CardTitle>
-                                            <p className="text-[0.65rem] text-muted-foreground">Active Delivery</p>
+                                            <p className="text-[11px] font-semibold" style={{ color: '#000' }}>{driver.currentJob}</p>
+                                            <p className="text-[9px]" style={{ color: '#666' }}>Active Delivery</p>
                                         </div>
                                     </div>
                                 </div>
-                            </CardHeader>
+                            </div>
 
-                            <CardContent className="p-3 pt-2">
-                                <div className="space-y-3">
-                                    {/* Progress bar */}
-                                    <div>
-                                        <div className="flex items-center justify-between text-xs mb-1.5">
-                                            <span className="text-muted-foreground">Route Progress</span>
-                                            <span className="font-semibold text-primary">{stats.progress}%</span>
-                                        </div>
-                                        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                                            <div
-                                                className="absolute inset-y-0 left-0 bg-primary rounded-full transition-all duration-500"
-                                                style={{ width: `${stats.progress}%` }}
-                                            />
-                                        </div>
+                            <div className="p-3 pt-2 space-y-3" style={{ background: '#fff' }}>
+                                {/* Win7 Progress bar */}
+                                <div>
+                                    <div className="flex items-center justify-between text-[10px] mb-1">
+                                        <span style={{ color: '#666' }}>Route Progress</span>
+                                        <span className="font-semibold" style={{ color: 'var(--w7-link-c)' }}>{stats.progress}%</span>
                                     </div>
-
-                                    {/* Route */}
-                                    <div className="flex items-center gap-2 text-xs">
-                                        <div className="flex-1 truncate">
-                                            <span className="text-muted-foreground">From:</span>
-                                            <span className="ml-1 font-medium">{driver.route?.origin || "Los Angeles, CA"}</span>
-                                        </div>
-                                        <span className="text-muted-foreground">→</span>
-                                        <div className="flex-1 truncate text-right">
-                                            <span className="font-medium">{driver.route?.destination || "Chicago, IL"}</span>
-                                        </div>
-                                    </div>
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full h-8 text-xs border-primary/30 text-primary hover:bg-primary/10"
-                                        onClick={handleTrackClick}
+                                    <div
+                                        role="progressbar"
+                                        className="h-[15px] rounded-[var(--w7-el-bdr)] overflow-hidden"
+                                        style={{
+                                            border: '1px solid var(--w7-el-bd)',
+                                            boxShadow: 'inset 0 0 0 1px rgba(243,243,243,0.5)',
+                                            background: 'linear-gradient(to bottom, #f3f3f3, #fcfcfc 3px, #dbdbdb 6px, #cacaca 6px, #d5d5d5), #ddd'
+                                        }}
                                     >
-                                        <IconLocation className="size-3.5 mr-1.5" />
-                                        Track Live
-                                    </Button>
+                                        <div
+                                            style={{
+                                                width: `${stats.progress}%`,
+                                                height: '100%',
+                                                background: 'linear-gradient(to bottom, rgba(243,243,243,0.7), rgba(252,252,252,0.7) 3px, transparent 6px), linear-gradient(to bottom, transparent 65%, rgba(255,255,255,0.3)), #0bd82c'
+                                            }}
+                                        />
+                                    </div>
                                 </div>
-                            </CardContent>
-                        </Card>
+
+                                {/* Route */}
+                                <div className="flex items-center gap-2 text-[10px]">
+                                    <div className="flex-1 truncate">
+                                        <span style={{ color: '#666' }}>From:</span>
+                                        <span className="ml-1 font-medium" style={{ color: '#000' }}>{driver.route?.origin || "Los Angeles, CA"}</span>
+                                    </div>
+                                    <span style={{ color: '#666' }}>→</span>
+                                    <div className="flex-1 truncate text-right">
+                                        <span className="font-medium" style={{ color: '#000' }}>{driver.route?.destination || "Chicago, IL"}</span>
+                                    </div>
+                                </div>
+
+                                <button
+                                    className="win7-btn w-full h-7 text-[10px]"
+                                    onClick={handleTrackClick}
+                                >
+                                    <IconLocation className="size-3.5 mr-1.5" />
+                                    Track Live
+                                </button>
+                            </div>
+                        </fieldset>
                     )}
 
-                    {/* Stats Grid */}
+                    {/* Stats Grid - Win7 groupbox style */}
                     <div className="grid grid-cols-3 gap-2">
-                        <Card className="p-3 bg-gradient-to-br from-primary/5 to-primary/10 border-primary/10">
-                            <div className="flex items-center gap-1.5 text-primary/70 mb-1">
+                        {/* Total */}
+                        <fieldset
+                            className="border rounded-[var(--w7-el-bdr)] p-3"
+                            style={{ borderColor: '#cdd7db', background: '#fff' }}
+                        >
+                            <div className="flex items-center gap-1.5 mb-1" style={{ color: 'var(--w7-link-c)' }}>
                                 <IconPackage className="size-3.5" />
-                                <span className="text-[0.6rem] font-medium uppercase tracking-wide">Total</span>
+                                <span className="text-[9px] font-semibold uppercase">Total</span>
                             </div>
-                            <p className="text-2xl font-bold text-primary">{stats.totalDeliveries}</p>
-                            <p className="text-[0.6rem] text-muted-foreground">Deliveries</p>
-                        </Card>
-                        <Card className="p-3 bg-gradient-to-br from-emerald-500/5 to-emerald-500/10 border-emerald-500/10">
-                            <div className="flex items-center gap-1.5 text-emerald-600/70 mb-1">
+                            <p className="text-xl font-bold" style={{ color: 'var(--w7-link-c)' }}>{stats.totalDeliveries}</p>
+                            <p className="text-[9px]" style={{ color: '#666' }}>Deliveries</p>
+                        </fieldset>
+
+                        {/* On-Time */}
+                        <fieldset
+                            className="border rounded-[var(--w7-el-bdr)] p-3"
+                            style={{ borderColor: '#cdd7db', background: '#fff' }}
+                        >
+                            <div className="flex items-center gap-1.5 mb-1" style={{ color: '#5cb85c' }}>
                                 <IconClock className="size-3.5" />
-                                <span className="text-[0.6rem] font-medium uppercase tracking-wide">On-Time</span>
+                                <span className="text-[9px] font-semibold uppercase">On-Time</span>
                             </div>
-                            <p className="text-2xl font-bold text-emerald-600">{stats.onTimeRate}%</p>
-                            <p className="text-[0.6rem] text-muted-foreground">Rate</p>
-                        </Card>
-                        <Card className="p-3 bg-gradient-to-br from-amber-500/5 to-amber-500/10 border-amber-500/10">
-                            <div className="flex items-center gap-1.5 text-amber-600/70 mb-1">
-                                <IconStar className="size-3.5" />
-                                <span className="text-[0.6rem] font-medium uppercase tracking-wide">Rating</span>
+                            <p className="text-xl font-bold" style={{ color: '#5cb85c' }}>{stats.onTimeRate}%</p>
+                            <p className="text-[9px]" style={{ color: '#666' }}>Rate</p>
+                        </fieldset>
+
+                        {/* Rating */}
+                        <fieldset
+                            className="border rounded-[var(--w7-el-bdr)] p-3"
+                            style={{ borderColor: '#cdd7db', background: '#fff' }}
+                        >
+                            <div className="flex items-center gap-1.5 mb-1" style={{ color: '#f4a100' }}>
+                                <IconStar className="size-3.5 fill-[#f4a100]" />
+                                <span className="text-[9px] font-semibold uppercase">Rating</span>
                             </div>
-                            <p className="text-2xl font-bold text-amber-600">{stats.rating}</p>
-                            <p className="text-[0.6rem] text-muted-foreground">{stats.reviews} Reviews</p>
-                        </Card>
+                            <p className="text-xl font-bold" style={{ color: '#f4a100' }}>{stats.rating}</p>
+                            <p className="text-[9px]" style={{ color: '#666' }}>{stats.reviews} Reviews</p>
+                        </fieldset>
                     </div>
 
-                    {/* Performance Chart */}
-                    <Card>
-                        <CardHeader className="p-3 pb-1">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-xs font-medium">
-                                    <IconChartLine className="size-4 text-primary" />
-                                    Monthly Performance
-                                </CardTitle>
-                                <Badge variant="secondary" className="text-[0.6rem] h-5">
-                                    Avg. {Math.round(shipmentData.reduce((sum, d) => sum + d.deliveries, 0) / 12)}/mo
-                                </Badge>
+                    {/* Performance Chart - Win7 groupbox */}
+                    <fieldset
+                        className="border rounded-[var(--w7-el-bdr)] p-0 m-0 overflow-hidden"
+                        style={{ borderColor: '#cdd7db', background: '#fff' }}
+                    >
+                        <div className="p-3 pb-1 flex items-center justify-between">
+                            <div className="flex items-center gap-2 text-[11px] font-semibold" style={{ color: '#000' }}>
+                                <IconChartLine className="size-4" style={{ color: 'var(--w7-link-c)' }} />
+                                Monthly Performance
                             </div>
-                        </CardHeader>
-                        <CardContent className="p-3 pt-0">
+                            <span
+                                className="text-[9px] px-2 py-0.5 rounded-[var(--w7-el-bdr)]"
+                                style={{ background: 'linear-gradient(#f2f2f2 45%, #ebebeb 45%, #cfcfcf)', border: '1px solid #8e8f8f', color: '#000' }}
+                            >
+                                Avg. {Math.round(shipmentData.reduce((sum, d) => sum + d.deliveries, 0) / 12)}/mo
+                            </span>
+                        </div>
+                        <div className="p-3 pt-0">
                             <ChartContainer config={shipmentChartConfig} className="h-[140px] w-full">
                                 <AreaChart data={shipmentData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                                     <defs>
-                                        <linearGradient id="fillDeliveries" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="var(--color-deliveries)" stopOpacity={0.3} />
-                                            <stop offset="100%" stopColor="var(--color-deliveries)" stopOpacity={0.05} />
+                                        <linearGradient id="fillDeliveriesWin7" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#0066cc" stopOpacity={0.3} />
+                                            <stop offset="100%" stopColor="#0066cc" stopOpacity={0.05} />
                                         </linearGradient>
                                     </defs>
-                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" opacity={0.4} />
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e0e0e0" opacity={0.8} />
                                     <XAxis
                                         dataKey="month"
                                         tickLine={false}
                                         axisLine={false}
-                                        tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                        tick={{ fontSize: 9, fill: "#666" }}
                                         tickMargin={6}
                                         interval={1}
                                     />
                                     <YAxis
                                         tickLine={false}
                                         axisLine={false}
-                                        tick={{ fontSize: 9, fill: "hsl(var(--muted-foreground))" }}
+                                        tick={{ fontSize: 9, fill: "#666" }}
                                         tickCount={3}
                                         width={28}
                                     />
                                     <ChartTooltip
                                         content={<ChartTooltipContent />}
-                                        cursor={{ stroke: "hsl(var(--primary))", strokeWidth: 1, strokeDasharray: "3 3" }}
+                                        cursor={{ stroke: "#0066cc", strokeWidth: 1, strokeDasharray: "3 3" }}
                                     />
                                     <Area
                                         type="monotone"
                                         dataKey="deliveries"
-                                        stroke="var(--color-deliveries)"
-                                        fill="url(#fillDeliveries)"
+                                        stroke="#0066cc"
+                                        fill="url(#fillDeliveriesWin7)"
                                         strokeWidth={2}
                                         dot={false}
-                                        activeDot={{ r: 3, fill: "var(--color-deliveries)", stroke: "hsl(var(--background))", strokeWidth: 2 }}
+                                        activeDot={{ r: 3, fill: "#0066cc", stroke: "#fff", strokeWidth: 2 }}
                                     />
                                 </AreaChart>
                             </ChartContainer>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </fieldset>
 
-                    {/* Delay Analysis */}
-                    <Card>
-                        <CardHeader className="p-3 pb-2">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-xs font-medium">Delay Analysis</CardTitle>
-                                <Badge variant="outline" className="text-[0.6rem] h-5">
-                                    {stats.totalDelays} Total
-                                </Badge>
-                            </div>
-                        </CardHeader>
-                        <CardContent className="p-3 pt-0">
+                    {/* Delay Analysis - Win7 groupbox */}
+                    <fieldset
+                        className="border rounded-[var(--w7-el-bdr)] p-0 m-0 overflow-hidden"
+                        style={{ borderColor: '#cdd7db', background: '#fff' }}
+                    >
+                        <div className="p-3 pb-2 flex items-center justify-between">
+                            <span className="text-[11px] font-semibold" style={{ color: '#000' }}>Delay Analysis</span>
+                            <span
+                                className="text-[9px] px-2 py-0.5 rounded-[var(--w7-el-bdr)]"
+                                style={{ border: '1px solid #8e8f8f', background: '#fff', color: '#000' }}
+                            >
+                                {stats.totalDelays} Total
+                            </span>
+                        </div>
+                        <div className="p-3 pt-0">
                             <div className="flex items-center gap-4">
                                 <ChartContainer config={delayChartConfig} className="h-[80px] w-[80px] shrink-0">
                                     <PieChart>
@@ -380,7 +455,7 @@ export function DriverDetailsSheet({
                                             paddingAngle={3}
                                         >
                                             {delayReasonsData.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.fill} stroke="hsl(var(--background))" />
+                                                <Cell key={`cell-${index}`} fill={entry.fill} stroke="#fff" />
                                             ))}
                                         </Pie>
                                     </PieChart>
@@ -390,17 +465,11 @@ export function DriverDetailsSheet({
                                         <div key={index} className="flex items-center gap-2">
                                             <div
                                                 className="size-2.5 rounded-full shrink-0"
-                                                style={{
-                                                    backgroundColor:
-                                                        item.fill === "var(--color-misrouted)" ? "oklch(0.646 0.222 41.116)" :
-                                                            item.fill === "var(--color-breakdown)" ? "oklch(0.7 0.015 286.067)" :
-                                                                item.fill === "var(--color-accident)" ? "oklch(0.47 0.157 37.304)" :
-                                                                    "oklch(0.553 0.195 38.402)"
-                                                }}
+                                                style={{ backgroundColor: item.fill }}
                                             />
                                             <div className="min-w-0">
-                                                <p className="text-[0.65rem] font-medium">{item.reason}</p>
-                                                <p className="text-[0.6rem] text-muted-foreground">
+                                                <p className="text-[10px] font-medium" style={{ color: '#000' }}>{item.reason}</p>
+                                                <p className="text-[9px]" style={{ color: '#666' }}>
                                                     {Math.round(item.count / stats.totalDelays * 100)}% • {item.count} cases
                                                 </p>
                                             </div>
@@ -408,28 +477,31 @@ export function DriverDetailsSheet({
                                     ))}
                                 </div>
                             </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </fieldset>
 
-                    {/* Contact Info - For Available Drivers */}
+                    {/* Contact Info - Win7 groupbox */}
                     {isAvailable && (
-                        <Card>
-                            <CardHeader className="p-3 pb-2">
-                                <CardTitle className="text-xs font-medium">Quick Contact</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-3 pt-0">
+                        <fieldset
+                            className="border rounded-[var(--w7-el-bdr)] p-0 m-0 overflow-hidden"
+                            style={{ borderColor: '#cdd7db', background: '#fff' }}
+                        >
+                            <div className="p-3 pb-2">
+                                <span className="text-[11px] font-semibold" style={{ color: '#000' }}>Quick Contact</span>
+                            </div>
+                            <div className="p-3 pt-0">
                                 <div className="flex gap-2">
-                                    <Button variant="outline" size="sm" className="flex-1 h-9 text-xs">
+                                    <button className="win7-btn flex-1 h-8 text-[10px] flex items-center justify-center">
                                         <IconPhone className="size-3.5 mr-1.5" />
                                         Call Driver
-                                    </Button>
-                                    <Button variant="outline" size="sm" className="flex-1 h-9 text-xs">
+                                    </button>
+                                    <button className="win7-btn flex-1 h-8 text-[10px] flex items-center justify-center">
                                         <IconMail className="size-3.5 mr-1.5" />
                                         Send Message
-                                    </Button>
+                                    </button>
                                 </div>
-                            </CardContent>
-                        </Card>
+                            </div>
+                        </fieldset>
                     )}
                 </div>
             </SheetContent>

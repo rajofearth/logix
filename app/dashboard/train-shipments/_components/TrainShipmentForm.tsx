@@ -13,10 +13,6 @@ import {
     IconCheck,
 } from "@tabler/icons-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { searchStations, type StationData } from "@/lib/trains";
 import {
     searchTrains,
@@ -35,9 +31,9 @@ interface TrainOption {
 }
 
 const STEPS = [
-    { id: 1, title: "Package Details", icon: IconPackage },
+    { id: 1, title: "Package", icon: IconPackage },
     { id: 2, title: "Route", icon: IconMapPin },
-    { id: 3, title: "Date & Train", icon: IconTrain },
+    { id: 3, title: "Train", icon: IconTrain },
     { id: 4, title: "Confirm", icon: IconCheck },
 ];
 
@@ -214,448 +210,329 @@ export function TrainShipmentForm() {
     };
 
     return (
-        <div className="space-y-6">
-            {/* Progress steps */}
-            <div className="flex items-center justify-between">
-                {STEPS.map((step, index) => (
-                    <React.Fragment key={step.id}>
-                        <div
-                            className={`flex items-center gap-2 ${step.id === currentStep
-                                    ? "text-primary"
-                                    : step.id < currentStep
-                                        ? "text-green-500"
-                                        : "text-muted-foreground"
-                                }`}
-                        >
-                            <div
-                                className={`flex size-8 items-center justify-center rounded-full border-2 ${step.id === currentStep
-                                        ? "border-primary bg-primary/10"
-                                        : step.id < currentStep
-                                            ? "border-green-500 bg-green-500/10"
-                                            : "border-muted"
-                                    }`}
-                            >
-                                {step.id < currentStep ? (
-                                    <IconCheck className="size-4" />
-                                ) : (
-                                    <step.icon className="size-4" />
-                                )}
-                            </div>
-                            <span className="hidden sm:inline text-sm font-medium">
-                                {step.title}
-                            </span>
-                        </div>
-                        {index < STEPS.length - 1 && (
-                            <div
-                                className={`flex-1 h-0.5 mx-2 ${step.id < currentStep ? "bg-green-500" : "bg-muted"
-                                    }`}
-                            />
-                        )}
-                    </React.Fragment>
+        <div className="win7-wrapper font-sans text-sm p-4 bg-[#f0f0f0]">
+            <menu role="tablist" aria-label="Shipment Steps" className="win7-tabs">
+                {STEPS.map((step) => (
+                    <button
+                        key={step.id}
+                        role="tab"
+                        aria-selected={step.id === currentStep}
+                        aria-controls={`step-${step.id}`}
+                        onClick={() => {
+                            // Optional: Allow navigation if logic permits, currently restricted to sequential
+                            // to avoid validation skipping.
+                            // setCurrentStep(step.id); 
+                        }}
+                        disabled={step.id > currentStep} // Only allow going back
+                        className="win7-tab"
+                    >
+                        <span className="flex items-center gap-1.5 px-1">
+                            <step.icon className="size-3.5" />
+                            {step.title}
+                        </span>
+                    </button>
                 ))}
-            </div>
+            </menu>
 
-            {/* Step content */}
-            <div className="rounded-lg border bg-card p-6">
+            <div role="tabpanel" id={`step-${currentStep}`} className="win7-panel">
+                
                 {/* Step 1: Package Details */}
                 {currentStep === 1 && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                                <IconPackage className="size-5 text-primary" />
+                    <div className="grid gap-4">
+                        <h2 className="font-bold text-lg mb-2 text-[#003399]">Package Details</h2>
+                        <div className="grid gap-1">
+                            <label className="font-bold">Package Name <span className="text-red-500">*</span></label>
+                            <input className="win7-input" value={packageName} onChange={e => setPackageName(e.target.value)} placeholder="e.g. Industrial Goods" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-1">
+                                <label className="font-bold">Weight (kg) <span className="text-red-500">*</span></label>
+                                <input type="number" step="0.1" className="win7-input" value={weightKg} onChange={e => setWeightKg(e.target.value)} />
                             </div>
-                            <div>
-                                <h2 className="text-lg font-semibold">Package Details</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Enter information about your shipment
-                                </p>
+                            <div className="grid gap-1">
+                                <label className="font-bold">Count</label>
+                                <input type="number" min="1" className="win7-input" value={packageCount} onChange={e => setPackageCount(e.target.value)} />
                             </div>
                         </div>
-
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="packageName">
-                                    Package Name <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="packageName"
-                                    placeholder="e.g., Industrial Equipment"
-                                    value={packageName}
-                                    onChange={(e) => setPackageName(e.target.value)}
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label htmlFor="weightKg">
-                                        Weight (kg) <span className="text-destructive">*</span>
-                                    </Label>
-                                    <Input
-                                        id="weightKg"
-                                        type="number"
-                                        step="0.1"
-                                        min="0.1"
-                                        placeholder="e.g., 500"
-                                        value={weightKg}
-                                        onChange={(e) => setWeightKg(e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="grid gap-2">
-                                    <Label htmlFor="packageCount">Number of Packages</Label>
-                                    <Input
-                                        id="packageCount"
-                                        type="number"
-                                        min="1"
-                                        placeholder="1"
-                                        value={packageCount}
-                                        onChange={(e) => setPackageCount(e.target.value)}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid gap-2">
-                                <Label htmlFor="description">Description (optional)</Label>
-                                <Textarea
-                                    id="description"
-                                    placeholder="Additional details about the cargo..."
-                                    value={description}
-                                    onChange={(e) => setDescription(e.target.value)}
-                                    rows={3}
-                                />
-                            </div>
+                        <div className="grid gap-1">
+                            <label className="font-bold">Description</label>
+                            <textarea className="win7-input" rows={3} value={description} onChange={e => setDescription(e.target.value)} />
                         </div>
                     </div>
                 )}
 
                 {/* Step 2: Route */}
                 {currentStep === 2 && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                                <IconMapPin className="size-5 text-primary" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold">Select Route</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Choose origin and destination stations
-                                </p>
-                            </div>
+                    <div className="grid gap-4">
+                        <h2 className="font-bold text-lg mb-2 text-[#003399]">Select Route</h2>
+
+                        <div className="grid gap-1 relative">
+                            <label className="font-bold">Origin Station <span className="text-red-500">*</span></label>
+                            <input
+                                className="win7-input"
+                                value={fromQuery}
+                                onChange={e => { setFromQuery(e.target.value); setFromStation(null); }}
+                                placeholder="Search origin..."
+                                onFocus={() => fromSuggestions.length > 0 && setShowFromSuggestions(true)}
+                            />
+                            {showFromSuggestions && fromSuggestions.length > 0 && (
+                                <div className="absolute top-[55px] left-0 w-full bg-white border border-[#7f9db9] shadow-lg z-20 max-h-40 overflow-auto">
+                                    {fromSuggestions.map(s => (
+                                        <div
+                                            key={s.code}
+                                            className="p-2 hover:bg-[#316ac5] hover:text-white cursor-pointer flex justify-between"
+                                            onClick={() => selectFromStation(s)}
+                                        >
+                                            <span>{s.name}</span>
+                                            <span className="font-mono text-xs opacity-70">{s.code}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {fromStation && <p className="text-xs text-green-600">✓ Selected: {fromStation.name}</p>}
                         </div>
 
-                        <div className="grid gap-6">
-                            {/* From station */}
-                            <div className="relative grid gap-2">
-                                <Label htmlFor="fromStation">
-                                    Origin Station <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="fromStation"
-                                    placeholder="Search station... (e.g., NDLS, Mumbai)"
-                                    value={fromQuery}
-                                    onChange={(e) => {
-                                        setFromQuery(e.target.value);
-                                        setFromStation(null);
-                                    }}
-                                    onFocus={() => fromSuggestions.length > 0 && setShowFromSuggestions(true)}
-                                />
-                                {showFromSuggestions && fromSuggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 z-10 mt-1 rounded-lg border bg-popover shadow-lg">
-                                        {fromSuggestions.map((station) => (
-                                            <button
-                                                key={station.code}
-                                                type="button"
-                                                className="w-full px-4 py-2 text-left hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
-                                                onClick={() => selectFromStation(station)}
-                                            >
-                                                <span className="font-medium">{station.name}</span>
-                                                <span className="text-muted-foreground ml-2">
-                                                    ({station.code})
-                                                </span>
-                                                <span className="text-xs text-muted-foreground ml-2">
-                                                    {station.city}, {station.state}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                                {fromStation && (
-                                    <p className="text-xs text-green-500">
-                                        ✓ {fromStation.name} ({fromStation.code})
-                                    </p>
-                                )}
-                            </div>
-
-                            {/* To station */}
-                            <div className="relative grid gap-2">
-                                <Label htmlFor="toStation">
-                                    Destination Station <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="toStation"
-                                    placeholder="Search station... (e.g., BCT, Chennai)"
-                                    value={toQuery}
-                                    onChange={(e) => {
-                                        setToQuery(e.target.value);
-                                        setToStation(null);
-                                    }}
-                                    onFocus={() => toSuggestions.length > 0 && setShowToSuggestions(true)}
-                                />
-                                {showToSuggestions && toSuggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 z-10 mt-1 rounded-lg border bg-popover shadow-lg">
-                                        {toSuggestions.map((station) => (
-                                            <button
-                                                key={station.code}
-                                                type="button"
-                                                className="w-full px-4 py-2 text-left hover:bg-accent transition-colors first:rounded-t-lg last:rounded-b-lg"
-                                                onClick={() => selectToStation(station)}
-                                            >
-                                                <span className="font-medium">{station.name}</span>
-                                                <span className="text-muted-foreground ml-2">
-                                                    ({station.code})
-                                                </span>
-                                                <span className="text-xs text-muted-foreground ml-2">
-                                                    {station.city}, {station.state}
-                                                </span>
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                                {toStation && (
-                                    <p className="text-xs text-green-500">
-                                        ✓ {toStation.name} ({toStation.code})
-                                    </p>
-                                )}
-                            </div>
+                        <div className="grid gap-1 relative">
+                            <label className="font-bold">Destination Station <span className="text-red-500">*</span></label>
+                            <input
+                                className="win7-input"
+                                value={toQuery}
+                                onChange={e => { setToQuery(e.target.value); setToStation(null); }}
+                                placeholder="Search destination..."
+                                onFocus={() => toSuggestions.length > 0 && setShowToSuggestions(true)}
+                            />
+                            {showToSuggestions && toSuggestions.length > 0 && (
+                                <div className="absolute top-[55px] left-0 w-full bg-white border border-[#7f9db9] shadow-lg z-20 max-h-40 overflow-auto">
+                                    {toSuggestions.map(s => (
+                                        <div
+                                            key={s.code}
+                                            className="p-2 hover:bg-[#316ac5] hover:text-white cursor-pointer flex justify-between"
+                                            onClick={() => selectToStation(s)}
+                                        >
+                                            <span>{s.name}</span>
+                                            <span className="font-mono text-xs opacity-70">{s.code}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                            {toStation && <p className="text-xs text-green-600">✓ Selected: {toStation.name}</p>}
                         </div>
                     </div>
                 )}
 
                 {/* Step 3: Date & Train */}
                 {currentStep === 3 && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10">
-                                <IconCalendar className="size-5 text-primary" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold">Select Date & Train</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Choose your journey date and preferred train
-                                </p>
-                            </div>
+                    <div className="grid gap-4 h-full flex-col">
+                        <h2 className="font-bold text-lg mb-2 text-[#003399]">Select Train</h2>
+                        <div className="grid gap-1">
+                            <label className="font-bold">Journey Date <span className="text-red-500">*</span></label>
+                            <input type="date" className="win7-input" value={journeyDate} onChange={e => setJourneyDate(e.target.value)} />
                         </div>
 
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label htmlFor="journeyDate">
-                                    Journey Date <span className="text-destructive">*</span>
-                                </Label>
-                                <Input
-                                    id="journeyDate"
-                                    type="date"
-                                    value={journeyDate}
-                                    onChange={(e) => setJourneyDate(e.target.value)}
-                                    min={new Date().toISOString().split("T")[0]}
-                                />
+                        <div className="flex-1 flex flex-col min-h-0">
+                            <div className="flex justify-between items-center bg-[#ece9d8] p-1 border border-[#aca899] mb-2 rounded-[2px]">
+                                <span className="font-bold px-2">Available Trains</span>
+                                <button className="win7-btn text-xs px-2 h-6" onClick={handleSearchTrains} disabled={isSearchingTrains}>
+                                    {isSearchingTrains ? "Searching..." : "Search Trains"}
+                                </button>
                             </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="coachType">Coach Type (optional)</Label>
-                                <Input
-                                    id="coachType"
-                                    placeholder="e.g., SL, 3A, 2A, 1A, GEN"
-                                    value={coachType}
-                                    onChange={(e) => setCoachType(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Train list */}
-                        <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                                <Label>Available Trains</Label>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={handleSearchTrains}
-                                    disabled={isSearchingTrains}
-                                >
-                                    {isSearchingTrains && (
-                                        <IconLoader2 className="size-4 mr-2 animate-spin" />
-                                    )}
-                                    Refresh
-                                </Button>
-                            </div>
-
-                            {isSearchingTrains ? (
-                                <div className="flex items-center justify-center py-8">
-                                    <IconLoader2 className="size-6 animate-spin text-muted-foreground" />
-                                </div>
-                            ) : trains.length === 0 ? (
-                                <div className="text-center py-8 text-muted-foreground">
-                                    {error || "No trains available. Try refreshing."}
-                                </div>
-                            ) : (
-                                <div className="grid gap-2 max-h-64 overflow-y-auto">
-                                    {trains.map((train) => (
-                                        <button
-                                            key={train.trainNumber}
-                                            type="button"
-                                            className={`w-full p-3 rounded-lg border text-left transition-colors ${selectedTrain?.trainNumber === train.trainNumber
-                                                    ? "border-primary bg-primary/5"
-                                                    : "hover:border-muted-foreground/50"
-                                                }`}
-                                            onClick={() => setSelectedTrain(train)}
-                                        >
-                                            <div className="flex items-center justify-between mb-1">
-                                                <span className="font-medium">{train.trainName}</span>
-                                                <span className="font-mono text-sm text-muted-foreground">
-                                                    {train.trainNumber}
-                                                </span>
-                                            </div>
-                                            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                                <span>{train.departure} → {train.arrival}</span>
-                                                <span>{train.duration}</span>
-                                                <span>{train.runningDays}</span>
-                                            </div>
-                                            {train.availableClasses.length > 0 && (
-                                                <div className="text-xs text-muted-foreground mt-1">
-                                                    Classes: {train.availableClasses.join(", ")}
-                                                </div>
-                                            )}
-                                        </button>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Step 4: Confirmation */}
-                {currentStep === 4 && (
-                    <div className="space-y-6">
-                        <div className="flex items-center gap-3 mb-6">
-                            <div className="flex size-10 items-center justify-center rounded-lg bg-green-500/10">
-                                <IconCheck className="size-5 text-green-500" />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-semibold">Confirm Shipment</h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Review your shipment details before creating
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="grid gap-4">
-                            {/* Package summary */}
-                            <div className="rounded-lg border p-4">
-                                <h3 className="font-medium mb-2">Package</h3>
-                                <div className="grid gap-1 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Name</span>
-                                        <span>{packageName}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Weight</span>
-                                        <span>{weightKg} kg</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Packages</span>
-                                        <span>{packageCount}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Route summary */}
-                            <div className="rounded-lg border p-4">
-                                <h3 className="font-medium mb-2">Route</h3>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <span className="font-medium">{fromStation?.name}</span>
-                                    <span className="text-muted-foreground">({fromStation?.code})</span>
-                                    <span className="mx-2">→</span>
-                                    <span className="font-medium">{toStation?.name}</span>
-                                    <span className="text-muted-foreground">({toStation?.code})</span>
-                                </div>
-                            </div>
-
-                            {/* Train summary */}
-                            <div className="rounded-lg border p-4">
-                                <h3 className="font-medium mb-2">Train</h3>
-                                <div className="grid gap-1 text-sm">
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Train</span>
-                                        <span>
-                                            {selectedTrain?.trainName} ({selectedTrain?.trainNumber})
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Date</span>
-                                        <span>{journeyDate}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Time</span>
-                                        <span>
-                                            {selectedTrain?.departure} → {selectedTrain?.arrival}
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-muted-foreground">Duration</span>
-                                        <span>{selectedTrain?.duration}</span>
-                                    </div>
-                                    {coachType && (
-                                        <div className="flex justify-between">
-                                            <span className="text-muted-foreground">Coach</span>
-                                            <span>{coachType}</span>
+                            <div className="border border-[#7f9db9] bg-white flex-1 overflow-y-auto min-h-[150px] p-1 space-y-1">
+                                {isSearchingTrains && <div className="text-center p-4 text-gray-500">Searching...</div>}
+                                {!isSearchingTrains && trains.length === 0 && <div className="text-center p-4 text-gray-500">No trains found. Select date and search.</div>}
+                                {!isSearchingTrains && trains.map(train => (
+                                    <div
+                                        key={train.trainNumber}
+                                        onClick={() => setSelectedTrain(train)}
+                                        className={`p-2 cursor-pointer border ${selectedTrain?.trainNumber === train.trainNumber ? "bg-[#316ac5] text-white border-[#316ac5]" : "hover:bg-[#f5f5f5] border-transparent border-b-gray-100"}`}
+                                    >
+                                        <div className="flex justify-between font-bold text-sm">
+                                            <span>{train.trainName}</span>
+                                            <span className="font-mono">{train.trainNumber}</span>
                                         </div>
-                                    )}
-                                </div>
+                                        <div className={`flex justify-between text-xs ${selectedTrain?.trainNumber === train.trainNumber ? "text-white" : "text-gray-500"}`}>
+                                            <span>{train.departure} - {train.arrival}</span>
+                                            <span>{train.duration}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     </div>
                 )}
-            </div>
 
-            {/* Error */}
-            {error && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
-                    <p className="text-sm text-destructive">{error}</p>
-                </div>
-            )}
+                {/* Step 4: Confirm */}
+                {currentStep === 4 && (
+                    <div className="grid gap-4">
+                        <h2 className="font-bold text-lg mb-2 text-[#003399]">Confirm Details</h2>
 
-            {/* Actions */}
-            <div className="flex justify-between">
-                <Button
-                    type="button"
-                    variant="outline"
-                    onClick={currentStep === 1 ? () => router.back() : handleBack}
-                    disabled={isLoading}
-                >
-                    <IconChevronLeft className="size-4 mr-2" />
-                    {currentStep === 1 ? "Cancel" : "Back"}
-                </Button>
-
-                {currentStep < 4 ? (
-                    <Button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={!canProceed() || isLoading}
-                    >
-                        Next
-                        <IconChevronRight className="size-4 ml-2" />
-                    </Button>
-                ) : (
-                    <Button
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={!canProceed() || isLoading}
-                    >
-                        {isLoading && <IconLoader2 className="size-4 mr-2 animate-spin" />}
-                        Create Shipment
-                    </Button>
+                        <fieldset className="border border-[#d0d0bf] p-4 rounded-[2px]">
+                            <legend className="px-1 text-[#003399]">Summary</legend>
+                            <div className="grid gap-2 text-xs">
+                                <div className="flex justify-between border-b border-gray-100 pb-1"><span className="text-gray-500">Package:</span> <span className="font-bold">{packageName} ({weightKg}kg)</span></div>
+                                <div className="flex justify-between border-b border-gray-100 pb-1"><span className="text-gray-500">Route:</span> <span className="font-bold">{fromStation?.name} → {toStation?.name}</span></div>
+                                <div className="flex justify-between border-b border-gray-100 pb-1"><span className="text-gray-500">Train:</span> <span className="font-bold">{selectedTrain?.trainName} ({selectedTrain?.trainNumber})</span></div>
+                                <div className="flex justify-between border-b border-gray-100 pb-1"><span className="text-gray-500">Date:</span> <span className="font-bold">{journeyDate}</span></div>
+                                <div className="flex justify-between"><span className="text-gray-500">Time:</span> <span className="font-bold">{selectedTrain?.departure} - {selectedTrain?.arrival}</span></div>
+                            </div>
+                        </fieldset>
+                    </div>
                 )}
+
+                {error && (
+                    <div className="p-2 border border-red-500 bg-red-100 text-red-600 text-xs mt-4">{error}</div>
+                )}
+
+                {/* Footer Actions */}
+                <div className="flex justify-between pt-6 mt-4 border-t border-gray-200">
+                    <button
+                        onClick={currentStep === 1 ? () => router.back() : handleBack}
+                        disabled={isLoading}
+                        className="win7-btn min-w-[80px]"
+                    >
+                        <span className="flex items-center gap-1"><IconChevronLeft className="size-3" /> {currentStep === 1 ? "Cancel" : "Back"}</span>
+                    </button>
+
+                    {currentStep < 4 ? (
+                        <button
+                            onClick={handleNext}
+                            disabled={!canProceed() || isLoading}
+                            className="win7-btn min-w-[80px]"
+                        >
+                            <span className="flex items-center gap-1">Next <IconChevronRight className="size-3" /></span>
+                        </button>
+                    ) : (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={!canProceed() || isLoading}
+                            className="win7-btn min-w-[120px] font-bold"
+                        >
+                            {isLoading && <IconLoader2 className="size-3 animate-spin inline mr-1" />}
+                            Create Shipment
+                        </button>
+                    )}
+                </div>
             </div>
+
+
+            <style jsx>{`
+                /* Variables based on design-docs/gui/_variables.scss */
+                .win7-wrapper {
+                    --w7-bg: #ece9d8;
+                    --w7-tab-bg: #fff;
+                    --w7-el-bd: #8e8f8f;
+                    --w7-el-bd-h: #3c7fb1; 
+                    --w7-el-bd-a: #6d91ab;
+                    --w7-el-bdr: 3px;
+                    --w7-el-grad: linear-gradient(#f2f2f2 45%, #ebebeb 45%, #cfcfcf);
+                    --w7-el-grad-h: linear-gradient(#eaf6fd 45%, #bee6fd 45%, #a7d9f5);
+                    --w7-el-grad-a: linear-gradient(#e5f4fc, #c4e5f6 30% 50%, #98d1ef 50%, #68b3db); 
+                    --w7-tabs-grad: linear-gradient(to bottom, #f2f2f2, #d8d8d8);
+                    --w7-input-bd: #7f9db9;
+                    --w7-blue: #003399;
+                }
+
+                /* TABS */
+                menu.win7-tabs {
+                    position: relative;
+                    margin: 0 0 -1px 0;
+                    padding-left: 3px;
+                    list-style-type: none;
+                    display: flex;
+                    z-index: 10;
+                }
+
+                .win7-tab {
+                    padding: 3px 8px 4px; /* Increased padding slightly for hit area */
+                    border: 1px solid #aca899;
+                    border-bottom: none;
+                    margin-right: -1px; /* Overlap borders */
+                    background: linear-gradient(to bottom, #f4f4f4 0%, #e0e0e0 100%);
+                    color: #444;
+                    font-size: 11px;
+                    cursor: pointer;
+                    border-radius: 2px 2px 0 0;
+                    position: relative;
+                    top: 1px;
+                }
+
+                .win7-tab:disabled {
+                    opacity: 0.7;
+                    cursor: not-allowed;
+                }
+
+                .win7-tab[aria-selected="true"] {
+                    background: var(--w7-tab-bg);
+                    border-color: #7f9db9;
+                    border-top: 2px solid #ff9933; /* Orange accent or blue? Win7 usually blue/orange. Standard win7 doesn't have orange top but some themes do. Let's stick to standard blue but the image looked clean. Actually the image had a slight highlight. I will use standard active state. */
+                    border-top: 1px solid #7f9db9;
+                    border-bottom: 2px solid white; /* Hide the panel border */
+                    color: #000;
+                    font-weight: 600;
+                    padding-bottom: 6px;
+                    margin-top: -2px;
+                    padding-top: 5px;
+                    z-index: 20;
+                }
+
+                /* PANEL */
+                .win7-panel {
+                    padding: 16px;
+                    background: var(--w7-tab-bg);
+                    border: 1px solid #7f9db9;
+                    position: relative;
+                    z-index: 5;
+                    box-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+                }
+
+                /* INPUTS */
+                input.win7-input, textarea.win7-input {
+                    font-family: "Segoe UI", sans-serif;
+                    padding: 3px 4px;
+                    border: 1px solid;
+                    border-color: #abadb3 #dbdfe6 #e3e9ef #e2e3ea;
+                    border-radius: 2px;
+                    background: #fff;
+                    width: 100%;
+                    outline: none;
+                    transition: border-color 0.2s;
+                }
+                input.win7-input:hover, textarea.win7-input:hover {
+                    border-color: #5794bf #b7d5ea #c7e2f1 #c5daed;
+                }
+                input.win7-input:focus, textarea.win7-input:focus {
+                     border-color: #3d7bad #a4c9e3 #b7d9ed #b5cfe7;
+                     box-shadow: 0 0 0 1px rgba(61, 123, 173, 0.2);
+                }
+
+                /* BUTTONS */
+                .win7-btn {
+                    border: 1px solid var(--w7-el-bd);
+                    border-radius: var(--w7-el-bdr);
+                    background: var(--w7-el-grad);
+                    color: black;
+                    padding: 4px 12px;
+                    min-height: 24px;
+                    font-family: inherit;
+                    cursor: pointer;
+                    box-shadow: inset 0 0 0 1px #fffc;
+                }
+                .win7-btn:hover:not(:disabled) {
+                    border-color: var(--w7-el-bd-h);
+                    background: var(--w7-el-grad-h);
+                }
+                .win7-btn:active:not(:disabled) {
+                    border-color: var(--w7-el-bd-a);
+                    background: var(--w7-el-grad-a);
+                    box-shadow: inset 1px 1px 0 #0003;
+                }
+                .win7-btn:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                    filter: grayscale(1);
+                }
+
+            `}</style>
         </div>
     );
 }

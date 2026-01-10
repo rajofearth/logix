@@ -18,11 +18,11 @@ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   )
 }
 
-function SelectValue({ 
-  className, 
+function SelectValue({
+  className,
   placeholder,
   children,
-  ...props 
+  ...props
 }: SelectPrimitive.Value.Props & {
   placeholder?: string
 }) {
@@ -58,7 +58,7 @@ function SelectValue({
   return (
     <SelectPrimitive.Value
       data-slot="select-value"
-      className={cn("flex flex-1 text-left", className)}
+      className={cn("flex flex-1 text-left text-[#222]", className)}
       {...props}
     >
       {content}
@@ -79,7 +79,22 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "border-input data-[placeholder]:text-muted-foreground bg-input/20 dark:bg-input/30 dark:hover:bg-input/50 focus-visible:border-ring focus-visible:ring-ring/30 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 gap-1.5 rounded-md border px-2 py-1.5 text-xs/relaxed transition-colors focus-visible:ring-[2px] aria-invalid:ring-[2px] data-[size=default]:h-7 data-[size=sm]:h-6 *:data-[slot=select-value]:flex *:data-[slot=select-value]:gap-1.5 [&_svg:not([class*='size-'])]:size-3.5 flex w-fit items-center justify-between whitespace-nowrap outline-none disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        // Windows 7 theme: gradient background, classic border, proper hover states
+        "bg-gradient-to-b from-[#f2f2f2] via-[#ebebeb] to-[#cfcfcf]",
+        "border border-[#8e8f8f] rounded-[3px]",
+        "shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)]",
+        "hover:border-[#3c7fb1] hover:bg-gradient-to-b hover:from-[#eaf6fd] hover:via-[#bee6fd] hover:to-[#a7d9f5]",
+        "focus-visible:shadow-[inset_0_0_0_2px_#98d1ef] focus-visible:outline focus-visible:outline-1 focus-visible:outline-dotted focus-visible:outline-black focus-visible:-outline-offset-4",
+        "active:border-[#6d91ab] active:shadow-[inset_1px_1px_0_rgba(0,0,0,0.2),inset_-1px_1px_0_rgba(0,0,0,0.07)]",
+        "active:bg-gradient-to-b active:from-[#e5f4fc] active:via-[#98d1ef] active:to-[#68b3db]",
+        "text-[#222] text-xs/relaxed gap-1.5 px-2 py-1.5",
+        "data-[size=default]:h-7 data-[size=sm]:h-6",
+        "*:data-[slot=select-value]:flex *:data-[slot=select-value]:gap-1.5",
+        "[&_svg:not([class*='size-'])]:size-3.5 flex w-fit items-center justify-between whitespace-nowrap outline-none",
+        "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-[#f4f4f4] disabled:border-[#adb2b5] disabled:text-[#838383]",
+        "*:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center",
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0",
+        "transition-all duration-100",
         className
       )}
       {...props}
@@ -87,7 +102,7 @@ function SelectTrigger({
       {children}
       <SelectPrimitive.Icon
         render={
-          <ChevronDownIcon className="text-muted-foreground size-3.5 pointer-events-none" />
+          <ChevronDownIcon className="text-[#555] size-3.5 pointer-events-none" />
         }
       />
     </SelectPrimitive.Trigger>
@@ -120,7 +135,24 @@ function SelectContent({
       >
         <SelectPrimitive.Popup
           data-slot="select-content"
-          className={cn("bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 min-w-32 rounded-lg shadow-md ring-1 duration-100 relative isolate z-50 max-h-(--available-height) w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto", className )}
+          className={cn(
+            // Windows 7 theme: white background, classic border, subtle shadow
+            "bg-[#f0f0f0] text-[#222] border border-[#0006] shadow-[4px_4px_3px_-2px_rgba(0,0,0,0.5)]",
+            "min-w-32 rounded-[0px] p-[2px]",
+            "data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95",
+            "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+            "duration-100 relative isolate z-50 max-h-(--available-height) w-(--anchor-width) origin-(--transform-origin) overflow-x-hidden overflow-y-auto",
+            // Override all child item hover/focus states with Windows 7 blue
+            "[&_[data-slot=select-item]:hover]:!bg-[linear-gradient(rgba(255,255,255,0.6),rgba(230,236,245,0.8)_90%,rgba(255,255,255,0.8))]",
+            "[&_[data-slot=select-item]:hover]:!border-[#aaddfa]",
+            "[&_[data-slot=select-item]:hover]:!shadow-[0_0_0_1px_#b3d3f9]",
+            "[&_[data-slot=select-item]:hover]:!text-[#222]",
+            "[&_[data-slot=select-item]:focus]:!bg-[linear-gradient(rgba(255,255,255,0.6),rgba(230,236,245,0.8)_90%,rgba(255,255,255,0.8))]",
+            "[&_[data-slot=select-item]:focus]:!border-[#aaddfa]",
+            "[&_[data-slot=select-item][data-highlighted]]:!bg-[linear-gradient(rgba(255,255,255,0.6),rgba(230,236,245,0.8)_90%,rgba(255,255,255,0.8))]",
+            "[&_[data-slot=select-item][data-highlighted]]:!border-[#aaddfa]",
+            className
+          )}
           {...props}
         >
           <SelectScrollUpButton />
@@ -139,7 +171,7 @@ function SelectLabel({
   return (
     <SelectPrimitive.GroupLabel
       data-slot="select-label"
-      className={cn("text-muted-foreground px-2 py-1.5 text-xs", className)}
+      className={cn("text-[#666] px-2 py-1.5 text-xs font-medium", className)}
       {...props}
     />
   )
@@ -154,9 +186,49 @@ function SelectItem({
     <SelectPrimitive.Item
       data-slot="select-item"
       className={cn(
-        "focus:bg-accent focus:text-accent-foreground not-data-[variant=destructive]:focus:**:text-accent-foreground min-h-7 gap-2 rounded-md px-2 py-1 text-xs/relaxed [&_svg:not([class*='size-'])]:size-3.5 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2 relative flex w-full cursor-default items-center outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        // Base styles - using CSS variables from win7-dashboard.css
+        "min-h-6 gap-2 rounded-[3px] px-2 py-[2px] text-xs/relaxed",
+        "text-[var(--w7-el-c,#222)] border border-transparent",
+        "[&_svg:not([class*='size-'])]:size-3.5 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        "relative flex w-full cursor-default items-center select-none",
+        "data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
         className
       )}
+      style={{
+        // Use CSS variables inline to override any global styles
+        // These are from design-docs/gui/_variables.scss
+        "--item-bg-hl": "linear-gradient(rgba(255,255,255,0.6), rgba(230,236,245,0.8) 90%, rgba(255,255,255,0.8))",
+        "--item-bd-hl": "#aaddfa",
+      } as React.CSSProperties}
+      // Use onMouseEnter/onFocus to apply styles that override globals
+      onMouseEnter={(e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.background = "var(--item-bg-hl)"
+        el.style.borderColor = "var(--item-bd-hl)"
+        el.style.boxShadow = "0 0 0 1px #b3d3f9"
+        el.style.color = "#222"
+        el.style.outline = "none"
+      }}
+      onMouseLeave={(e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.background = ""
+        el.style.borderColor = "transparent"
+        el.style.boxShadow = ""
+      }}
+      onFocus={(e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.background = "var(--item-bg-hl)"
+        el.style.borderColor = "var(--item-bd-hl)"
+        el.style.boxShadow = "0 0 0 1px #b3d3f9"
+        el.style.color = "#222"
+        el.style.outline = "none"
+      }}
+      onBlur={(e) => {
+        const el = e.currentTarget as HTMLElement
+        el.style.background = ""
+        el.style.borderColor = "transparent"
+        el.style.boxShadow = ""
+      }}
       {...props}
     >
       <SelectPrimitive.ItemText className="flex flex-1 gap-2 shrink-0 whitespace-nowrap">
@@ -165,7 +237,7 @@ function SelectItem({
       <SelectPrimitive.ItemIndicator
         render={<span className="pointer-events-none absolute right-2 flex items-center justify-center" />}
       >
-        <CheckIcon className="pointer-events-none" />
+        <CheckIcon className="pointer-events-none text-[#222]" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   )
@@ -178,7 +250,7 @@ function SelectSeparator({
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cn("bg-border/50 -mx-1 my-1 h-px pointer-events-none", className)}
+      className={cn("bg-[#d0d0d0] -mx-1 my-1 h-px pointer-events-none shadow-[inset_0_-1px_#fff]", className)}
       {...props}
     />
   )
@@ -191,11 +263,10 @@ function SelectScrollUpButton({
   return (
     <SelectPrimitive.ScrollUpArrow
       data-slot="select-scroll-up-button"
-      className={cn("bg-popover z-10 flex cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-3.5 top-0 w-full", className)}
+      className={cn("bg-white z-10 flex cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-3.5 top-0 w-full text-[#555] hover:bg-[#eaf6fd]", className)}
       {...props}
     >
-      <ChevronUpIcon
-      />
+      <ChevronUpIcon />
     </SelectPrimitive.ScrollUpArrow>
   )
 }
@@ -207,11 +278,10 @@ function SelectScrollDownButton({
   return (
     <SelectPrimitive.ScrollDownArrow
       data-slot="select-scroll-down-button"
-      className={cn("bg-popover z-10 flex cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-3.5 bottom-0 w-full", className)}
+      className={cn("bg-white z-10 flex cursor-default items-center justify-center py-1 [&_svg:not([class*='size-'])]:size-3.5 bottom-0 w-full text-[#555] hover:bg-[#eaf6fd]", className)}
       {...props}
     >
-      <ChevronDownIcon
-      />
+      <ChevronDownIcon />
     </SelectPrimitive.ScrollDownArrow>
   )
 }

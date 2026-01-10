@@ -1,20 +1,20 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { WarehouseHeader } from "./_components/header";
 import { FloorNavigator } from "./_components/floor-navigator";
 import { WarehouseVisualGrid } from "./_components/warehouse-grid";
 import { WarehouseFooterStats } from "./_components/footer-stats";
 import { Warehouse, Floor } from "./_components/types";
 import { fetchWarehouses, fetchWarehouse, WarehouseListItem } from "./_lib/api";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2, Plus, AlertCircle } from "lucide-react";
 import { AddWarehouseDialog } from "./_components/add-warehouse-dialog";
 import { AddFloorDialog } from "./_components/add-floor-dialog";
 import { AddBlockDialog } from "./_components/add-block-dialog";
 import { Button } from "@/components/ui/button";
+import { RestockAiPanel } from "./_components/restock-ai-panel";
+import { MLPredictionPanel } from "./_components/ml-prediction-panel";
 
 export default function WarehousePage() {
   // Loading and error states
@@ -90,6 +90,10 @@ export default function WarehousePage() {
   const selectedFloor = selectedWarehouse?.floors.find((f) => f.id === selectedFloorId) ||
     selectedWarehouse?.floors[0];
 
+  const availableCategories = selectedFloor
+    ? Array.from(new Set(selectedFloor.blocks.map((b) => b.category)))
+    : [];
+
   // Refresh current warehouse data
   const refreshWarehouse = useCallback(async () => {
     if (!selectedWarehouseId) return;
@@ -126,12 +130,11 @@ export default function WarehousePage() {
     setSelectedFloorId(floorId);
   };
 
-  // Handle search result click - navigate to the floor and highlight block
+  // Handle search result click
   const handleSearchResultClick = async (floorId: string, blockId: string, warehouseId?: string) => {
     // If different warehouse, switch to it first
     if (warehouseId && warehouseId !== selectedWarehouseId) {
       setSelectedWarehouseId(warehouseId);
-      // Wait a bit for warehouse to load
       setTimeout(() => {
         setSelectedFloorId(floorId);
         setHighlightedBlockId(blockId);
@@ -144,12 +147,10 @@ export default function WarehousePage() {
     }
   };
 
-  // Create warehouses array for header (combining list with loaded data)
+  // Create warehouses array for header
   const warehousesForHeader: Warehouse[] = warehouseList.map((item) => {
     const loaded = warehouses.get(item.id);
     if (loaded) return loaded;
-
-    // Return minimal warehouse object for unloaded warehouses
     return {
       id: item.id,
       name: item.name,
@@ -166,92 +167,7 @@ export default function WarehousePage() {
     };
   });
 
-  // Loading state
-  if (isLoading && warehouseList.length === 0) {
-    return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties}
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-          <SiteHeader title="Warehouse Management" />
-          <div className="flex flex-1 items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-3">
-              <Loader2 className="h-8 w-8 animate-spin text-zinc-400" />
-              <p className="text-zinc-400 text-sm">Loading warehouses...</p>
-            </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    );
-  }
-
-  // Error state
-  if (error && warehouseList.length === 0) {
-    return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties}
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-          <SiteHeader title="Warehouse Management" />
-          <div className="flex flex-1 items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-3">
-              <p className="text-red-400 text-sm">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-zinc-400 text-sm underline hover:text-white"
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    );
-  }
-
-  // Empty state
-  if (warehouseList.length === 0) {
-    return (
-      <SidebarProvider
-        style={{
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties}
-      >
-        <AppSidebar variant="inset" />
-        <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-          <SiteHeader title="Warehouse Management" />
-          <div className="flex flex-1 items-center justify-center bg-zinc-950">
-            <div className="flex flex-col items-center gap-4">
-              <p className="text-zinc-400 text-lg">No warehouses found</p>
-              <p className="text-zinc-500 text-sm max-w-md text-center">
-                Get started by creating your first warehouse. You can add floors, blocks, and products to organize your inventory.
-              </p>
-              <Button onClick={() => setAddWarehouseOpen(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Warehouse
-              </Button>
-            </div>
-            <AddWarehouseDialog
-              open={addWarehouseOpen}
-              onOpenChange={setAddWarehouseOpen}
-              onSuccess={refreshWarehouses}
-            />
-          </div>
-        </SidebarInset>
-      </SidebarProvider>
-    );
-  }
-
-  // Create a placeholder floor for loading state
+  // Placeholder floor
   const placeholderFloor: Floor = {
     id: "loading",
     name: "Loading...",
@@ -265,69 +181,129 @@ export default function WarehousePage() {
     },
   };
 
-  return (
-    <SidebarProvider
-      style={{
-        "--sidebar-width": "calc(var(--spacing) * 72)",
-        "--header-height": "calc(var(--spacing) * 12)",
-      } as React.CSSProperties}
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset className="max-h-screen overflow-hidden flex flex-col">
-        <SiteHeader title="Warehouse Management" />
-        <div className="flex flex-1 flex-col gap-3 p-4 overflow-hidden bg-zinc-950">
-          {/* Header with Warehouse Selector */}
-          <WarehouseHeader
-            warehouses={warehousesForHeader}
-            selectedWarehouseId={selectedWarehouseId || ""}
-            onWarehouseChange={handleWarehouseChange}
-            onSearchResultClick={handleSearchResultClick}
-            onAddWarehouse={() => setAddWarehouseOpen(true)}
-          />
+  if (isLoading && warehouseList.length === 0) {
+    return (
+      <WarehouseSkeleton />
+    );
+  }
 
-          {/* Navigation & Actions */}
-          <div className="flex items-center justify-between gap-4">
-            {selectedWarehouse && (
-              <FloorNavigator
-                floors={selectedWarehouse.floors}
-                selectedFloorId={selectedFloorId || ""}
-                onFloorSelect={handleFloorChange}
-                onAddFloor={() => setAddFloorOpen(true)}
-              />
-            )}
-
-            {selectedWarehouse && selectedFloorId && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setAddBlockOpen(true)}
-                className="gap-2 bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-800"
-              >
-                <Plus className="h-4 w-4" />
-                Add Block
-              </Button>
-            )}
+  if (error && warehouseList.length === 0) {
+    return (
+      <DashboardShell title="Warehouse Management">
+        <div className="flex h-full items-center justify-center bg-[#ece9d8]">
+          <div className="win7-window p-4 bg-white border border-red-500 flex flex-col items-center gap-2">
+            <AlertCircle className="text-red-500" />
+            <p className="text-red-600 font-bold">{error}</p>
+            <button className="win7-btn" onClick={() => window.location.reload()}>Retry</button>
           </div>
-
-          {/* Main Content - Block Grid */}
-          <div className="flex-1 rounded-lg p-4 min-h-0 overflow-hidden relative">
-            {isLoading && (
-              <div className="absolute inset-0 bg-zinc-950/80 flex items-center justify-center z-10">
-                <Loader2 className="h-6 w-6 animate-spin text-zinc-400" />
-              </div>
-            )}
-            <WarehouseVisualGrid
-              floor={selectedFloor || placeholderFloor}
-              highlightedBlockId={highlightedBlockId}
-              warehouseId={selectedWarehouseId || undefined}
-              onRefresh={refreshWarehouse}
-            />
-          </div>
-
-          {/* Footer Stats */}
-          <WarehouseFooterStats floor={selectedFloor || placeholderFloor} />
         </div>
-      </SidebarInset>
+      </DashboardShell>
+    );
+  }
+
+  if (warehouseList.length === 0) {
+    return (
+      <DashboardShell title="Warehouse Management">
+        <div className="flex h-full items-center justify-center bg-[#ece9d8]">
+          <div className="win7-groupbox bg-white p-4 max-w-md text-center">
+            <h2 className="text-lg font-bold text-[#003399]">No Warehouses Found</h2>
+            <p className="text-sm text-gray-500 mb-4">Start by creating your first warehouse.</p>
+            <button className="win7-btn" onClick={() => setAddWarehouseOpen(true)}>
+              <Plus className="inline size-4 mr-1" /> Create Warehouse
+            </button>
+          </div>
+        </div>
+        <AddWarehouseDialog open={addWarehouseOpen} onOpenChange={setAddWarehouseOpen} onSuccess={refreshWarehouses} />
+      </DashboardShell>
+    );
+  }
+
+  return (
+    <DashboardShell title="Warehouse Management System">
+      <div className="flex flex-col gap-3 p-3 h-full bg-[#ece9d8]">
+        {/* Header */}
+        <WarehouseHeader
+          warehouses={warehousesForHeader}
+          selectedWarehouseId={selectedWarehouseId || ""}
+          onWarehouseChange={handleWarehouseChange}
+          onSearchResultClick={handleSearchResultClick}
+          onAddWarehouse={() => setAddWarehouseOpen(true)}
+        />
+
+        {/* Controls */}
+        <div className="flex items-center justify-between gap-4 p-1 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+          {selectedWarehouse && (
+            <FloorNavigator
+              floors={selectedWarehouse.floors}
+              selectedFloorId={selectedFloorId || ""}
+              onFloorSelect={handleFloorChange}
+              onAddFloor={() => setAddFloorOpen(true)}
+            />
+          )}
+
+          {selectedWarehouse && selectedFloorId && (
+            <button
+              onClick={() => setAddBlockOpen(true)}
+              className="win7-btn gap-1 font-bold text-xs"
+            >
+              <Plus className="h-3 w-3" />
+              Add Block
+            </button>
+          )}
+        </div>
+
+        {/* Main Content - Block Grid */}
+        <div className="flex-1 border border-[#898c95] bg-white min-h-0 overflow-hidden relative shadow-inner">
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            </div>
+          )}
+          <WarehouseVisualGrid
+            floor={selectedFloor || placeholderFloor}
+            highlightedBlockId={highlightedBlockId}
+            warehouseId={selectedWarehouseId || undefined}
+            warehouse={selectedWarehouse}
+            onRefresh={refreshWarehouse}
+          />
+        </div>
+
+        {/* Footer Stats */}
+        <div className="win7-groupbox">
+          <legend>Statistics</legend>
+          <div className="win7-p-2">
+            <WarehouseFooterStats floor={selectedFloor || placeholderFloor} />
+          </div>
+        </div>
+
+        {/* AI Restock */}
+        {selectedWarehouseId && selectedFloor && (
+          <div className="win7-groupbox">
+            <legend>AI</legend>
+            <div className="win7-p-2">
+              <RestockAiPanel
+                warehouseId={selectedWarehouseId}
+                floorId={selectedFloor.id}
+                floorName={selectedFloor.name}
+                categories={availableCategories}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ML Price Prediction */}
+        {selectedWarehouseId && selectedFloor && (
+          <div className="win7-groupbox">
+            <legend>ML Price Prediction</legend>
+            <div className="win7-p-2">
+              <MLPredictionPanel
+                warehouse={selectedWarehouse}
+                floor={selectedFloor}
+              />
+            </div>
+          </div>
+        )}
+      </div>
 
       <AddWarehouseDialog
         open={addWarehouseOpen}
@@ -353,6 +329,52 @@ export default function WarehousePage() {
           onSuccess={refreshWarehouse}
         />
       )}
-    </SidebarProvider>
+    </DashboardShell>
+  );
+}
+
+function WarehouseSkeleton() {
+  return (
+    <DashboardShell title="Warehouse Management">
+      <div className="flex flex-col gap-3 p-3 h-full bg-[#ece9d8]">
+        {/* Header Skeleton */}
+        <div className="flex justify-between items-center p-2 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+          <div className="h-8 w-48 bg-gray-200 animate-pulse border border-[#7f9db9]"></div>
+          <div className="h-8 w-32 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
+        </div>
+
+        {/* Controls Skeleton */}
+        <div className="flex items-center justify-between gap-4 p-1 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+          <div className="flex gap-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-6 w-16 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
+            ))}
+          </div>
+          <div className="h-6 w-24 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
+        </div>
+
+        {/* Main Grid Skeleton */}
+        <div className="flex-1 border border-[#898c95] bg-white min-h-0 overflow-hidden relative shadow-inner flex items-center justify-center">
+          <div className="absolute inset-0" style={{
+            backgroundImage: 'linear-gradient(#f0f0f0 1px, transparent 1px), linear-gradient(90deg, #f0f0f0 1px, transparent 1px)',
+            backgroundSize: '40px 40px'
+          }}></div>
+          <div className="z-10 bg-white/80 p-4 border border-gray-300 shadow-sm flex flex-col items-center gap-2">
+            <Loader2 className="animate-spin text-gray-400 size-8" />
+            <span className="text-gray-500 font-bold">Loading Warehouse...</span>
+          </div>
+        </div>
+
+        {/* Footer Stats Skeleton */}
+        <div className="win7-groupbox">
+          <legend>Statistics</legend>
+          <div className="win7-p-2 flex gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-10 w-24 bg-gray-100 animate-pulse border border-gray-200"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </DashboardShell>
   );
 }

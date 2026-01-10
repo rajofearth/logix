@@ -7,9 +7,7 @@ import type { JobDTO } from "./_types"
 import { deleteJob, listJobs } from "./_server/jobActions"
 import { JobsTable } from "./_components/JobsTable"
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export default function JobsPage() {
   const [jobs, setJobs] = React.useState<JobDTO[]>([])
@@ -46,41 +44,25 @@ export default function JobsPage() {
   }
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Jobs" />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-              {isLoading ? (
-                <div className="text-muted-foreground px-4 text-sm lg:px-6">
-                  Loading jobs…
-                </div>
-              ) : (
-                <JobsTable
-                  jobs={jobs}
-                  onDelete={handleDelete}
-                  onJobUpdate={(updatedJob) => {
-                    setJobs((prev) =>
-                      prev.map((j) => (j.id === updatedJob.id ? updatedJob : j))
-                    )
-                  }}
-                />
-              )}
-            </div>
+    <DashboardShell title="Logix Dashboard - Jobs" itemCount={jobs.length}>
+      <div className="win7-groupbox">
+        <legend>Jobs Management</legend>
+        {isLoading ? (
+          <div style={{ padding: 16, color: "#666", fontSize: 11 }}>
+            Loading jobs…
           </div>
-        </div>
-      </SidebarInset>
-    </SidebarProvider>
+        ) : (
+          <JobsTable
+            jobs={jobs}
+            onDelete={handleDelete}
+            onJobUpdate={(updatedJob) => {
+              setJobs((prev) =>
+                prev.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+              )
+            }}
+          />
+        )}
+      </div>
+    </DashboardShell>
   )
 }
-
-

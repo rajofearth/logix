@@ -22,9 +22,11 @@ interface PackageVerification {
 
 interface DriverInfoPanelProps {
     delivery: Delivery;
+    topRightDock?: React.ReactNode;
+    threatDetectionPanel?: React.ReactNode;
 }
 
-export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
+export function DriverInfoPanel({ delivery, topRightDock, threatDetectionPanel }: DriverInfoPanelProps) {
     const [verifications, setVerifications] = React.useState<PackageVerification[]>([]);
     const [loadingVerifications, setLoadingVerifications] = React.useState(false);
 
@@ -52,6 +54,16 @@ export function DriverInfoPanel({ delivery }: DriverInfoPanelProps) {
 
     return (
         <div className="absolute bottom-3 left-3 right-3 z-10">
+            {topRightDock ? (
+                <div className="absolute bottom-full left-0 mb-3 pointer-events-auto">
+                    {topRightDock}
+                </div>
+            ) : null}
+            {threatDetectionPanel ? (
+                <div className="absolute bottom-full right-0 mb-3 pointer-events-auto max-w-[400px]">
+                    {threatDetectionPanel}
+                </div>
+            ) : null}
             <div className="bg-background/70 backdrop-blur-xl backdrop-saturate-150 border border-white/10 rounded-lg shadow-xl overflow-hidden">
                 <Tabs defaultValue="driver" className="w-full">
                     <TabsList className="w-full justify-start rounded-none border-b border-border/50 bg-transparent h-auto p-0">

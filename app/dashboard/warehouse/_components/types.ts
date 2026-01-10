@@ -1,5 +1,3 @@
-"use client";
-
 import {
     Monitor,
     UtensilsCrossed,
@@ -20,6 +18,7 @@ export interface Product {
     name: string;
     quantity: number;
     category: ProductCategory;
+    averageWeeklySales?: number | null;
     boughtAt: number; // Purchase price per unit
     currentPrice: number; // Current market price per unit
     expiryDate?: Date;
@@ -162,4 +161,80 @@ export function getCategoryLabel(category: ProductCategory): string {
 
 export function formatCapacityPercentage(used: number, capacity: number): number {
     return Math.round((used / capacity) * 100);
+}
+
+// ML Price Prediction Types
+
+export type GoodsType = "gold" | "oil" | "silver" | "wheat";
+export type RouteType = "economy" | "fastest" | "via_gas_station";
+export type DeviationReason = "delay" | "theft_risk" | "spoilage" | "market" | "insurance_recovery" | "premium" | "none";
+
+export interface PricePrediction {
+    deviationRatio: number;
+    deviationRatioPercent: string;
+    deviationINR: number;
+    direction: "positive" | "negative";
+    initialValueINR: number;
+    expectedFinalValueINR: number;
+    predictedReason?: DeviationReason;
+    confidence?: number;
+    pricing?: {
+        baseCost: number;
+        riskBuffer: number;
+        suggestedQuote: number;
+    };
+}
+
+export interface LogisticsData {
+    originState: string;
+    destState: string;
+    routeDistance: number; // in meters
+    routeType: RouteType;
+    packageWeightKg: number;
+    estimatedDurationHours: number;
+    actualTransitHours?: number;
+    delayHours?: number;
+    pickupHour?: number; // 0-23
+    dayOfWeek?: number; // 0=Monday, 6=Sunday
+    pickupMonth?: number; // 1-12
+}
+
+export interface MLPredictionRequest {
+    goodsType: GoodsType;
+    routeDistance: number;
+    packageWeightKg: number;
+    routeType: RouteType;
+    pickupHour: number;
+    dayOfWeek: number;
+    originState: string;
+    destState: string;
+    isInterstate: boolean;
+    estimatedDurationHours: number;
+    initialGoodsValue: number;
+    logisticsTotalAmount: number;
+    pickupMonth: number;
+    actualTransitHours: number;
+    delayHours: number;
+}
+
+export interface MLPredictionResponse {
+    success: boolean;
+    prediction?: {
+        deviationRatio: number;
+        deviationRatioPercent: string;
+        deviationINR: number;
+        direction: "positive" | "negative";
+        initialValueINR: number;
+        expectedFinalValueINR: number;
+    };
+    pricing?: {
+        baseCost: number;
+        riskBuffer: number;
+        suggestedQuote: number;
+    };
+    classification?: {
+        predictedReason: DeviationReason;
+        confidence: number;
+    };
+    error?: string;
 }

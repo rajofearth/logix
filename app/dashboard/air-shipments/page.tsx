@@ -10,29 +10,16 @@ import {
     IconSearch,
 } from "@tabler/icons-react";
 
-import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SiteHeader } from "@/components/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+
 import { listShipments, type ShipmentListItem } from "./_server/actions";
 
-const STATUS_COLORS: Record<string, string> = {
-    created: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-    in_transit: "bg-yellow-500/10 text-yellow-500 border-yellow-500/20",
-    delivered: "bg-green-500/10 text-green-500 border-green-500/20",
-    cancelled: "bg-red-500/10 text-red-500 border-red-500/20",
-    exception: "bg-orange-500/10 text-orange-500 border-orange-500/20",
+const STATUS_LABELS: Record<string, string> = {
+    created: "Created",
+    in_transit: "In Transit",
+    delivered: "Delivered",
+    cancelled: "Cancelled",
+    exception: "Exception",
 };
 
 function formatDate(date: Date): string {
@@ -71,200 +58,157 @@ export default function AirShipmentsPage() {
         fetchShipments();
     }, [fetchShipments]);
 
+    // Calculate stats
+    const stats = React.useMemo(() => {
+        return {
+            created: shipments.filter((s) => s.status === "created").length,
+            in_transit: shipments.filter((s) => s.status === "in_transit").length,
+            delivered: shipments.filter((s) => s.status === "delivered").length,
+        }
+    }, [shipments]);
+
     return (
-        <SidebarProvider
-            style={
-                {
-                    "--sidebar-width": "calc(var(--spacing) * 72)",
-                    "--header-height": "calc(var(--spacing) * 12)",
-                } as React.CSSProperties
-            }
-        >
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Air Shipments" />
-                <div className="flex flex-1 flex-col">
-                    <div className="@container/main flex flex-1 flex-col gap-2">
-                        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6 px-4 lg:px-6">
-                            {/* Header */}
-                            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                                <div>
-                                    <h1 className="text-2xl font-bold tracking-tight">
-                                        Air Shipments
-                                    </h1>
-                                    <p className="text-muted-foreground">
-                                        Manage and track your air cargo shipments
-                                    </p>
-                                </div>
-                                <Link href="/dashboard/air-shipments/new">
-                                    <Button className="gap-2">
-                                        <IconPlus className="size-4" />
-                                        Create Shipment
-                                    </Button>
-                                </Link>
+        <DashboardShell title="Logix Dashboard - Air Shipments" itemCount={total}>
+            <div className="flex flex-col gap-4">
+                {/* Header & Controls */}
+                <div className="win7-groupbox">
+                    <legend>Shipment Controls</legend>
+                    <div className="win7-p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div className="flex gap-4 items-center w-full sm:w-auto">
+                            {/* Filter input */}
+                            <div className="relative flex-1 sm:w-64">
+                                <IconSearch className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-500 pointer-events-none" />
+                                <input
+                                    placeholder="Search reference..."
+                                    className="pl-7 pr-2 h-7 w-full border border-[#7f9db9] text-xs outline-none search-input-with-icon"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    style={{ background: '#fff' }}
+                                />
                             </div>
-
-                            {/* Filters */}
-                            <div className="flex gap-4">
-                                <div className="relative flex-1 max-w-sm">
-                                    <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                                    <Input
-                                        placeholder="Search by reference code..."
-                                        className="pl-9"
-                                        value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
-                                    />
-                                </div>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={fetchShipments}
-                                    disabled={isLoading}
-                                >
-                                    <IconRefresh
-                                        className={`size-4 ${isLoading ? "animate-spin" : ""}`}
-                                    />
-                                </Button>
-                            </div>
-
-                            {/* Stats */}
-                            <div className="grid gap-4 md:grid-cols-4">
-                                <div className="rounded-lg border bg-card p-4">
-                                    <div className="text-2xl font-bold">{total}</div>
-                                    <p className="text-xs text-muted-foreground">
-                                        Total Shipments
-                                    </p>
-                                </div>
-                                <div className="rounded-lg border bg-card p-4">
-                                    <div className="text-2xl font-bold text-blue-500">
-                                        {shipments.filter((s) => s.status === "created").length}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Created</p>
-                                </div>
-                                <div className="rounded-lg border bg-card p-4">
-                                    <div className="text-2xl font-bold text-yellow-500">
-                                        {shipments.filter((s) => s.status === "in_transit").length}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">In Transit</p>
-                                </div>
-                                <div className="rounded-lg border bg-card p-4">
-                                    <div className="text-2xl font-bold text-green-500">
-                                        {shipments.filter((s) => s.status === "delivered").length}
-                                    </div>
-                                    <p className="text-xs text-muted-foreground">Delivered</p>
-                                </div>
-                            </div>
-
-                            {/* Table */}
-                            <div className="rounded-lg border">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Reference</TableHead>
-                                            <TableHead>Package</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Carrier</TableHead>
-                                            <TableHead>Route</TableHead>
-                                            <TableHead>Created</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {isLoading ? (
-                                            Array.from({ length: 5 }).map((_, i) => (
-                                                <TableRow key={i}>
-                                                    <TableCell>
-                                                        <Skeleton className="h-4 w-32" />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Skeleton className="h-4 w-40" />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Skeleton className="h-5 w-20" />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Skeleton className="h-4 w-28" />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Skeleton className="h-4 w-24" />
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Skeleton className="h-4 w-20" />
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        ) : shipments.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell
-                                                    colSpan={6}
-                                                    className="h-32 text-center text-muted-foreground"
-                                                >
-                                                    <div className="flex flex-col items-center gap-2">
-                                                        <IconPlane className="size-8 opacity-50" />
-                                                        <p>No shipments found</p>
-                                                        <Link href="/dashboard/air-shipments/new">
-                                                            <Button variant="outline" size="sm">
-                                                                Create your first shipment
-                                                            </Button>
-                                                        </Link>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            shipments.map((shipment) => (
-                                                <TableRow
-                                                    key={shipment.id}
-                                                    className="cursor-pointer hover:bg-muted/50"
-                                                    onClick={() =>
-                                                        router.push(
-                                                            `/dashboard/air-shipments/${shipment.id}`
-                                                        )
-                                                    }
-                                                >
-                                                    <TableCell className="font-mono text-sm">
-                                                        {shipment.referenceCode}
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div>
-                                                            <div className="font-medium">
-                                                                {shipment.packageName}
-                                                            </div>
-                                                            <div className="text-xs text-muted-foreground">
-                                                                {shipment.weightKg} kg
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <Badge
-                                                            variant="outline"
-                                                            className={STATUS_COLORS[shipment.status]}
-                                                        >
-                                                            {shipment.status.replace("_", " ")}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        <div>
-                                                            <div className="text-sm">{shipment.carrier}</div>
-                                                            <div className="text-xs text-muted-foreground font-mono">
-                                                                {shipment.flightNumber}
-                                                            </div>
-                                                        </div>
-                                                    </TableCell>
-                                                    <TableCell className="font-mono text-sm">
-                                                        {shipment.fromAirportIcao} → {shipment.toAirportIcao}
-                                                    </TableCell>
-                                                    <TableCell className="text-muted-foreground">
-                                                        {formatDate(shipment.createdAt)}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </div>
+                            <button
+                                onClick={fetchShipments}
+                                disabled={isLoading}
+                                className="win7-btn h-7 w-7 flex items-center justify-center p-0"
+                                title="Refresh"
+                            >
+                                <IconRefresh
+                                    className={`size-3.5 ${isLoading ? "animate-spin" : ""}`}
+                                />
+                            </button>
                         </div>
+
+                        <Link href="/dashboard/air-shipments/new">
+                            <button className="win7-btn flex items-center gap-1">
+                                <IconPlus className="size-3.5" />
+                                Create Shipment
+                            </button>
+                        </Link>
                     </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
+
+                {/* Status Bar / Stats */}
+                <div className="grid grid-cols-4 gap-2">
+                    <div className="border border-[#7f9db9] bg-white p-2">
+                        <div className="text-xl font-bold font-sans">{total}</div>
+                        <p className="text-[10px] text-gray-500 uppercase">Total</p>
+                    </div>
+                    <div className="border border-[#7f9db9] bg-white p-2">
+                        <div className="text-xl font-bold font-sans text-blue-600">{stats.created}</div>
+                        <p className="text-[10px] text-gray-500 uppercase">Created</p>
+                    </div>
+                    <div className="border border-[#7f9db9] bg-white p-2">
+                        <div className="text-xl font-bold font-sans text-[#fc0]">{stats.in_transit}</div> {/* Win7 yellow-ish */}
+                        <p className="text-[10px] text-gray-500 uppercase">In Transit</p>
+                    </div>
+                    <div className="border border-[#7f9db9] bg-white p-2">
+                        <div className="text-xl font-bold font-sans text-green-600">{stats.delivered}</div>
+                        <p className="text-[10px] text-gray-500 uppercase">Delivered</p>
+                    </div>
+                </div>
+
+                {/* Table */}
+                <div className="border border-[#7f9db9] bg-white">
+                    <table className="win7-table w-full">
+                        <thead>
+                            <tr>
+                                <th className="text-left py-1 pr-2">Reference</th>
+                                <th className="text-left py-1 pr-2">Package</th>
+                                <th className="text-left py-1 pr-2">Status</th>
+                                <th className="text-left py-1 pr-2">Carrier</th>
+                                <th className="text-left py-1 pr-2">Route</th>
+                                <th className="text-left py-1">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {isLoading ? (
+                                <tr>
+                                    <td colSpan={6} className="h-32 text-center align-middle">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <div role="progressbar" className="marquee w-64" />
+                                            <span className="text-xs text-gray-500 font-sans">Loading shipments...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : shipments.length === 0 ? (
+                                <tr>
+                                    <td colSpan={6} className="h-32 text-center text-gray-500">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <IconPlane className="size-8 opacity-50" />
+                                            <p>No shipments found</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                shipments.map((shipment) => (
+                                    <tr
+                                        key={shipment.id}
+                                        className="hover:bg-[#eef1ff] cursor-pointer"
+                                        onClick={() =>
+                                            router.push(
+                                                `/dashboard/air-shipments/${shipment.id}`
+                                            )
+                                        }
+                                    >
+                                        <td className="font-mono text-xs text-blue-800">
+                                            {shipment.referenceCode}
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div className="font-bold text-xs">
+                                                    {shipment.packageName}
+                                                </div>
+                                                <div className="text-[10px] text-gray-500">
+                                                    {shipment.weightKg} kg
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className="text-xs">
+                                                {STATUS_LABELS[shipment.status] || shipment.status}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div>
+                                                <div className="text-xs">{shipment.carrier}</div>
+                                                <div className="text-[10px] text-gray-500 font-mono">
+                                                    {shipment.flightNumber}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="font-mono text-xs">
+                                            {shipment.fromAirportIcao} → {shipment.toAirportIcao}
+                                        </td>
+                                        <td className="text-xs text-gray-500">
+                                            {formatDate(shipment.createdAt)}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </DashboardShell>
     );
 }

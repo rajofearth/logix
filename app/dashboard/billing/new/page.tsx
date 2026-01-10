@@ -1,8 +1,6 @@
 "use client"
 
-import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
-import { AppSidebar } from '@/components/dashboard/app-sidebar'
-import { SiteHeader } from '@/components/dashboard/site-header'
+import { DashboardShell } from '@/components/dashboard/dashboard-shell'
 import { InvoiceForm } from '@/app/dashboard/billing/_component/invoice-form'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -45,14 +43,10 @@ export default function NewInvoicePage() {
     }
 
     return (
-        <SidebarProvider>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Create New Invoice" />
-                <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full">
-                    <InvoiceForm onSubmit={handleSubmit} />
-                </div>
-            </SidebarInset>
-        </SidebarProvider>
+        <DashboardShell title="Create New Invoice">
+            <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 max-w-5xl mx-auto w-full">
+                <InvoiceForm onSubmit={handleSubmit} />
+            </div>
+        </DashboardShell>
     )
 }

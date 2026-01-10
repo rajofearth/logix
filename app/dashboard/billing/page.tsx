@@ -1,124 +1,106 @@
-import { AppSidebar } from '@/components/dashboard/app-sidebar'
-import { SiteHeader } from '@/components/dashboard/site-header'
-import {
-    SidebarInset,
-    SidebarProvider,
-} from '@/components/ui/sidebar'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Plus, Download, Filter, Search } from "lucide-react"
-import { Input } from "@/components/ui/input"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { InvoiceList } from "@/app/dashboard/billing/_component/invoice-list"
-import { BillingStats } from "@/app/dashboard/billing/_component/billing-stats"
-import Link from 'next/link'
+"use client";
+
+import * as React from "react";
+import Link from 'next/link';
+import { Plus, Download, Filter, Search } from "lucide-react";
+
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { InvoiceList } from "@/app/dashboard/billing/_component/invoice-list";
+import { BillingStats } from "@/app/dashboard/billing/_component/billing-stats";
+
+type TabValue = "all" | "salary" | "pending" | "paid" | "draft";
 
 export default function BillingPage() {
+    const [activeTab, setActiveTab] = React.useState<TabValue>("all");
+
     return (
-        <SidebarProvider>
-            <AppSidebar variant="inset" />
-            <SidebarInset>
-                <SiteHeader title="Invoices & Billing" />
-                <div className="flex flex-1 flex-col p-4 md:p-6 lg:p-8 space-y-6">
-                    {/* Header Actions */}
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <DashboardShell title="Logix Accounts & Billing">
+            <div className="flex flex-col gap-4">
+                {/* Header Actions */}
+                <div className="win7-groupbox">
+                    <legend>Billing Operations</legend>
+                    <div className="win7-p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h2 className="text-2xl font-bold tracking-tight">Billing Overview</h2>
-                            <p className="text-muted-foreground">Manage your GST invoices, delivery challans, and financial reports.</p>
+                            <h2 className="text-xl font-bold font-sans">Billing Overview</h2>
+                            <p className="text-xs text-gray-500">Manage invoices, salary slips, and financial reports.</p>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                                <Download className="mr-2 h-4 w-4" />
-                                Export GSTR-1
-                            </Button>
-                            <Button size="sm" asChild>
-                                <Link href="/dashboard/billing/new">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Create Invoice
-                                </Link>
-                            </Button>
+                            <button className="win7-btn flex items-center gap-1">
+                                <Download className="size-3.5" /> Export GSTR-1
+                            </button>
+                            <Link href="/dashboard/billing/new">
+                                <button className="win7-btn flex items-center gap-1">
+                                    <Plus className="size-3.5" /> Create Invoice
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Stats Overview */}
+                <BillingStats />
+
+                {/* Main Content */}
+                <div className="flex flex-col gap-2">
+                    {/* Toolbar & Filter */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        {/* Custom Win7 Tabs */}
+                        <div className="flex border-b border-[#7f9db9] pl-2 gap-1 select-none w-full md:w-auto overflow-x-auto">
+                            {[
+                                { id: "all", label: "All Invoices" },
+                                { id: "salary", label: "Salary Slips" },
+                                { id: "pending", label: "Pending" },
+                                { id: "paid", label: "Paid" },
+                                { id: "draft", label: "Drafts" },
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as TabValue)}
+                                    className={`px-3 py-1 border-t border-l border-r rounded-t text-xs font-sans mb-[-1px] z-10 ${activeTab === tab.id
+                                            ? "bg-white border-[#7f9db9] border-b-white font-bold pb-1.5"
+                                            : "bg-[#ece9d8] border-[#aca899] text-gray-600 hover:bg-[#f5f5f5]"
+                                        }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="flex items-center gap-2 w-full md:w-auto">
+                            <div className="relative w-full md:w-64">
+                                <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-400 pointer-events-none" />
+                                <input
+                                    type="search"
+                                    placeholder="Search invoices..."
+                                    className="pl-7 pr-2 h-7 w-full border border-[#7f9db9] text-xs outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <button className="win7-btn h-7 flex items-center gap-1 px-3">
+                                <Filter className="size-3.5" /> Filter
+                            </button>
                         </div>
                     </div>
 
-                    {/* Stats Overview */}
-                    <BillingStats />
-
-                    {/* Main Content */}
-                    <Tabs defaultValue="all" className="w-full">
-                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-                            <TabsList>
-                                <TabsTrigger value="all">All Invoices</TabsTrigger>
-                                <TabsTrigger value="salary">Salary Slips</TabsTrigger>
-                                <TabsTrigger value="pending">Pending</TabsTrigger>
-                                <TabsTrigger value="paid">Paid</TabsTrigger>
-                                <TabsTrigger value="draft">Drafts</TabsTrigger>
-                            </TabsList>
-                            <div className="flex items-center gap-2 w-full md:w-auto">
-                                <div className="relative w-full md:w-64">
-                                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                                    <Input
-                                        type="search"
-                                        placeholder="Search invoices..."
-                                        className="pl-8 h-9"
-                                    />
-                                </div>
-                                <Button variant="ghost" size="sm" className="h-9">
-                                    <Filter className="mr-2 h-4 w-4" />
-                                    Filter
-                                </Button>
+                    {/* Tab Content Area */}
+                    <div className="bg-white border border-[#7f9db9] p-4 min-h-[400px]">
+                        {activeTab === "all" && (
+                            <div>
+                                <h3 className="font-bold text-[#003399] mb-2 border-b border-[#ece9d8] pb-1">Recent Transactions</h3>
+                                <InvoiceList />
                             </div>
-                        </div>
-
-                        <TabsContent value="all" className="mt-0 space-y-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-lg">Recent Transactions</CardTitle>
-                                    <CardDescription>View and manage all your logistics billing documents.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <InvoiceList />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="salary" className="mt-0 space-y-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-lg">Salary Statements</CardTitle>
-                                    <CardDescription>Monthly salary slips generated from blockchain payments.</CardDescription>
-                                </CardHeader>
-                                <CardContent className="p-0">
-                                    <InvoiceList type="SALARY_SLIP" />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="pending" className="mt-0">
-                            <Card>
-                                <CardContent className="p-0">
-                                    <InvoiceList status="PENDING" />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="paid" className="mt-0">
-                            <Card>
-                                <CardContent className="p-0">
-                                    <InvoiceList status="PAID" />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-
-                        <TabsContent value="draft" className="mt-0">
-                            <Card>
-                                <CardContent className="p-0">
-                                    <InvoiceList status="DRAFT" />
-                                </CardContent>
-                            </Card>
-                        </TabsContent>
-                    </Tabs>
+                        )}
+                        {activeTab === "salary" && (
+                            <div>
+                                <h3 className="font-bold text-[#003399] mb-2 border-b border-[#ece9d8] pb-1">Salary Statements</h3>
+                                <InvoiceList type="SALARY_SLIP" />
+                            </div>
+                        )}
+                        {activeTab === "pending" && <InvoiceList status="PENDING" />}
+                        {activeTab === "paid" && <InvoiceList status="PAID" />}
+                        {activeTab === "draft" && <InvoiceList status="DRAFT" />}
+                    </div>
                 </div>
-            </SidebarInset>
-        </SidebarProvider>
-    )
+            </div>
+        </DashboardShell>
+    );
 }

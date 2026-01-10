@@ -15,22 +15,15 @@ export function ProjectsGrid({ projects, isLoading, onProjectClick }: ProjectsGr
         return (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="rounded-lg border bg-card p-4 space-y-3">
-                        <div className="flex items-start gap-3">
-                            <Skeleton className="size-10 rounded-lg" />
-                            <div className="flex-1 space-y-2">
-                                <Skeleton className="h-4 w-3/4" />
-                                <Skeleton className="h-3 w-1/2" />
-                            </div>
-                        </div>
-                        <Skeleton className="h-3 w-full" />
-                        <Skeleton className="h-3 w-4/5" />
-                        <Skeleton className="h-1.5 w-full" />
-                        <div className="flex justify-between">
-                            <Skeleton className="h-6 w-20" />
-                            <Skeleton className="h-4 w-16" />
-                        </div>
-                    </div>
+                    <div
+                        key={i}
+                        className="animate-pulse h-[180px]"
+                        style={{
+                            background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                            border: '1px solid #c0c1cd',
+                            borderRadius: '3px',
+                        }}
+                    />
                 ))}
             </div>
         )

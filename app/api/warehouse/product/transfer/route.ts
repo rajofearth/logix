@@ -1,5 +1,6 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
+import { hasAverageWeeklySalesColumn } from "@/app/api/warehouse/_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 // Increase timeout for warehouse transactions
@@ -18,10 +19,23 @@ export async function POST(req: Request) {
             );
         }
 
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+
         // Get source product
         const sourceProduct = await prisma.product.findUnique({
             where: { id: productId },
-            include: { block: true },
+            select: {
+                id: true,
+                sku: true,
+                name: true,
+                quantity: true,
+                category: true,
+                boughtAt: true,
+                currentPrice: true,
+                expiryDate: true,
+                blockId: true,
+                ...(hasWeekly ? { averageWeeklySales: true } : {}),
+            },
         });
 
         if (!sourceProduct) {
@@ -73,6 +87,9 @@ export async function POST(req: Request) {
                         name: sourceProduct.name,
                         quantity,
                         category: sourceProduct.category,
+                        ...(hasWeekly && "averageWeeklySales" in sourceProduct
+                            ? { averageWeeklySales: sourceProduct.averageWeeklySales }
+                            : {}),
                         boughtAt: sourceProduct.boughtAt,
                         currentPrice: sourceProduct.currentPrice,
                         expiryDate: sourceProduct.expiryDate,

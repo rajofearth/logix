@@ -1,8 +1,6 @@
 "use client";
 
 import { Search, SlidersHorizontal } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 interface SearchBarProps {
     value: string;
@@ -13,21 +11,49 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
     return (
         <div className="relative flex items-center gap-2">
             <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search..."
+                {/* Win7 Search input styling from _searchbox.scss */}
+                <input
+                    placeholder="Search deliveries..."
                     value={value}
                     onChange={(e) => onChange(e.target.value)}
-                    className="pl-9 h-10 bg-background dark:bg-card border-border transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    style={{
+                        font: 'var(--w7-font)',
+                        fontSize: '9pt',
+                        width: '100%',
+                        height: '24px',
+                        padding: '3px 28px 3px 8px',
+                        border: '1px solid transparent',
+                        borderRadius: '2px',
+                        background: '#fff',
+                        color: '#000',
+                        boxShadow: 'inset 1px 1px 0 #8e8f8f, inset -1px -1px 0 #ccc',
+                        outline: 'none',
+                    }}
+                    onFocus={(e) => {
+                        e.currentTarget.style.boxShadow = 'inset 1px 1px 0 #3d7bad, inset -1px -1px 0 #a5d1e9'
+                    }}
+                    onBlur={(e) => {
+                        e.currentTarget.style.boxShadow = 'inset 1px 1px 0 #8e8f8f, inset -1px -1px 0 #ccc'
+                    }}
+                />
+                <Search
+                    className="absolute right-2 top-1/2 -translate-y-1/2 size-3.5 pointer-events-none"
+                    style={{ color: '#666' }}
                 />
             </div>
-            <Button
-                variant="outline"
-                size="icon"
-                className="size-10 shrink-0 hover:bg-primary/10 hover:border-primary/30 transition-all duration-200"
+            {/* Win7 Filter button */}
+            <button
+                className="win7-btn flex items-center justify-center"
+                title="Filters"
+                style={{
+                    width: '26px',
+                    height: '24px',
+                    padding: 0,
+                    minWidth: '26px',
+                }}
             >
-                <SlidersHorizontal className="size-4" />
-            </Button>
+                <SlidersHorizontal className="size-3.5" style={{ color: '#000' }} />
+            </button>
         </div>
     );
 }

@@ -5,31 +5,23 @@ import { IconPhone, IconBriefcase, IconMapPin } from "@tabler/icons-react"
 import type { DriverDTO } from "../_types"
 import { cn } from "@/lib/utils"
 import { getInitials } from "@/lib/utils"
-import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
 
 const statusConfig = {
     available: {
         label: "Available",
-        ringColor: "ring-emerald-500",
-        badgeClass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-        dotColor: "bg-emerald-500",
-        nameHoverColor: "group-hover:text-emerald-600 dark:group-hover:text-emerald-400",
+        dotClass: "bg-[#5cb85c]",
+        badgeClass: "bg-[#dff0d8] text-[#3c763d] border-[#d6e9c6]",
     },
     "on-route": {
         label: "On Route",
-        ringColor: "ring-primary",
-        badgeClass: "bg-primary/10 text-primary",
-        dotColor: "bg-primary",
-        nameHoverColor: "group-hover:text-primary",
+        dotClass: "bg-[#5bc0de]",
+        badgeClass: "bg-[#d9edf7] text-[#31708f] border-[#bce8f1]",
     },
     "off-duty": {
         label: "Off Duty",
-        ringColor: "ring-muted-foreground/50",
-        badgeClass: "bg-muted text-muted-foreground",
-        dotColor: "bg-muted-foreground/50",
-        nameHoverColor: "group-hover:text-muted-foreground",
+        dotClass: "bg-[#999]",
+        badgeClass: "bg-[#f5f5f5] text-[#777] border-[#ddd]",
     },
 }
 
@@ -43,94 +35,67 @@ export function DriverCard({ driver, onClick }: DriverCardProps) {
     const hasActiveJob = driver.currentJob && driver.route
 
     return (
-        <Card
+        <div
             onClick={onClick}
             className={cn(
-                "group relative overflow-hidden transition-all duration-300",
-                "hover:shadow-lg hover:-translate-y-1 hover:border-primary/20",
-                "cursor-pointer"
+                // Use win7-aero-card class for glass border effect
+                "win7-aero-card",
+                "group cursor-pointer",
+                "hover:shadow-[2px_2px_12px_2px_rgba(0,0,0,0.4),inset_0_0_0_1px_rgba(255,255,255,0.9)]"
             )}
         >
-            {/* Status indicator line */}
-            <div
-                className={cn(
-                    "absolute top-0 left-0 right-0 h-0.5 transition-all duration-300",
-                    status.dotColor,
-                    "group-hover:h-1"
-                )}
-            />
+            {/* Aero header - blue glass bar */}
+            <div className="win7-aero-card-header">
+                {/* Avatar */}
+                <Avatar size="lg" className="border border-[rgba(0,0,0,0.5)] shadow-sm">
+                    <AvatarImage src={driver.avatar ?? undefined} alt={driver.name} />
+                    <AvatarFallback className="bg-[var(--w7-el-grad)] text-[#333]">
+                        {getInitials(driver.name)}
+                    </AvatarFallback>
+                </Avatar>
 
-            <CardContent className="pt-5 pb-4">
-                {/* Header: Avatar + Name/Status */}
-                <div className="flex items-center gap-3 mb-4">
-                    <div className="relative">
-                        <Avatar
-                            size="lg"
-                            className={cn(
-                                "ring-2 ring-offset-2 ring-offset-background transition-transform duration-300",
-                                "group-hover:scale-105",
-                                status.ringColor
-                            )}
-                        >
-                            <AvatarImage src={driver.avatar ?? undefined} alt={driver.name} />
-                            <AvatarFallback className="text-sm font-medium">
-                                {getInitials(driver.name)}
-                            </AvatarFallback>
-                        </Avatar>
-                        {/* Online indicator dot */}
-                        <span
-                            className={cn(
-                                "absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background",
-                                status.dotColor
-                            )}
-                        />
-                    </div>
-
-                    <div className="flex-1 min-w-0">
-                        <h3 className={cn(
-                            "font-semibold text-sm truncate text-foreground transition-colors",
-                            status.nameHoverColor
-                        )}>
-                            {driver.name}
-                        </h3>
-                        <Badge
-                            variant="secondary"
-                            className={cn("mt-1 text-[0.6rem] font-medium", status.badgeClass)}
-                        >
-                            {status.label}
-                        </Badge>
-                    </div>
+                <div className="flex-1 min-w-0 ml-3">
+                    <h3 className="font-semibold text-[11px] truncate">
+                        {driver.name}
+                    </h3>
+                    {/* Status badge */}
+                    <span className={cn(
+                        "inline-block mt-1 px-2 py-0.5 text-[10px] font-semibold uppercase rounded-[var(--w7-el-bdr)] border",
+                        status.badgeClass
+                    )}>
+                        {status.label}
+                    </span>
                 </div>
+            </div>
 
+            {/* Aero body - content area */}
+            <div className="win7-aero-card-body">
                 {/* Phone */}
                 {driver.phone && (
-                    <div className="flex items-center gap-2 text-muted-foreground mb-3">
-                        <IconPhone className="size-3.5 shrink-0" />
-                        <span className="text-xs">{driver.phone}</span>
+                    <div className="flex items-center gap-2 mb-3 text-[11px] text-[var(--w7-el-c)]">
+                        <IconPhone className="size-3.5 shrink-0 text-[var(--w7-el-c-d)]" />
+                        <span>{driver.phone}</span>
                     </div>
                 )}
 
-                {/* Job Section - always same height */}
-                <div
-                    className={cn(
-                        "rounded-lg p-3 transition-colors",
-                        hasActiveJob ? "bg-primary/5 border border-primary/10" : "bg-muted/30 border border-transparent"
-                    )}
-                >
+                {/* Job Section - fieldset from _groupbox.scss */}
+                <fieldset className="border border-[#cdd7db] rounded-[var(--w7-el-bdr)] p-2 m-0 shadow-[inset_0_0_0_1px_#fff]">
                     <div className="space-y-2">
                         {/* Current Job */}
                         <div className="flex items-start gap-2">
-                            <IconBriefcase className={cn(
-                                "size-3.5 shrink-0 mt-0.5",
-                                hasActiveJob ? "text-primary" : "text-muted-foreground/40"
-                            )} />
+                            <IconBriefcase
+                                className={cn(
+                                    "size-3.5 shrink-0 mt-0.5",
+                                    hasActiveJob ? "text-[var(--w7-link-c)]" : "text-[var(--w7-el-c-d)]"
+                                )}
+                            />
                             <div className="flex-1 min-w-0">
-                                <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                                <p className="text-[9px] text-[var(--w7-el-c-d)] font-semibold uppercase mb-0.5">
                                     Current Job
                                 </p>
                                 <p className={cn(
-                                    "text-xs truncate",
-                                    hasActiveJob ? "font-medium text-foreground" : "text-muted-foreground/60 italic"
+                                    "text-[11px]",
+                                    hasActiveJob ? "text-[var(--w7-el-c)]" : "text-[var(--w7-el-c-d)] italic"
                                 )}>
                                     {driver.currentJob || "No job assigned"}
                                 </p>
@@ -139,28 +104,30 @@ export function DriverCard({ driver, onClick }: DriverCardProps) {
 
                         {/* Route */}
                         <div className="flex items-start gap-2">
-                            <IconMapPin className={cn(
-                                "size-3.5 shrink-0 mt-0.5",
-                                hasActiveJob ? "text-primary" : "text-muted-foreground/40"
-                            )} />
+                            <IconMapPin
+                                className={cn(
+                                    "size-3.5 shrink-0 mt-0.5",
+                                    hasActiveJob ? "text-[var(--w7-link-c)]" : "text-[var(--w7-el-c-d)]"
+                                )}
+                            />
                             <div className="flex-1 min-w-0">
-                                <p className="text-[0.65rem] uppercase tracking-wide text-muted-foreground">
+                                <p className="text-[9px] text-[var(--w7-el-c-d)] font-semibold uppercase mb-0.5">
                                     Route
                                 </p>
                                 {hasActiveJob && driver.route ? (
-                                    <div className="flex items-center gap-1 text-xs text-foreground">
+                                    <div className="flex items-center gap-1 text-[11px] text-[var(--w7-el-c)]">
                                         <span className="truncate">{driver.route.origin}</span>
-                                        <span className="text-primary font-medium shrink-0">→</span>
+                                        <span className="text-[var(--w7-el-c-d)]">→</span>
                                         <span className="truncate">{driver.route.destination}</span>
                                     </div>
                                 ) : (
-                                    <p className="text-xs text-muted-foreground/60 italic">—</p>
+                                    <p className="text-[11px] text-[var(--w7-el-c-d)] italic">—</p>
                                 )}
                             </div>
                         </div>
                     </div>
-                </div>
-            </CardContent>
-        </Card>
+                </fieldset>
+            </div>
+        </div>
     )
 }

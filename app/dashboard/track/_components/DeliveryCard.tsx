@@ -1,9 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import type { Delivery } from "../_data/deliveries";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 interface DeliveryCardProps {
     delivery: Delivery;
@@ -21,81 +20,128 @@ export function DeliveryCard({
     onClick
 }: DeliveryCardProps) {
     return (
-        <Card
+        <div
             onMouseEnter={() => onHover(delivery.id)}
             onMouseLeave={() => onHover(null)}
             onClick={onClick}
             className={cn(
-                "transition-all duration-300 cursor-pointer",
-                isSelected
-                    ? "ring-2 ring-primary bg-primary/10 dark:bg-primary/15 shadow-md"
-                    : "hover:ring-1 hover:ring-primary/20",
-                isHovered && !isSelected && "scale-[1.02] shadow-lg"
+                "transition-all duration-100 cursor-pointer p-2 border select-none",
+                "font-[var(--w7-font)]"
             )}
+            style={{
+                font: 'var(--w7-font)',
+                fontSize: '9pt',
+                background: isSelected
+                    ? 'linear-gradient(#3399ff 45%, #1c78cc 45%, #0056b3)' // Win7 selection blue gradient
+                    : isHovered
+                        ? 'linear-gradient(rgba(255,255,255,0.6), rgba(230,236,245,0.8) 90%, rgba(255,255,255,0.8))' // Win7 hover
+                        : '#fff',
+                border: isSelected
+                    ? '1px solid #003399'
+                    : isHovered
+                        ? '1px solid #aaddfa' // Win7 hover border
+                        : '1px solid #cdd7db',
+                borderRadius: 'var(--w7-el-bdr)',
+                boxShadow: isSelected
+                    ? 'inset 0 0 0 1px rgba(255,255,255,0.3)'
+                    : 'inset 0 0 0 1px #fff',
+                color: isSelected ? '#fff' : '#000',
+            }}
         >
-            <CardContent className="p-0">
-                {/* Header Section */}
-                <div className="flex items-start justify-between p-3 pb-2">
-                    <div className="space-y-0.5">
-                        <p className="text-sm font-semibold text-foreground">{delivery.type}</p>
+            {/* Header Section */}
+            <div className="flex items-start justify-between pb-1">
+                <p
+                    className="text-xs font-bold"
+                    style={{ color: isSelected ? '#fff' : '#000' }}
+                >
+                    {delivery.type}
+                </p>
+                {isSelected && (
+                    <span
+                        className="text-[10px]"
+                        style={{ color: 'rgba(255,255,255,0.8)' }}
+                    >
+                        Selected
+                    </span>
+                )}
+            </div>
+
+            {/* Route Section - Compact */}
+            <div className="space-y-1 mb-2">
+                {/* Origin */}
+                <div className="flex items-start gap-2">
+                    <div className="w-3 flex justify-center pt-1">
+                        <div
+                            className="size-1.5 rounded-full"
+                            style={{ background: isSelected ? '#fff' : '#0066cc' }}
+                        />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <p
+                            className="text-[11px] truncate leading-tight"
+                            style={{ color: isSelected ? '#fff' : '#000' }}
+                        >
+                            {delivery.origin.address}
+                        </p>
                     </div>
                 </div>
 
-                {/* Route Section - Compact */}
-                <div className="px-3 py-2 space-y-2">
-                    {/* Origin */}
-                    <div className="flex items-start gap-2 group/origin">
-                        <div className="relative flex flex-col items-center pt-0.5">
-                            <div className="size-2.5 rounded-full bg-emerald-500 ring-2 ring-emerald-500/20 transition-all duration-200 group-hover/origin:ring-emerald-500/40" />
-                            <div className="w-0.5 h-5 bg-linear-to-b from-emerald-500/50 to-destructive/50" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.origin.address}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.origin.detail}
-                            </p>
-                        </div>
+                {/* Destination */}
+                <div className="flex items-start gap-2">
+                    <div className="w-3 flex justify-center pt-1">
+                        <div
+                            className="size-1.5 rounded-sm"
+                            style={{ background: isSelected ? '#fff' : '#cc0000' }}
+                        />
                     </div>
-
-                    {/* Destination */}
-                    <div className="flex items-start gap-2 group/dest">
-                        <div className="relative flex flex-col items-center pt-0.5">
-                            <div className="size-2.5 rounded-full bg-destructive ring-2 ring-destructive/20 transition-all duration-200 group-hover/dest:ring-destructive/40" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.destination.address}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.destination.detail}
-                            </p>
-                        </div>
+                    <div className="flex-1 min-w-0">
+                        <p
+                            className="text-[11px] truncate leading-tight"
+                            style={{ color: isSelected ? '#fff' : '#000' }}
+                        >
+                            {delivery.destination.address}
+                        </p>
                     </div>
                 </div>
+            </div>
 
-                {/* Driver Section - Compact */}
-                <div className="flex items-center justify-between px-3 py-2 border-t border-border/50">
-                    <div className="flex items-center gap-2">
-                        <Avatar className="size-8 ring-2 ring-background shadow-sm transition-transform duration-200 hover:scale-110">
-                            <AvatarImage src={delivery.driver.avatar} alt={delivery.driver.name} />
-                            <AvatarFallback className="text-xs">{delivery.driver.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="min-w-0">
-                            <p className="text-[10px] text-muted-foreground">Driver Details</p>
-                            <p className="text-xs font-medium text-foreground truncate">
-                                {delivery.driver.name}
-                            </p>
-                            <p className="text-[10px] text-muted-foreground truncate">
-                                {delivery.driver.role}
-                            </p>
-                        </div>
-                    </div>
-
-
+            {/* Driver Section - Compact */}
+            <div
+                className="flex items-center gap-2 pt-1"
+                style={{
+                    borderTop: isSelected ? '1px solid rgba(255,255,255,0.3)' : '1px solid #e0e0e0'
+                }}
+            >
+                <Avatar
+                    className="size-6"
+                    style={{ border: '1px solid #8e8f8f' }}
+                >
+                    <AvatarImage src={delivery.driver.avatar} alt={delivery.driver.name} />
+                    <AvatarFallback
+                        className="text-[9px]"
+                        style={{
+                            background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                            color: '#333'
+                        }}
+                    >
+                        {delivery.driver.name.charAt(0)}
+                    </AvatarFallback>
+                </Avatar>
+                <div className="min-w-0">
+                    <p
+                        className="text-[11px] font-medium truncate"
+                        style={{ color: isSelected ? '#fff' : '#000' }}
+                    >
+                        {delivery.driver.name}
+                    </p>
+                    <p
+                        className="text-[9px] truncate"
+                        style={{ color: isSelected ? 'rgba(255,255,255,0.8)' : '#666' }}
+                    >
+                        {delivery.driver.role}
+                    </p>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }

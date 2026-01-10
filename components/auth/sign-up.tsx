@@ -1,22 +1,13 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import Image from "next/image";
-import { Loader2, X } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { authClient, signUp } from "@/lib/auth-client";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { uploadFiles } from "@/lib/uploadthing";
+import Link from "next/link";
 
 export default function SignUp() {
 	const [firstName, setFirstName] = useState("");
@@ -41,167 +32,201 @@ export default function SignUp() {
 		}
 	};
 
-	return (
-		<Card className="z-50 rounded-md rounded-t-none max-w-md">
-			<CardHeader>
-				<CardTitle className="text-lg md:text-xl">Sign Up</CardTitle>
-				<CardDescription className="text-xs md:text-sm">
-					Enter your information to create an account
-				</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<div className="grid gap-4">
-					<div className="grid grid-cols-2 gap-4">
-						<div className="grid gap-2">
-							<Label htmlFor="first-name">First name</Label>
-							<Input
-								id="first-name"
-								placeholder="Max"
-								required
-								onChange={(e) => {
-									setFirstName(e.target.value);
-								}}
-								value={firstName}
-							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="last-name">Last name</Label>
-							<Input
-								id="last-name"
-								placeholder="Robinson"
-								required
-								onChange={(e) => {
-									setLastName(e.target.value);
-								}}
-								value={lastName}
-							/>
-						</div>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="email">Email</Label>
-						<Input
-							id="email"
-							type="email"
-							placeholder="m@example.com"
-							required
-							onChange={(e) => {
-								setEmail(e.target.value);
-							}}
-							value={email}
-						/>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="password">Password</Label>
-						<Input
-							id="password"
-							type="password"
-							value={password}
-							onChange={(e) => setPassword(e.target.value)}
-							autoComplete="new-password"
-							placeholder="Password"
-						/>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="password">Confirm Password</Label>
-						<Input
-							id="password_confirmation"
-							type="password"
-							value={passwordConfirmation}
-							onChange={(e) => setPasswordConfirmation(e.target.value)}
-							autoComplete="new-password"
-							placeholder="Confirm Password"
-						/>
-					</div>
-					<div className="grid gap-2">
-						<Label htmlFor="image">Profile Image (optional)</Label>
-						<div className="flex items-end gap-4">
-							{imagePreview && (
-								<div className="relative w-16 h-16 rounded-sm overflow-hidden">
-									<Image
-										src={imagePreview}
-										alt="Profile preview"
-										fill
-										className="object-cover"
-									/>
-								</div>
-							)}
-							<div className="flex items-center gap-2 w-full">
-								<Input
-									id="image"
-									type="file"
-									accept="image/*"
-									onChange={handleImageChange}
-									className="w-full"
-								/>
-								{imagePreview && (
-									<X
-										className="cursor-pointer"
-										onClick={() => {
-											setImage(null);
-											setImagePreview(null);
-										}}
-									/>
-								)}
-							</div>
-						</div>
-					</div>
-					<Button
-						type="submit"
-						className="w-full"
-						disabled={loading}
-						onClick={async () => {
-							if (password !== passwordConfirmation) {
-								toast.error("Passwords do not match");
-								return;
-							}
+	const handleSignUp = async () => {
+		if (password !== passwordConfirmation) {
+			toast.error("Passwords do not match");
+			return;
+		}
 
-							await signUp.email({
-								email,
-								password,
-								name: `${firstName} ${lastName}`,
-								callbackURL: "/dashboard",
-								fetchOptions: {
-									onResponse: () => {
-										setLoading(false);
-									},
-									onRequest: () => {
-										setLoading(true);
-									},
-									onError: (ctx) => {
-										toast.error(ctx.error.message);
-									},
-									onSuccess: async () => {
-										if (image) {
-											try {
-												const uploaded = await uploadFiles("adminProfilePicture", {
-													files: [image],
-												});
-												const url = uploaded?.[0]?.ufsUrl;
-												if (!url) throw new Error("Upload succeeded but URL is missing");
-
-												await authClient.updateUser({ image: url });
-											} catch (e) {
-												const message =
-													e instanceof Error ? e.message : "Failed to upload profile image";
-												toast.error(message);
-											}
-										}
-
-										router.push("/dashboard");
-									},
-								},
+		await signUp.email({
+			email,
+			password,
+			name: `${firstName} ${lastName}`,
+			callbackURL: "/dashboard",
+			fetchOptions: {
+				onResponse: () => {
+					setLoading(false);
+				},
+				onRequest: () => {
+					setLoading(true);
+				},
+				onError: (ctx) => {
+					toast.error(ctx.error.message);
+				},
+				onSuccess: async () => {
+					if (image) {
+						try {
+							const uploaded = await uploadFiles("adminProfilePicture", {
+								files: [image],
 							});
-						}}
+							const url = uploaded?.[0]?.ufsUrl;
+							if (!url) throw new Error("Upload succeeded but URL is missing");
+
+							await authClient.updateUser({ image: url });
+						} catch (e) {
+							const message =
+								e instanceof Error ? e.message : "Failed to upload profile image";
+							toast.error(message);
+						}
+					}
+
+					router.push("/dashboard");
+				},
+			},
+		});
+	};
+
+	return (
+		<div className="window active" style={{ maxWidth: "450px", margin: "auto" }}>
+			<div className="title-bar">
+				<div className="title-bar-text">Create Account</div>
+				<div className="title-bar-controls">
+					<button aria-label="Minimize"></button>
+					<button aria-label="Close"></button>
+				</div>
+			</div>
+			<div className="window-body has-space">
+				<p style={{ marginBottom: "16px" }}>
+					Enter your information to create an account
+				</p>
+
+				{/* Name fields - side by side */}
+				<div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+					<div className="group" style={{ flex: 1 }}>
+						<label htmlFor="first-name">First name:</label>
+						<input
+							id="first-name"
+							type="text"
+							placeholder="Max"
+							required
+							onChange={(e) => setFirstName(e.target.value)}
+							value={firstName}
+							style={{ width: "100%", boxSizing: "border-box" }}
+						/>
+					</div>
+					<div className="group" style={{ flex: 1 }}>
+						<label htmlFor="last-name">Last name:</label>
+						<input
+							id="last-name"
+							type="text"
+							placeholder="Robinson"
+							required
+							onChange={(e) => setLastName(e.target.value)}
+							value={lastName}
+							style={{ width: "100%", boxSizing: "border-box" }}
+						/>
+					</div>
+				</div>
+
+				<div className="group" style={{ marginBottom: "12px" }}>
+					<label htmlFor="email">Email:</label>
+					<input
+						id="email"
+						type="text"
+						placeholder="m@example.com"
+						required
+						onChange={(e) => setEmail(e.target.value)}
+						value={email}
+						style={{ width: "100%", boxSizing: "border-box" }}
+					/>
+				</div>
+
+				<div className="group" style={{ marginBottom: "12px" }}>
+					<label htmlFor="password">Password:</label>
+					<input
+						id="password"
+						type="password"
+						placeholder="Password"
+						autoComplete="new-password"
+						value={password}
+						onChange={(e) => setPassword(e.target.value)}
+						style={{ width: "100%", boxSizing: "border-box" }}
+					/>
+				</div>
+
+				<div className="group" style={{ marginBottom: "12px" }}>
+					<label htmlFor="password_confirmation">Confirm Password:</label>
+					<input
+						id="password_confirmation"
+						type="password"
+						placeholder="Confirm Password"
+						autoComplete="new-password"
+						value={passwordConfirmation}
+						onChange={(e) => setPasswordConfirmation(e.target.value)}
+						style={{ width: "100%", boxSizing: "border-box" }}
+					/>
+				</div>
+
+				{/* Profile Image */}
+				<fieldset style={{ marginBottom: "12px" }}>
+					<legend>Profile Image (optional)</legend>
+					<div style={{ display: "flex", alignItems: "flex-end", gap: "12px" }}>
+						{imagePreview && (
+							<div style={{
+								width: "64px",
+								height: "64px",
+								overflow: "hidden",
+								border: "2px inset",
+								flexShrink: 0
+							}}>
+								<Image
+									src={imagePreview}
+									alt="Profile preview"
+									width={64}
+									height={64}
+									style={{ objectFit: "cover", width: "100%", height: "100%" }}
+								/>
+							</div>
+						)}
+						<div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
+							<input
+								id="image"
+								type="file"
+								accept="image/*"
+								onChange={handleImageChange}
+								style={{ flex: 1 }}
+							/>
+							{imagePreview && (
+								<button
+									type="button"
+									onClick={() => {
+										setImage(null);
+										setImagePreview(null);
+									}}
+								>
+									Clear
+								</button>
+							)}
+						</div>
+					</div>
+				</fieldset>
+
+				<section style={{ display: "flex", justifyContent: "flex-end", gap: "6px", marginTop: "16px" }}>
+					<button
+						className="default"
+						disabled={loading}
+						onClick={handleSignUp}
 					>
 						{loading ? (
-							<Loader2 size={16} className="animate-spin" />
+							<>
+								<Loader2 size={16} className="animate-spin" style={{ marginRight: "4px", display: "inline-block" }} />
+								Creating...
+							</>
 						) : (
 							"Create an account"
 						)}
-					</Button>
+					</button>
+				</section>
+
+				<div style={{ textAlign: "center", marginTop: "16px", fontSize: "12px" }}>
+					<p>
+						Already have an account?{" "}
+						<Link href="/auth/sign-in">
+							Sign in
+						</Link>
+					</p>
 				</div>
-			</CardContent>
-          
-		</Card>
+			</div>
+		</div>
 	);
 }

@@ -18,13 +18,19 @@ export function DriversGrid({ drivers, isLoading, onDriverClick }: DriversGridPr
     const isInitialLoad = isLoading && drivers.length === 0
 
     if (isInitialLoad) {
-        // Only show skeleton on very first load
+        // Windows 7 style skeleton loading
         return (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {Array.from({ length: 6 }).map((_, i) => (
                     <div
                         key={i}
-                        className="h-52 rounded-xl bg-muted/50 animate-pulse"
+                        style={{
+                            height: '180px',
+                            background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                            border: '1px solid #c0c1cd',
+                            borderRadius: 'var(--w7-el-bdr)',
+                        }}
+                        className="animate-pulse"
                     />
                 ))}
             </div>
@@ -32,13 +38,26 @@ export function DriversGrid({ drivers, isLoading, onDriverClick }: DriversGridPr
     }
 
     if (drivers.length === 0 && !isLoading) {
+        // Windows 7 style empty state
         return (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="size-16 rounded-2xl bg-muted/50 flex items-center justify-center mb-4">
-                    <IconUserOff className="size-8 text-muted-foreground/50" />
+            <div
+                className="flex flex-col items-center justify-center py-12 text-center"
+                style={{ color: '#000' }}
+            >
+                <div
+                    className="size-16 flex items-center justify-center mb-4"
+                    style={{
+                        background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                        border: '1px solid #c0c1cd',
+                        borderRadius: 'var(--w7-el-bdr)',
+                    }}
+                >
+                    <IconUserOff className="size-8" style={{ color: '#666' }} />
                 </div>
-                <h3 className="font-semibold text-foreground mb-1">No drivers found</h3>
-                <p className="text-sm text-muted-foreground max-w-sm">
+                <h3 style={{ fontSize: '12px', fontWeight: 600, color: '#000', marginBottom: '4px' }}>
+                    No drivers found
+                </h3>
+                <p style={{ fontSize: '11px', color: '#666', maxWidth: '280px' }}>
                     Try adjusting your filters or search query to find drivers.
                 </p>
             </div>

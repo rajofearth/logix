@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-
 import type { DriverStatus } from "./_types"
 import type { DriverDTO } from "./_types"
 import type { DriverStats } from "./_server/driverActions"
@@ -10,10 +9,7 @@ import { DriverFilters } from "./_components/DriverFilters"
 import { DriversGrid } from "./_components/DriversGrid"
 import { Pagination } from "./_components/Pagination"
 import { DriverDetailsSheet } from "./_components/DriverDetailsSheet"
-
-import { AppSidebar } from "@/components/dashboard/app-sidebar"
-import { SiteHeader } from "@/components/dashboard/site-header"
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
+import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 
 export default function DriversPage() {
   const [drivers, setDrivers] = React.useState<DriverDTO[]>([])
@@ -70,56 +66,40 @@ export default function DriversPage() {
   }
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "calc(var(--spacing) * 72)",
-          "--header-height": "calc(var(--spacing) * 12)",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar variant="inset" />
-      <SidebarInset>
-        <SiteHeader title="Drivers" />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 px-4 md:gap-6 md:py-6 lg:px-6">
-              {/* Filters & Search */}
-              <DriverFilters
-                stats={stats}
-                activeFilter={filter}
-                onFilterChange={setFilter}
-                search={search}
-                onSearchChange={setSearch}
-              />
+    <DashboardShell title="Logix Dashboard - Drivers" itemCount={totalItems}>
+      <div className="win7-groupbox">
+        <legend>Driver Management</legend>
+        <div className="win7-p-4 flex flex-col gap-4">
+          <DriverFilters
+            stats={stats}
+            activeFilter={filter}
+            onFilterChange={setFilter}
+            search={search}
+            onSearchChange={setSearch}
+          />
 
-              {/* Drivers Grid */}
-              <DriversGrid
-                drivers={drivers}
-                isLoading={isLoading}
-                onDriverClick={handleDriverClick}
-              />
+          <DriversGrid
+            drivers={drivers}
+            isLoading={isLoading}
+            onDriverClick={handleDriverClick}
+          />
 
-              {/* Pagination - always visible when there are items */}
-              {totalItems > 0 && (
-                <Pagination
-                  currentPage={page}
-                  totalPages={totalPages}
-                  totalItems={totalItems}
-                  onPageChange={setPage}
-                />
-              )}
-            </div>
-          </div>
+          {totalItems > 0 && (
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              totalItems={totalItems}
+              onPageChange={setPage}
+            />
+          )}
         </div>
-      </SidebarInset>
+      </div>
 
-      {/* Driver Details Sheet */}
       <DriverDetailsSheet
         driver={selectedDriver}
         open={isSheetOpen}
         onOpenChange={setIsSheetOpen}
       />
-    </SidebarProvider>
+    </DashboardShell>
   )
 }
