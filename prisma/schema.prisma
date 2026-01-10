@@ -11,49 +11,49 @@ datasource db {
 // ============================================
 
 model Driver {
-  id                      String            @id @default(uuid()) @db.Uuid
+  id                      String               @id @default(uuid()) @db.Uuid
   name                    String
-  dob                     DateTime?         @db.Date
-  photoUrl                String?           @map("photo_url")
-  aadharNo                String?           @unique @map("aadhar_no")
-  isAadharVerified        Boolean           @default(false) @map("is_aadhar_verified")
-  aadharCardFile          String?           @map("aadhar_card_file")
-  driverLicenseNo         String?           @unique @map("driver_license_no")
-  isDriverLicenseVerified Boolean           @default(false) @map("is_driver_license_verified")
-  driverLicenseFile       String?           @map("driver_license_file")
-  panCardNo               String?           @unique @map("pan_card_no")
-  isPanCardVerified       Boolean           @default(false) @map("is_pan_card_verified")
-  panCardFile             String?           @map("pan_card_file")
-  createdAt               DateTime          @default(now()) @map("created_at")
-  updatedAt               DateTime          @updatedAt @map("updated_at")
-  email                   String            @unique
-  emailVerified           Boolean           @default(false) @map("email_verified")
+  dob                     DateTime?            @db.Date
+  photoUrl                String?              @map("photo_url")
+  aadharNo                String?              @unique @map("aadhar_no")
+  isAadharVerified        Boolean              @default(false) @map("is_aadhar_verified")
+  aadharCardFile          String?              @map("aadhar_card_file")
+  driverLicenseNo         String?              @unique @map("driver_license_no")
+  isDriverLicenseVerified Boolean              @default(false) @map("is_driver_license_verified")
+  driverLicenseFile       String?              @map("driver_license_file")
+  panCardNo               String?              @unique @map("pan_card_no")
+  isPanCardVerified       Boolean              @default(false) @map("is_pan_card_verified")
+  panCardFile             String?              @map("pan_card_file")
+  createdAt               DateTime             @default(now()) @map("created_at")
+  updatedAt               DateTime             @updatedAt @map("updated_at")
+  email                   String               @unique
+  emailVerified           Boolean              @default(false) @map("email_verified")
   image                   String?
-  aadharCardFileKey       String?           @map("aadhar_card_file_key")
-  driverLicenseFileKey    String?           @map("driver_license_file_key")
-  panCardFileKey          String?           @map("pan_card_file_key")
-  phoneNumber             String?           @unique @map("phone_number")
-  phoneNumberVerified     Boolean           @default(false) @map("phone_number_verified")
-  aadhaarOtpGeneratedAt   DateTime?         @map("aadhaar_otp_generated_at")
-  aadhaarOtpReferenceId   String?           @map("aadhaar_otp_reference_id")
-  insuranceFile           String?           @map("insurance_file")
-  insuranceFileKey        String?           @map("insurance_file_key")
-  insuranceNo             String?           @map("insurance_no")
-  isInsuranceVerified     Boolean           @default(false) @map("is_insurance_verified")
-  isVehiclePlateVerified  Boolean           @default(false) @map("is_vehicle_plate_verified")
-  panAadhaarLinkCheckedAt DateTime?         @map("pan_aadhaar_link_checked_at")
-  panAadhaarLinkStatus    String?           @map("pan_aadhaar_link_status")
-  vehicleOwnerType        VehicleOwnerType? @map("vehicle_owner_type")
-  vehiclePlateNo          String?           @map("vehicle_plate_no")
-  status                  DriverStatus      @default(available)
+  aadharCardFileKey       String?              @map("aadhar_card_file_key")
+  driverLicenseFileKey    String?              @map("driver_license_file_key")
+  panCardFileKey          String?              @map("pan_card_file_key")
+  phoneNumber             String?              @unique @map("phone_number")
+  phoneNumberVerified     Boolean              @default(false) @map("phone_number_verified")
+  aadhaarOtpGeneratedAt   DateTime?            @map("aadhaar_otp_generated_at")
+  aadhaarOtpReferenceId   String?              @map("aadhaar_otp_reference_id")
+  insuranceFile           String?              @map("insurance_file")
+  insuranceFileKey        String?              @map("insurance_file_key")
+  insuranceNo             String?              @map("insurance_no")
+  isInsuranceVerified     Boolean              @default(false) @map("is_insurance_verified")
+  isVehiclePlateVerified  Boolean              @default(false) @map("is_vehicle_plate_verified")
+  panAadhaarLinkCheckedAt DateTime?            @map("pan_aadhaar_link_checked_at")
+  panAadhaarLinkStatus    String?              @map("pan_aadhaar_link_status")
+  vehicleOwnerType        VehicleOwnerType?    @map("vehicle_owner_type")
+  vehiclePlateNo          String?              @map("vehicle_plate_no")
+  status                  DriverStatus         @default(available)
   accounts                Account[]
-  currentLocation         DriverLocation?   @relation("CurrentLocation")
+  currentLocation         DriverLocation?      @relation("CurrentLocation")
   jobs                    Job[]
-  locationHistory         LocationPoint[]   @relation("LocationHistory")
+  locationHistory         LocationPoint[]      @relation("LocationHistory")
   sessions                Session[]
   verifiedDriver          VerifiedDriver?
-  walletAddress           String?           @map("wallet_address")
-  baseSalary              Decimal           @default(20000) @map("base_salary") @db.Decimal(12, 2)
+  walletAddress           String?              @map("wallet_address")
+  baseSalary              Decimal              @default(20000) @map("base_salary") @db.Decimal(12, 2)
   salaryPayments          SalaryPayment[]
   fuelPaymentRequests     FuelPaymentRequest[]
 
@@ -215,11 +215,67 @@ model Job {
   packageVerifications PackageVerification[]
 
   // Air shipments can optionally reference jobs for ground segments
-  shipmentSegments  ShipmentSegment[] @relation("JobShipmentSegments")
+  shipmentSegments ShipmentSegment[] @relation("JobShipmentSegments")
+
+  // Multimodal fulfillment orchestration
+  parentJobId         String?              @map("parent_job_id") @db.Uuid
+  parentJob           Job?                 @relation("JobHierarchy", fields: [parentJobId], references: [id], onDelete: SetNull)
+  childJobs           Job[]                @relation("JobHierarchy")
+  fulfillmentPlans    FulfillmentPlan[]    @relation("JobFulfillmentPlans")
+  fulfillmentSegments FulfillmentSegment[] @relation("FulfillmentSegmentJob")
 
   @@index([pickupAt])
   @@index([status])
+  @@index([parentJobId])
   @@map("jobs")
+}
+
+// ============================================
+// Multimodal Fulfillment Orchestration
+// ============================================
+
+model FulfillmentPlan {
+  id              String                @id @default(uuid()) @db.Uuid
+  masterJobId     String                @map("master_job_id") @db.Uuid
+  masterJob       Job                   @relation("JobFulfillmentPlans", fields: [masterJobId], references: [id], onDelete: Cascade)
+  status          FulfillmentPlanStatus @default(draft)
+  objective       FulfillmentObjective  @default(balanced)
+  selectedPlanKey String?               @map("selected_plan_key")
+  options         Json?                 @map("options")
+  createdAt       DateTime              @default(now()) @map("created_at")
+  updatedAt       DateTime              @updatedAt @map("updated_at")
+  segments        FulfillmentSegment[]
+
+  @@index([masterJobId, createdAt])
+  @@index([status, createdAt])
+  @@map("fulfillment_plans")
+}
+
+model FulfillmentSegment {
+  id        String                   @id @default(uuid()) @db.Uuid
+  planId    String                   @map("plan_id") @db.Uuid
+  plan      FulfillmentPlan          @relation(fields: [planId], references: [id], onDelete: Cascade)
+  sortOrder Int                      @default(0) @map("sort_order")
+  mode      FulfillmentSegmentMode
+  status    FulfillmentSegmentStatus @default(planned)
+  planned   Json?                    @map("planned")
+
+  // Optional links to executed entities
+  jobId           String?        @map("job_id") @db.Uuid
+  job             Job?           @relation("FulfillmentSegmentJob", fields: [jobId], references: [id], onDelete: SetNull)
+  shipmentId      String?        @map("shipment_id") @db.Uuid
+  shipment        Shipment?      @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  trainShipmentId String?        @map("train_shipment_id") @db.Uuid
+  trainShipment   TrainShipment? @relation(fields: [trainShipmentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([planId, sortOrder])
+  @@index([jobId])
+  @@index([shipmentId])
+  @@index([trainShipmentId])
+  @@map("fulfillment_segments")
 }
 
 model ChatThread {
@@ -559,47 +615,48 @@ model Shipment {
   status        ShipmentStatus @default(created)
   metadata      Json?
 
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  segments      ShipmentSegment[]
-  events        ShipmentEvent[]
+  segments            ShipmentSegment[]
+  events              ShipmentEvent[]
+  fulfillmentSegments FulfillmentSegment[]
 
   @@index([status, createdAt])
   @@map("shipments")
 }
 
 model ShipmentSegment {
-  id               String              @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
-  shipmentId       String              @map("shipment_id") @db.Uuid
-  shipment         Shipment            @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipmentId String   @map("shipment_id") @db.Uuid
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
-  type             ShipmentSegmentType
-  sortOrder        Int                 @default(0) @map("sort_order")
+  type      ShipmentSegmentType
+  sortOrder Int                 @default(0) @map("sort_order")
 
   // Ground segments can reference existing jobs (which already have driver tracking)
-  jobId            String?             @map("job_id") @db.Uuid
-  job              Job?                @relation("JobShipmentSegments", fields: [jobId], references: [id], onDelete: SetNull)
+  jobId String? @map("job_id") @db.Uuid
+  job   Job?    @relation("JobShipmentSegments", fields: [jobId], references: [id], onDelete: SetNull)
 
   // Air segment fields (prototype)
-  carrier          String?
-  carrierTrackingId String?            @map("carrier_tracking_id")
-  flightNumber     String?             @map("flight_number")
-  fromAirportIcao  String?             @map("from_airport_icao")
-  toAirportIcao    String?             @map("to_airport_icao")
-  icao24           String?             @map("icao24")
+  carrier           String?
+  carrierTrackingId String? @map("carrier_tracking_id")
+  flightNumber      String? @map("flight_number")
+  fromAirportIcao   String? @map("from_airport_icao")
+  toAirportIcao     String? @map("to_airport_icao")
+  icao24            String? @map("icao24")
 
-  plannedDepartureAt DateTime?         @map("planned_departure_at")
-  plannedArrivalAt   DateTime?         @map("planned_arrival_at")
-  actualDepartureAt  DateTime?         @map("actual_departure_at")
-  actualArrivalAt    DateTime?         @map("actual_arrival_at")
+  plannedDepartureAt DateTime? @map("planned_departure_at")
+  plannedArrivalAt   DateTime? @map("planned_arrival_at")
+  actualDepartureAt  DateTime? @map("actual_departure_at")
+  actualArrivalAt    DateTime? @map("actual_arrival_at")
 
-  createdAt       DateTime             @default(now()) @map("created_at")
-  updatedAt       DateTime             @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  events          ShipmentEvent[]
-  airPositions    AirPositionPoint[]
+  events       ShipmentEvent[]
+  airPositions AirPositionPoint[]
 
   @@index([shipmentId, sortOrder])
   @@index([jobId])
@@ -608,26 +665,26 @@ model ShipmentSegment {
 }
 
 model ShipmentEvent {
-  id           String           @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
-  shipmentId   String           @map("shipment_id") @db.Uuid
-  shipment     Shipment         @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipmentId String   @map("shipment_id") @db.Uuid
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
-  segmentId    String?          @map("segment_id") @db.Uuid
-  segment      ShipmentSegment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
+  segmentId String?          @map("segment_id") @db.Uuid
+  segment   ShipmentSegment? @relation(fields: [segmentId], references: [id], onDelete: SetNull)
 
-  type         ShipmentEventType
-  title        String
-  description  String?          @db.Text
+  type        ShipmentEventType
+  title       String
+  description String?           @db.Text
 
-  locationName String?          @map("location_name")
-  locationLat  Decimal?         @map("location_lat") @db.Decimal(9, 6)
-  locationLng  Decimal?         @map("location_lng") @db.Decimal(9, 6)
+  locationName String?  @map("location_name")
+  locationLat  Decimal? @map("location_lat") @db.Decimal(9, 6)
+  locationLng  Decimal? @map("location_lng") @db.Decimal(9, 6)
 
-  occurredAt   DateTime         @map("occurred_at")
-  raw          Json?
+  occurredAt DateTime @map("occurred_at")
+  raw        Json?
 
-  createdAt    DateTime         @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([shipmentId, occurredAt])
   @@index([segmentId, occurredAt])
@@ -636,21 +693,21 @@ model ShipmentEvent {
 }
 
 model AirPositionPoint {
-  id                 String          @id @default(uuid()) @db.Uuid
+  id String @id @default(uuid()) @db.Uuid
 
-  segmentId           String          @map("segment_id") @db.Uuid
-  segment             ShipmentSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
+  segmentId String          @map("segment_id") @db.Uuid
+  segment   ShipmentSegment @relation(fields: [segmentId], references: [id], onDelete: Cascade)
 
-  timestamp           DateTime
-  latitude            Decimal         @db.Decimal(9, 6)
-  longitude           Decimal         @db.Decimal(9, 6)
-  baroAltitudeMeters  Decimal?        @map("baro_altitude_meters") @db.Decimal(10, 2)
-  velocityMps         Decimal?        @map("velocity_mps") @db.Decimal(10, 2)
-  heading             Decimal?        @db.Decimal(6, 2)
-  onGround            Boolean?        @map("on_ground")
-  source              String?         @map("source")
+  timestamp          DateTime
+  latitude           Decimal  @db.Decimal(9, 6)
+  longitude          Decimal  @db.Decimal(9, 6)
+  baroAltitudeMeters Decimal? @map("baro_altitude_meters") @db.Decimal(10, 2)
+  velocityMps        Decimal? @map("velocity_mps") @db.Decimal(10, 2)
+  heading            Decimal? @db.Decimal(6, 2)
+  onGround           Boolean? @map("on_ground")
+  source             String?  @map("source")
 
-  createdAt           DateTime        @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([segmentId, timestamp])
   @@map("air_position_points")
@@ -782,6 +839,35 @@ enum ShipmentEventType {
   exception
 }
 
+enum FulfillmentPlanStatus {
+  draft
+  executing
+  completed
+  failed
+  cancelled
+}
+
+enum FulfillmentObjective {
+  balanced
+  fastest
+  cheapest
+  revenue
+}
+
+enum FulfillmentSegmentMode {
+  ground
+  train
+  air
+}
+
+enum FulfillmentSegmentStatus {
+  planned
+  in_progress
+  completed
+  failed
+  cancelled
+}
+
 // ============================================
 // Driver Fuel Payment Requests
 // ============================================
@@ -826,47 +912,48 @@ enum TrainShipmentStatus {
 }
 
 model TrainShipment {
-  id              String               @id @default(uuid()) @db.Uuid
-  referenceCode   String               @unique @map("reference_code")
-  status          TrainShipmentStatus  @default(created)
+  id            String              @id @default(uuid()) @db.Uuid
+  referenceCode String              @unique @map("reference_code")
+  status        TrainShipmentStatus @default(created)
 
   // Package details
-  packageName     String               @map("package_name")
-  weightKg        Decimal              @map("weight_kg") @db.Decimal(10, 2)
-  packageCount    Int                  @default(1) @map("package_count")
-  description     String?
+  packageName  String  @map("package_name")
+  weightKg     Decimal @map("weight_kg") @db.Decimal(10, 2)
+  packageCount Int     @default(1) @map("package_count")
+  description  String?
 
   // Train details
-  trainNumber     String               @map("train_number")
-  trainName       String               @map("train_name")
-  coachType       String?              @map("coach_type")
-  pnr             String?
+  trainNumber String  @map("train_number")
+  trainName   String  @map("train_name")
+  coachType   String? @map("coach_type")
+  pnr         String?
 
   // Route
-  fromStationCode String               @map("from_station_code")
-  fromStationName String               @map("from_station_name")
-  toStationCode   String               @map("to_station_code")
-  toStationName   String               @map("to_station_name")
+  fromStationCode String @map("from_station_code")
+  fromStationName String @map("from_station_name")
+  toStationCode   String @map("to_station_code")
+  toStationName   String @map("to_station_name")
 
   // Timing
-  journeyDate     DateTime             @map("journey_date") @db.Date
-  scheduledDep    DateTime             @map("scheduled_dep")
-  scheduledArr    DateTime             @map("scheduled_arr")
-  actualDep       DateTime?            @map("actual_dep")
-  actualArr       DateTime?            @map("actual_arr")
+  journeyDate  DateTime  @map("journey_date") @db.Date
+  scheduledDep DateTime  @map("scheduled_dep")
+  scheduledArr DateTime  @map("scheduled_arr")
+  actualDep    DateTime? @map("actual_dep")
+  actualArr    DateTime? @map("actual_arr")
 
   // Tracking
-  currentStation  String?              @map("current_station")
-  currentLat      Decimal?             @map("current_lat") @db.Decimal(9, 6)
-  currentLng      Decimal?             @map("current_lng") @db.Decimal(9, 6)
-  delayMinutes    Int?                 @map("delay_minutes")
-  lastTrackedAt   DateTime?            @map("last_tracked_at")
+  currentStation String?   @map("current_station")
+  currentLat     Decimal?  @map("current_lat") @db.Decimal(9, 6)
+  currentLng     Decimal?  @map("current_lng") @db.Decimal(9, 6)
+  delayMinutes   Int?      @map("delay_minutes")
+  lastTrackedAt  DateTime? @map("last_tracked_at")
 
-  createdAt       DateTime             @default(now()) @map("created_at")
-  updatedAt       DateTime             @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  events          TrainShipmentEvent[]
-  positions       TrainPositionPoint[]
+  events              TrainShipmentEvent[]
+  positions           TrainPositionPoint[]
+  fulfillmentSegments FulfillmentSegment[]
 
   @@index([status, journeyDate])
   @@index([trainNumber])
@@ -874,39 +961,39 @@ model TrainShipment {
 }
 
 model TrainShipmentEvent {
-  id           String              @id @default(uuid()) @db.Uuid
-  shipmentId   String              @map("shipment_id") @db.Uuid
-  shipment     TrainShipment       @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  id         String        @id @default(uuid()) @db.Uuid
+  shipmentId String        @map("shipment_id") @db.Uuid
+  shipment   TrainShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
-  type         String
-  title        String
-  description  String?
-  stationCode  String?             @map("station_code")
-  stationName  String?             @map("station_name")
-  occurredAt   DateTime            @map("occurred_at")
+  type        String
+  title       String
+  description String?
+  stationCode String?  @map("station_code")
+  stationName String?  @map("station_name")
+  occurredAt  DateTime @map("occurred_at")
 
-  createdAt    DateTime            @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([shipmentId, occurredAt])
   @@map("train_shipment_events")
 }
 
 model TrainPositionPoint {
-  id            String        @id @default(uuid()) @db.Uuid
-  shipmentId    String        @map("shipment_id") @db.Uuid
-  shipment      TrainShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  id         String        @id @default(uuid()) @db.Uuid
+  shipmentId String        @map("shipment_id") @db.Uuid
+  shipment   TrainShipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
 
-  stationCode   String        @map("station_code")
-  stationName   String        @map("station_name")
-  latitude      Decimal       @db.Decimal(9, 6)
-  longitude     Decimal       @db.Decimal(9, 6)
-  arrivalTime   DateTime?     @map("arrival_time")
-  departureTime DateTime?     @map("departure_time")
+  stationCode   String    @map("station_code")
+  stationName   String    @map("station_name")
+  latitude      Decimal   @db.Decimal(9, 6)
+  longitude     Decimal   @db.Decimal(9, 6)
+  arrivalTime   DateTime? @map("arrival_time")
+  departureTime DateTime? @map("departure_time")
   delay         String?
   platform      String?
-  distanceKm    Int?          @map("distance_km")
+  distanceKm    Int?      @map("distance_km")
 
-  createdAt     DateTime      @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([shipmentId, stationCode])
   @@index([shipmentId, createdAt])

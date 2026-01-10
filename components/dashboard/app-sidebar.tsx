@@ -14,6 +14,7 @@ import {
   IconMapRoute,
   IconMessageCircle,
   IconPlane,
+  IconRoute,
   IconScan,
   IconSearch,
   IconSettings2,
@@ -51,6 +52,11 @@ const data = {
       title: "Jobs",
       url: "/dashboard/jobs",
       icon: IconTruckDelivery,
+    },
+    {
+      title: "Fulfillment",
+      url: "/dashboard/fulfillment",
+      icon: IconRoute,
     },
     {
       title: "Driver",

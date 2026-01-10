@@ -30,6 +30,8 @@ import type { JobDTO, JobStatus } from "../_types"
 import type { AvailableDriverDTO } from "../_server/driverList"
 import { assignDriver } from "../_server/jobActions"
 import { listAvailableDrivers } from "../_server/driverList"
+import { planFulfillment } from "@/app/dashboard/fulfillment/_server/planActions"
+import { executeFulfillmentPlan } from "@/app/dashboard/fulfillment/_server/executeActions"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -124,6 +126,7 @@ export function JobsTable({
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [availableDrivers, setAvailableDrivers] = React.useState<AvailableDriverDTO[]>([])
   const [loadingDrivers, setLoadingDrivers] = React.useState(false)
+  const [autoPlanJobId, setAutoPlanJobId] = React.useState<string | null>(null)
 
   const fetchAvailableDrivers = React.useCallback(async () => {
     if (availableDrivers.length > 0) return
@@ -149,6 +152,25 @@ export function JobsTable({
       toast.error(msg)
     }
   }, [onJobUpdate])
+
+  const handleAutoPlanAndExecute = React.useCallback(async (job: JobDTO) => {
+    setAutoPlanJobId(job.id)
+    try {
+      const planned = await planFulfillment(job.id, "balanced")
+      const executed = await executeFulfillmentPlan(planned.planId)
+      if (!executed.success) {
+        toast.error(executed.error)
+        return
+      }
+      toast.success("Auto plan started")
+      router.refresh()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to auto plan"
+      toast.error(msg)
+    } finally {
+      setAutoPlanJobId(null)
+    }
+  }, [router])
 
   const columns: ColumnDef<JobDTO>[] = React.useMemo(
     () => [
@@ -315,6 +337,15 @@ export function JobsTable({
                 )}
 
                 <DropdownMenuSeparator />
+                {job.status === "pending" && (
+                  <DropdownMenuItem
+                    onClick={() => void handleAutoPlanAndExecute(job)}
+                    disabled={autoPlanJobId === job.id}
+                  >
+                    <IconRoute className="size-3.5" />
+                    {autoPlanJobId === job.id ? "Planning..." : "Auto Plan & Execute"}
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem variant="destructive" onClick={() => onDelete(job)}>
                   <IconTrash className="size-3.5" />
                   Delete
@@ -327,7 +358,7 @@ export function JobsTable({
         size: 40,
       },
     ],
-    [availableDrivers, loadingDrivers, fetchAvailableDrivers, handleAssignDriver, router, onDelete]
+    [availableDrivers, loadingDrivers, fetchAvailableDrivers, handleAssignDriver, handleAutoPlanAndExecute, autoPlanJobId, router, onDelete]
   )
 
   const table = useReactTable({
