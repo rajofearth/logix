@@ -1581,3 +1581,54 @@
     transform: translateX(100%);
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   📂 LISTBOX / LISTVIEW ITEMS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.win7-listbox {
+  background: #fff;
+  border: 1px solid #8e8f8f;
+  padding: 2px;
+  overflow-y: auto;
+}
+
+.win7-list-item {
+  padding: 4px 6px;
+  border: 1px solid transparent;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Hover state for list items - mimic Windows 7 Explorer hover */
+.win7-list-item:hover {
+  background: var(--w7-li-bg-hl);
+  border-color: var(--w7-li-bd-hl);
+  border-radius: 2px;
+}
+
+/* Selected state (if needed later) */
+.win7-list-item.selected {
+  background: #cce8ff;
+  border-color: #99d1ff;
+}
+
+/* Notification specific adjustments to generic list item */
+.win7-notification-item {
+  align-items: flex-start;
+  padding: 8px 10px;
+  border-bottom: 1px solid transparent;
+  /* To keep height consistent */
+}
+
+.win7-notification-item:hover {
+  background: var(--w7-li-bg-hl);
+  border-color: var(--w7-li-bd-hl);
+  box-shadow: inset 0 0 0 1px #fff6;
+}
+
+.win7-notification-item.unread {
+  font-weight: 600;
+}

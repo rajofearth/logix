@@ -62,101 +62,76 @@ export function NotificationCard({
     }
 
     return (
-        <button
-            type="button"
+        <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onKeyDown={handleKeyDown}
+            role="button"
+            tabIndex={0}
             className={cn(
-                "group relative flex gap-3 rounded-lg p-3 transition-all duration-300 ease-out text-left w-full",
-                "hover:bg-muted/50 hover:shadow-sm hover:-translate-y-0.5",
-                "border border-transparent",
-                !notification.read && "bg-primary/5 border-primary/10",
+                "win7-list-item win7-notification-item w-full transition-none",
+                !notification.read && "unread", // Bold font handled by CSS
                 isDeleting && "opacity-0 scale-95 h-0 p-0 m-0 overflow-hidden",
                 isMarking && "opacity-70"
             )}
             onClick={handleMarkAsRead}
         >
-            {/* Icon with unread indicator */}
-            <div className="relative shrink-0">
-                <div
-                    className={cn(
-                        "flex size-10 items-center justify-center rounded-full transition-transform duration-200",
-                        config.iconBgColor,
-                        isHovered && "scale-110"
-                    )}
-                >
-                    <Icon className={cn("size-5", config.textColor)} />
-                </div>
-                {/* Unread indicator dot - positioned on icon */}
+            {/* Icon */}
+            <div className="relative shrink-0 mr-1 mt-0.5">
+                <Icon className={cn("size-4 text-[#444]", config.textColor)} />
                 {!notification.read && (
-                    <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary border-2 border-background" />
+                    <span className="absolute -top-1 -right-1 text-[8px] text-[#0066cc]">●</span>
                 )}
             </div>
 
             {/* Content */}
-            <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                        <p
-                            className={cn(
-                                "text-sm font-medium truncate transition-colors",
-                                notification.read ? "text-muted-foreground" : "text-foreground"
-                            )}
-                        >
-                            {notification.title}
-                        </p>
-                        <Badge
-                            variant="outline"
-                            className={cn(
-                                "shrink-0 text-[10px] px-1.5 py-0",
-                                config.textColor
-                            )}
-                        >
-                            {config.label}
-                        </Badge>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground shrink-0">
+            <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                    <p className={cn(
+                        "text-[12px] truncate leading-tight",
+                        notification.read ? "text-gray-500 font-normal" : "text-black font-semibold"
+                    )}>
+                        {notification.title}
+                    </p>
+                    <span className="text-[10px] text-gray-500 shrink-0">
                         {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
                     </span>
                 </div>
 
-                <p
-                    className={cn(
-                        "text-xs leading-relaxed transition-colors",
-                        notification.read ? "text-muted-foreground/70" : "text-muted-foreground"
-                    )}
-                >
-                    {notification.message}
-                </p>
+                <div className="flex items-start gap-1 mt-0.5">
+                    <p className={cn(
+                        "text-[11px] leading-snug line-clamp-2",
+                        notification.read ? "text-gray-400" : "text-gray-600"
+                    )}>
+                        {notification.message}
+                    </p>
+                </div>
             </div>
 
-            {/* Actions - revealed on hover */}
+            {/* Hover Actions (Windows Explorer style visible on hover) */}
             <div
                 className={cn(
-                    "absolute right-2 top-2 flex gap-1 transition-all duration-200",
-                    isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+                    "flex gap-1 shrink-0 ml-1",
+                    isHovered ? "opacity-100" : "opacity-0"
                 )}
             >
                 {!notification.read && (
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
+                    <button
                         onClick={handleMarkAsRead}
-                        className="size-6 hover:bg-primary/10 hover:text-primary"
+                        className="p-1 hover:bg-[#e6f4fc] hover:border hover:border-[#a8d8eb] rounded-sm"
+                        title="Mark as read"
                     >
-                        <IconCheck className="size-3.5" />
-                    </Button>
+                        <IconCheck className="size-3 text-[#0066cc]" />
+                    </button>
                 )}
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
+                <button
                     onClick={handleDelete}
-                    className="size-6 hover:bg-destructive/10 hover:text-destructive"
+                    className="p-1 hover:bg-[#e6f4fc] hover:border hover:border-[#a8d8eb] rounded-sm"
+                    title="Delete"
                 >
-                    <IconX className="size-3.5" />
-                </Button>
+                    <IconX className="size-3 text-[#cc0000]" />
+                </button>
             </div>
-        </button>
+        </div>
     )
 }

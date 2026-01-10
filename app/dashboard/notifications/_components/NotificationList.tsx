@@ -48,95 +48,66 @@ export function NotificationList({
     }, [notifications, filter])
 
     return (
-        <div className="flex h-full flex-col">
-            {/* Header */}
-            <div className="border-b border-border p-4 space-y-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                        <h2 className="text-lg font-semibold text-foreground">Notifications</h2>
-                        {unreadCount > 0 && (
-                            <Badge
-                                variant="default"
-                                className="animate-pulse"
-                            >
-                                {unreadCount} new
-                            </Badge>
-                        )}
-                    </div>
-                    {unreadCount > 0 && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onMarkAllAsRead}
-                            className="text-xs text-muted-foreground hover:text-primary"
-                        >
-                            <IconCheck className="size-3.5 mr-1" />
-                            Mark all read
-                        </Button>
-                    )}
-                </div>
-
-                {/* Filter Tabs */}
-                <div className="flex flex-wrap gap-2">
-                    {filterOptions.map((option) => {
-                        const isActive = filter === option.value
-                        const count =
-                            option.value === "all"
-                                ? notifications.length
-                                : option.value === "unread"
-                                    ? unreadCount
-                                    : notifications.filter((n) => n.type === option.value).length
-
-                        return (
-                            <Badge
-                                key={option.value}
-                                variant={isActive ? "default" : "outline"}
-                                className={cn(
-                                    "cursor-pointer transition-all duration-200",
-                                    isActive && "shadow-sm",
-                                    !isActive && "hover:bg-muted/50"
-                                )}
-                                onClick={() => setFilter(option.value)}
-                            >
-                                {option.label}
-                                {count > 0 && (
-                                    <span className={cn(
-                                        "ml-1 text-[10px]",
-                                        isActive ? "text-primary-foreground/70" : "text-muted-foreground"
-                                    )}>
-                                        ({count})
-                                    </span>
-                                )}
-                            </Badge>
-                        )
-                    })}
-                </div>
+        <div className="flex h-full flex-col p-2 space-y-2">
+            {/* Header / Toolbar area */}
+            <div className="flex items-end justify-between px-1">
+                <h2 className="text-lg text-[#003399] mb-1">Notifications</h2>
+                {unreadCount > 0 && (
+                    <button
+                        onClick={onMarkAllAsRead}
+                        className="win7-btn text-[11px] mb-1"
+                    >
+                        <IconCheck className="size-3 inline-block mr-1" />
+                        Mark all read
+                    </button>
+                )}
             </div>
 
-            {/* Notification List */}
-            <ScrollArea className="flex-1">
-                <div className="p-2 space-y-1">
+            {/* Win7 Tabs */}
+            <menu role="tablist" className="win7-tablist">
+                {filterOptions.map((option) => {
+                    const isActive = filter === option.value
+                    const count =
+                        option.value === "all"
+                            ? notifications.length
+                            : option.value === "unread"
+                                ? unreadCount
+                                : notifications.filter((n) => n.type === option.value).length
+
+                    return (
+                        <button
+                            key={option.value}
+                            role="tab"
+                            aria-selected={isActive}
+                            onClick={() => setFilter(option.value)}
+                            className={cn("win7-tab", isActive && "active")}
+                        >
+                            {option.label}
+                            {count > 0 && <span className="ml-1 text-[#666]">({count})</span>}
+                        </button>
+                    )
+                })}
+            </menu>
+
+            {/* Notification List (Listbox style) */}
+            <div className="win7-listbox flex-1 w-full" role="tabpanel">
+                <div className="p-1 space-y-0.5">
                     {filteredNotifications.length === 0 ? (
                         <div className="flex flex-col items-center justify-center py-16 text-center">
-                            <div className="flex size-16 items-center justify-center rounded-full bg-muted mb-4">
-                                <IconBellOff className="size-8 text-muted-foreground" />
+                            <div className="mb-4 opacity-50">
+                                <IconBellOff className="size-10 text-[#888]" />
                             </div>
-                            <p className="text-sm font-medium text-muted-foreground">
+                            <p className="text-[12px] text-[#555]">
                                 No notifications
-                            </p>
-                            <p className="text-xs text-muted-foreground/70 mt-1">
-                                {filter === "unread"
-                                    ? "You're all caught up!"
-                                    : `No ${filter === "all" ? "" : filter} notifications yet`}
                             </p>
                         </div>
                     ) : (
                         filteredNotifications.map((notification, index) => (
                             <div
                                 key={notification.id}
-                                className="animate-in fade-in-0 slide-in-from-left-2"
+                                className="animate-in fade-in-0 slide-in-from-left-1 duration-200"
                                 style={{
-                                    animationDelay: `${index * 50}ms`,
+                                    animationDelay: `${index * 30}ms`,
                                     animationFillMode: "backwards",
                                 }}
                             >
@@ -149,7 +120,7 @@ export function NotificationList({
                         ))
                     )}
                 </div>
-            </ScrollArea>
+            </div>
         </div>
     )
 }
