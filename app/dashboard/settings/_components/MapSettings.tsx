@@ -34,12 +34,12 @@ export function MapSettings() {
                 description={currentStyleLabel}
             >
                 <Select value={mapStyle} onValueChange={handleStyleChange}>
-                    <SelectTrigger className="w-28 h-8">
+                    <SelectTrigger className="w-[130px] h-[26px] text-[11px]">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                         {mapStyles.map((style) => (
-                            <SelectItem key={style.value} value={style.value}>
+                            <SelectItem key={style.value} value={style.value} className="text-[11px]">
                                 {style.label}
                             </SelectItem>
                         ))}
@@ -51,6 +51,11 @@ export function MapSettings() {
                 icon={<IconMapPin className="size-4" />}
                 title="Default Location"
                 description="Mumbai, India"
+                editable
+                onEdit={() => {
+                    // TODO: Implement location edit
+                    console.log("Edit default location")
+                }}
                 showDivider={false}
             />
         </SettingsSection>

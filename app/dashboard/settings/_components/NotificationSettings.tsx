@@ -1,9 +1,9 @@
 "use client"
 
 import * as React from "react"
-import { IconBell, IconMail, IconBrowserCheck } from "@tabler/icons-react"
+import { IconBell, IconMail, IconBrowserCheck, IconTruck, IconReceipt } from "@tabler/icons-react"
 import { SettingsSection, SettingsItem } from "./SettingsSectionCard"
-import { Switch } from "@/components/ui/switch"
+import { Checkbox } from "@/components/ui/checkbox"
 
 export function NotificationSettings() {
     const [emailNotifications, setEmailNotifications] = React.useState(true)
@@ -19,9 +19,10 @@ export function NotificationSettings() {
                 title="Email Notifications"
                 description="Receive updates via email"
             >
-                <Switch
+                <Checkbox
                     checked={emailNotifications}
-                    onCheckedChange={setEmailNotifications}
+                    onCheckedChange={(checked) => setEmailNotifications(checked === true)}
+                    aria-label="Email Notifications"
                 />
             </SettingsItem>
 
@@ -30,9 +31,10 @@ export function NotificationSettings() {
                 title="Push Notifications"
                 description="Browser push notifications"
             >
-                <Switch
+                <Checkbox
                     checked={pushNotifications}
-                    onCheckedChange={setPushNotifications}
+                    onCheckedChange={(checked) => setPushNotifications(checked === true)}
+                    aria-label="Push Notifications"
                 />
             </SettingsItem>
 
@@ -41,30 +43,35 @@ export function NotificationSettings() {
                 title="Job Updates"
                 description="New jobs and status changes"
             >
-                <Switch
+                <Checkbox
                     checked={jobAlerts}
-                    onCheckedChange={setJobAlerts}
+                    onCheckedChange={(checked) => setJobAlerts(checked === true)}
+                    aria-label="Job Updates"
                 />
             </SettingsItem>
 
             <SettingsItem
+                icon={<IconTruck className="size-4" />}
                 title="Driver Alerts"
                 description="Driver status and location updates"
             >
-                <Switch
+                <Checkbox
                     checked={driverAlerts}
-                    onCheckedChange={setDriverAlerts}
+                    onCheckedChange={(checked) => setDriverAlerts(checked === true)}
+                    aria-label="Driver Alerts"
                 />
             </SettingsItem>
 
             <SettingsItem
+                icon={<IconReceipt className="size-4" />}
                 title="Billing & Invoices"
                 description="Payment and invoice notifications"
                 showDivider={false}
             >
-                <Switch
+                <Checkbox
                     checked={billingAlerts}
-                    onCheckedChange={setBillingAlerts}
+                    onCheckedChange={(checked) => setBillingAlerts(checked === true)}
+                    aria-label="Billing & Invoices"
                 />
             </SettingsItem>
         </SettingsSection>

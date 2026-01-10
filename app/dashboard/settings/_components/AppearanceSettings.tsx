@@ -38,19 +38,18 @@ export function AppearanceSettings() {
 
     return (
         <SettingsSection title="Appearance">
-            {/* Theme */}
             <SettingsItem
                 icon={<IconPalette className="size-4" />}
                 title="Theme"
                 description={currentThemeLabel}
             >
                 <Select value={currentTheme} onValueChange={(v) => v && setTheme(v)}>
-                    <SelectTrigger className="w-28 h-8">
+                    <SelectTrigger className="w-[130px] h-[26px] text-[11px]">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                         {themes.map((t) => (
-                            <SelectItem key={t.value} value={t.value}>
+                            <SelectItem key={t.value} value={t.value} className="text-[11px]">
                                 <div className="flex items-center gap-2">
                                     <t.icon className="size-3.5" />
                                     {t.label}
@@ -61,7 +60,6 @@ export function AppearanceSettings() {
                 </Select>
             </SettingsItem>
 
-            {/* Language */}
             <SettingsItem
                 icon={<IconLanguage className="size-4" />}
                 title="Language"
@@ -69,12 +67,12 @@ export function AppearanceSettings() {
                 showDivider={false}
             >
                 <Select value={language} onValueChange={(v) => setLanguage(v as Language)}>
-                    <SelectTrigger className="w-28 h-8">
+                    <SelectTrigger className="w-[130px] h-[26px] text-[11px]">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                         {languages.map((l) => (
-                            <SelectItem key={l.value} value={l.value}>
+                            <SelectItem key={l.value} value={l.value} className="text-[11px]">
                                 {l.label}
                             </SelectItem>
                         ))}
