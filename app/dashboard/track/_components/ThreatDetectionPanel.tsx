@@ -50,7 +50,15 @@ export function ThreatDetectionPanel({
                     result.hasThreat ? (
                         <div className="space-y-3">
                             {/* Threat Alert Header */}
-                            <div className="win7-groupbox border-red-500 bg-red-50">
+                            <div className="win7-groupbox border-red-500 bg-red-50 relative">
+                                {isLoading && (
+                                    <div className="absolute top-2 right-2 z-10">
+                                        <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded border border-red-300">
+                                            <div className="animate-spin rounded-full h-2.5 w-2.5 border-b-2 border-red-600" />
+                                            <span className="text-[9px] text-red-800">New scan...</span>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="flex items-center justify-between mb-2">
                                     <div className="flex items-center gap-2">
                                         <AlertTriangle className="size-4 text-red-600" />
@@ -122,7 +130,15 @@ export function ThreatDetectionPanel({
                             </div>
                         </div>
                     ) : (
-                        <div className="win7-groupbox bg-green-50 border-green-400 p-3 text-center">
+                        <div className="win7-groupbox bg-green-50 border-green-400 p-3 text-center relative">
+                            {isLoading && (
+                                <div className="absolute top-2 right-2 z-10">
+                                    <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2 py-1 rounded border border-green-300">
+                                        <div className="animate-spin rounded-full h-2.5 w-2.5 border-b-2 border-green-600" />
+                                        <span className="text-[9px] text-green-800">New scan...</span>
+                                    </div>
+                                </div>
+                            )}
                             <div className="flex items-center justify-center gap-2 mb-1">
                                 <Shield className="size-4 text-green-600" />
                                 <span className="text-[11px] font-semibold text-green-900">
