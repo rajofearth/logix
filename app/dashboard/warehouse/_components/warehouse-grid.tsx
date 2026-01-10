@@ -37,22 +37,19 @@ export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, wa
     return (
         <div className="flex flex-col gap-4 h-full">
             {/* Category Sections */}
-            <div className="flex-1 overflow-auto">
+            <div className="flex-1 overflow-auto p-1">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {categories.map((category) => (
-                        <div
+                        <fieldset
                             key={category}
-                            className="p-4 rounded-xl bg-zinc-900/40 border border-zinc-800"
+                            className="win7-groupbox m-0 h-full"
                         >
-                            {/* Section Header */}
-                            <div className="mb-4">
-                                <span className="text-xs font-medium text-zinc-300 bg-zinc-800 px-2 py-1 rounded">
-                                    {floor.name} - {getCategoryLabel(category as ProductCategory)}
-                                </span>
-                            </div>
+                            <legend className="ml-2">
+                                {getCategoryLabel(category as ProductCategory)}
+                            </legend>
 
                             {/* Blocks Grid */}
-                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 p-2">
                                 {blocksByCategory[category]
                                     .sort((a, b) => a.column - b.column)
                                     .map((block) => (
@@ -64,7 +61,7 @@ export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, wa
                                         />
                                     ))}
                             </div>
-                        </div>
+                        </fieldset>
                     ))}
                 </div>
             </div>

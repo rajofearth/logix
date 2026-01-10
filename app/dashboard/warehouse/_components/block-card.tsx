@@ -75,24 +75,26 @@ export function BlockCard({ block, onClick, isHighlighted }: BlockCardProps) {
             ref={cardRef}
             onClick={() => onClick(block)}
             className={cn(
-                "flex flex-col p-3 rounded-lg bg-zinc-900/60 border transition-all text-left w-full",
+                "win7-card flex flex-col p-2 transition-all text-left w-full hover:brightness-105 active:brightness-95 select-none relative bg-white",
                 isHighlighted
-                    ? "border-primary ring-2 ring-primary/50 animate-pulse"
-                    : "border-zinc-800 hover:border-zinc-600"
+                    ? "ring-2 ring-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                    : ""
             )}
         >
             {/* Header */}
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-2 pb-2 border-b border-gray-100">
                 <div className="flex items-center gap-2">
-                    <span className="text-xl font-bold text-white">{block.column.toString().padStart(2, "0")}</span>
-                    <span className="text-xs text-zinc-500">s</span>
+                    <span className="text-xl font-bold text-[#003399] drop-shadow-sm font-sans">
+                        {block.column.toString().padStart(2, "0")}
+                    </span>
+                    <span className="text-xs text-gray-500">s</span>
                 </div>
-                <div className="flex items-center gap-3 text-xs text-zinc-400">
-                    <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3 text-xs text-gray-600">
+                    <div className="flex items-center gap-1" title="Active Workers">
                         <Users className="h-3 w-3" />
                         <span>{workers}</span>
                     </div>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1" title="Capacity">
                         <CategoryIcon className="h-3 w-3" />
                         <span>{block.used}/{block.capacity}</span>
                     </div>

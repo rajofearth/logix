@@ -190,7 +190,7 @@ export default function WarehousePage() {
   if (error && warehouseList.length === 0) {
     return (
       <DashboardShell title="Warehouse Management">
-        <div className="flex h-full items-center justify-center bg-[#ece9d8]">
+        <div className="flex h-full items-center justify-center bg-[var(--w7-surface)]">
           <div className="win7-window p-4 bg-white border border-red-500 flex flex-col items-center gap-2">
             <AlertCircle className="text-red-500" />
             <p className="text-red-600 font-bold">{error}</p>
@@ -204,7 +204,7 @@ export default function WarehousePage() {
   if (warehouseList.length === 0) {
     return (
       <DashboardShell title="Warehouse Management">
-        <div className="flex h-full items-center justify-center bg-[#ece9d8]">
+        <div className="flex h-full items-center justify-center bg-[var(--w7-surface)]">
           <div className="win7-groupbox bg-white p-4 max-w-md text-center">
             <h2 className="text-lg font-bold text-[#003399]">No Warehouses Found</h2>
             <p className="text-sm text-gray-500 mb-4">Start by creating your first warehouse.</p>
@@ -220,7 +220,7 @@ export default function WarehousePage() {
 
   return (
     <DashboardShell title="Warehouse Management System">
-      <div className="flex flex-col gap-3 p-3 h-full bg-[#ece9d8]">
+      <div className="flex flex-col gap-3 p-3 h-full bg-[var(--w7-surface)]">
         {/* Header */}
         <WarehouseHeader
           warehouses={warehousesForHeader}
@@ -231,7 +231,7 @@ export default function WarehousePage() {
         />
 
         {/* Controls */}
-        <div className="flex items-center justify-between gap-4 p-1 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+        <div className="flex items-center justify-between gap-4 p-1 bg-[var(--w7-surface)] border-b border-white shadow-[0_1px_0_#aca899]">
           {selectedWarehouse && (
             <FloorNavigator
               floors={selectedWarehouse.floors}
@@ -336,15 +336,15 @@ export default function WarehousePage() {
 function WarehouseSkeleton() {
   return (
     <DashboardShell title="Warehouse Management">
-      <div className="flex flex-col gap-3 p-3 h-full bg-[#ece9d8]">
+      <div className="flex flex-col gap-3 p-3 h-full bg-[var(--w7-surface)]">
         {/* Header Skeleton */}
-        <div className="flex justify-between items-center p-2 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+        <div className="flex justify-between items-center p-2 bg-[var(--w7-surface)] border-b border-[var(--w7-el-bd)] shadow-[0_1px_0_#fff]">
           <div className="h-8 w-48 bg-gray-200 animate-pulse border border-[#7f9db9]"></div>
           <div className="h-8 w-32 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>
         </div>
 
         {/* Controls Skeleton */}
-        <div className="flex items-center justify-between gap-4 p-1 bg-[#ece9d8] border-b border-white shadow-[0_1px_0_#aca899]">
+        <div className="flex items-center justify-between gap-4 p-1 bg-[var(--w7-surface)] border-b border-[var(--w7-el-bd)] shadow-[0_1px_0_#fff]">
           <div className="flex gap-2">
             {[1, 2, 3].map(i => (
               <div key={i} className="h-6 w-16 bg-gray-200 animate-pulse border border-[#7f9db9] rounded-sm"></div>

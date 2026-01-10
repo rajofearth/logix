@@ -112,7 +112,7 @@ export function WarehouseHeader({
     const showDropdown = isSearchFocused && searchQuery.trim().length > 0;
 
     return (
-        <div className="flex items-center justify-between px-3 py-2 bg-[#ece9d8] border border-white shadow-[1px_1px_0_#aca899] select-none">
+        <div className="flex items-center justify-between px-3 py-2 bg-[var(--w7-surface)] border-b border-[var(--w7-el-bd)] shadow-[0_1px_0_#fff] select-none">
             {/* Left: Zone Info */}
             <div className="flex items-center gap-4">
                 <div className="flex flex-col">
@@ -121,18 +121,18 @@ export function WarehouseHeader({
                 </div>
 
                 <div className="flex items-center gap-2 ml-2">
-                    <div className="flex items-center gap-1.5 px-2 py-1 border border-[#7f9db9] bg-white text-black text-xs">
+                    <div className="flex items-center gap-1.5 px-2 py-1 border border-[var(--w7-el-bd)] bg-white text-black text-xs shadow-inner">
                         <Eye className="h-3.5 w-3.5 text-blue-600" />
                         <span>{selectedWarehouse?.totalBlocks || 120}</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-2 py-1 border border-[#7f9db9] bg-white text-black text-xs">
+                    <div className="flex items-center gap-1.5 px-2 py-1 border border-[var(--w7-el-bd)] bg-white text-black text-xs shadow-inner">
                         <Users className="h-3.5 w-3.5 text-green-600" />
                         <span>{selectedWarehouse?.workers || 120}</span>
                     </div>
                 </div>
 
                 <Select value={selectedWarehouseId} onValueChange={(value) => value && onWarehouseChange(value)}>
-                    <SelectTrigger className="w-[140px] h-6 text-xs bg-white border-[#7f9db9] text-black">
+                    <SelectTrigger className="w-[140px] h-[23px] text-xs bg-white border-[var(--w7-el-bd)] text-black rounded-[2px] shadow-[inset_0_0_0_1px_#fff]">
                         <SelectValue placeholder="Zone">{selectedWarehouse?.name || "Select"}</SelectValue>
                     </SelectTrigger>
                     <SelectContent>
@@ -155,7 +155,7 @@ export function WarehouseHeader({
                         onChange={(e) => setSearchQuery(e.target.value)}
                         onFocus={() => setIsSearchFocused(true)}
                         placeholder="Search products, SKUs, blocks..."
-                        className="w-full h-8 pl-8 pr-8 bg-white border border-[#7f9db9] text-sm text-black placeholder:text-gray-400 focus:outline-none focus:border-blue-500"
+                        className="win7-input w-full pl-8 pr-8 text-sm placeholder:text-gray-400"
                     />
                     {searchQuery && (
                         <button
@@ -224,7 +224,7 @@ export function WarehouseHeader({
 
             {/* Right: Live Status & Actions */}
             <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2 px-3 py-1 bg-white border border-[#7f9db9] shadow-inner">
+                <div className="flex items-center gap-2 px-3 py-1 bg-white border border-[var(--w7-el-bd)] shadow-inner rounded-[2px]" title="System Online">
                     <span className="relative flex h-2 w-2">
                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
                         <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
