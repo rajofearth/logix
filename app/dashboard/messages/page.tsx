@@ -143,37 +143,37 @@ export default function MessagesPage() {
 
     return (
         <DashboardShell title="Messenger Service">
-            <div className="flex flex-1 overflow-hidden bg-[#ece9d8] p-2">
-                <div className="flex w-full h-full border border-white shadow-[1px_1px_0_#aca899] bg-white">
-                    {/* Left: Driver List */}
-                    <div className="w-72 shrink-0 border-r border-[#aca899] flex flex-col">
-                        <div className="bg-[#ece9d8] p-1 border-b border-[#aca899]">
-                            <p className="text-xs text-gray-600">Active Drivers</p>
-                        </div>
-                        <div className="flex-1 overflow-y-auto bg-white">
-                            <DriverList
-                                drivers={drivers}
-                                selectedDriverId={selectedDriver?.id ?? null}
-                                onDriverSelect={handleDriverSelect}
-                                isLoading={isLoading}
-                            />
-                        </div>
-                    </div>
+            {/* Main Content Area - Integrated Layout */}
+            <div className="flex h-[calc(100vh-120px)] overflow-hidden font-['Segoe_UI'] bg-[#ece9d8] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)] border border-[#aca899] m-4 rounded-sm">
 
-                    {/* Center: Conversation View */}
-                    <div className="flex-1 min-w-0 flex flex-col bg-[#eef1ff]">
-                        <ConversationView
-                            driver={selectedDriver}
-                            messages={selectedDriver ? messages : []}
-                            onSendMessage={handleSendMessage}
-                            canSend={canSend}
+                {/* Left: Driver List (Sidebar) */}
+                <div className="w-72 shrink-0 border-r border-[#aca899] flex flex-col bg-white shadow-[1px_0_0_#fff]">
+                    <div className="bg-[#eff7fa] p-2 border-b border-[#aca899] flex items-center gap-2">
+                        <span className="text-[#1e5774] font-medium text-xs">Contacts</span>
+                    </div>
+                    <div className="flex-1 overflow-y-auto">
+                        <DriverList
+                            drivers={drivers}
+                            selectedDriverId={selectedDriver?.id ?? null}
+                            onDriverSelect={handleDriverSelect}
+                            isLoading={isLoading}
                         />
                     </div>
+                </div>
 
-                    {/* Right: Driver Info Panel */}
-                    <div className="w-72 shrink-0 hidden lg:block border-l border-[#aca899] bg-[#f0f0f0]">
-                        <DriverInfoPanel driver={selectedDriver} />
-                    </div>
+                {/* Center: Conversation View */}
+                <div className="flex-1 min-w-0 flex flex-col bg-white relative z-10">
+                    <ConversationView
+                        driver={selectedDriver}
+                        messages={selectedDriver ? messages : []}
+                        onSendMessage={handleSendMessage}
+                        canSend={canSend}
+                    />
+                </div>
+
+                {/* Right: Driver Info Panel (Details Pane) */}
+                <div className="w-72 shrink-0 hidden lg:block border-l border-[#aca899] bg-[#f0f0f0] shadow-[-1px_0_0_#fff]">
+                    <DriverInfoPanel driver={selectedDriver} />
                 </div>
             </div>
         </DashboardShell>
