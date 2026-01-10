@@ -2,8 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 import type { ProductCategory } from "./types";
@@ -18,7 +16,6 @@ type RestockAiPanelProps = {
 };
 
 type DeltaEventData = { text: string };
-type PromptEventData = { prompt: string };
 type ServerErrorEventData = { message: string };
 
 function safeJsonParse<T>(raw: string): T | null {
@@ -32,10 +29,8 @@ function safeJsonParse<T>(raw: string): T | null {
 export function RestockAiPanel({ warehouseId, floorId, floorName, categories }: RestockAiPanelProps) {
   const [scope, setScope] = useState<RestockAiScopeValue>("floor");
   const [category, setCategory] = useState<"all" | ProductCategory>("all");
-  const [includePrompt, setIncludePrompt] = useState(false);
 
   const [output, setOutput] = useState("");
-  const [prompt, setPrompt] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +66,6 @@ export function RestockAiPanel({ warehouseId, floorId, floorName, categories }: 
 
     stop();
     setOutput("");
-    setPrompt(null);
     setError(null);
     setIsStreaming(true);
 
@@ -79,7 +73,6 @@ export function RestockAiPanel({ warehouseId, floorId, floorName, categories }: 
     url.searchParams.set("scope", scope);
     if (scope === "floor" && floorId) url.searchParams.set("floorId", floorId);
     if (category !== "all") url.searchParams.set("category", category);
-    if (includePrompt) url.searchParams.set("includePrompt", "1");
 
     const es = new EventSource(url.toString());
     esRef.current = es;
@@ -88,12 +81,6 @@ export function RestockAiPanel({ warehouseId, floorId, floorName, categories }: 
       const data = safeJsonParse<DeltaEventData>((evt as MessageEvent).data);
       if (!data?.text) return;
       setOutput((prev) => prev + data.text);
-    });
-
-    es.addEventListener("prompt", (evt) => {
-      const data = safeJsonParse<PromptEventData>((evt as MessageEvent).data);
-      if (!data?.prompt) return;
-      setPrompt(data.prompt);
     });
 
     es.addEventListener("server_error", (evt) => {
@@ -116,41 +103,38 @@ export function RestockAiPanel({ warehouseId, floorId, floorName, categories }: 
   };
 
   return (
-    <Card size="sm" className="border-[#7f9db9] bg-white text-black">
-      <CardHeader className="border-b border-[#7f9db9]">
-        <CardTitle>AI Restock Recommendations</CardTitle>
-        <div className="text-xs text-gray-600">
-          Uses LMStudio model <span className="font-mono">google/gemma-3n-e4b</span> and estimates weekly sales.
-          {scope === "floor" && floorName ? ` (Floor: ${floorName})` : ""}
+    <div className="win7-window flex flex-col">
+      <div className="title-bar">
+        <div className="title-bar-text">
+          AI Restock Recommendations
+          {scope === "floor" && floorName ? ` - ${floorName}` : ""}
         </div>
-      </CardHeader>
-      <CardContent className="grid gap-3">
+      </div>
+      <div className="window-body has-space flex flex-col gap-2">
         <RestockAiScope
           scope={scope}
           onScopeChange={setScope}
           category={category}
           onCategoryChange={setCategory}
           categories={categoryOptions}
-          includePrompt={includePrompt}
-          onIncludePromptChange={setIncludePrompt}
           disabled={disabledControls}
         />
 
         <div className="flex items-center justify-between gap-2">
           <div className="text-xs text-red-600">{error ? `Error: ${error}` : ""}</div>
-          <Button
+          <button
             type="button"
-            className="h-8 text-xs win7-btn"
+            className="win7-btn text-xs"
             onClick={onGenerate}
             disabled={!canGenerate || isStreaming}
           >
             {isStreaming ? "Generating…" : "Generate"}
-          </Button>
+          </button>
         </div>
 
-        <RestockAiOutput output={output} prompt={prompt} isStreaming={isStreaming} onStop={stop} onCopy={onCopy} />
-      </CardContent>
-    </Card>
+        <RestockAiOutput output={output} isStreaming={isStreaming} onStop={stop} onCopy={onCopy} />
+      </div>
+    </div>
   );
 }
 

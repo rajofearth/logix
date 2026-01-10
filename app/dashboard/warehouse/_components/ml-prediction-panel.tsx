@@ -1,23 +1,10 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
 import { toast } from "sonner";
-import { Loader2, TrendingUp, TrendingDown, IndianRupee, AlertCircle, Sparkles } from "lucide-react";
 import type { Product, Warehouse, Floor, LogisticsData, RouteType, PricePrediction } from "./types";
 import { predictProductPrice } from "../_lib/api";
 import { extractStateFromWarehouse } from "@/lib/warehouse/ml-prediction-mapper";
-import { cn } from "@/lib/utils";
 
 interface MLPredictionPanelProps {
     warehouse?: Warehouse | null;
@@ -128,92 +115,78 @@ export function MLPredictionPanel({ warehouse, floor }: MLPredictionPanelProps) 
     const canPredict = selectedProduct && logisticsData.destState && logisticsData.routeDistance && logisticsData.routeType;
 
     return (
-        <Card size="sm" className="border-[#7f9db9] bg-white text-black">
-            <CardHeader className="border-b border-[#7f9db9]">
-                <CardTitle className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4" />
+        <div className="win7-window flex flex-col">
+            <div className="title-bar">
+                <div className="title-bar-text">
                     ML Price Prediction
-                </CardTitle>
-                <div className="text-xs text-gray-600">
-                    Predict price deviations for logistics shipments using deep learning models.
-                    {warehouse && ` (Warehouse: ${warehouse.name})`}
+                    {warehouse ? ` - ${warehouse.name}` : ""}
                 </div>
-            </CardHeader>
-            <CardContent className="grid gap-4">
+            </div>
+            <div className="window-body has-space flex flex-col gap-2">
                 {/* Product Selection */}
-                <div className="space-y-2">
-                    <Label htmlFor="product-select">Select Product</Label>
-                    <Select value={selectedProductId} onValueChange={(value) => setSelectedProductId(value || "")}>
-                        <SelectTrigger id="product-select">
-                            <SelectValue placeholder="Choose a product" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {products.length === 0 ? (
-                                <SelectItem value="none" disabled>
-                                    No products available
-                                </SelectItem>
-                            ) : (
-                                products.map((product) => (
-                                    <SelectItem key={product.id} value={product.id}>
-                                        {product.name} ({product.quantity} units) - {formatCurrency(product.currentPrice)}/unit
-                                    </SelectItem>
-                                ))
-                            )}
-                        </SelectContent>
-                    </Select>
+                <div className="win7-groupbox">
+                    <legend className="text-xs">Product</legend>
+                    <select
+                        className="win7-input w-full text-xs"
+                        value={selectedProductId}
+                        onChange={(e) => setSelectedProductId(e.target.value)}
+                    >
+                        <option value="">Choose a product</option>
+                        {products.length === 0 ? (
+                            <option value="" disabled>No products available</option>
+                        ) : (
+                            products.map((product) => (
+                                <option key={product.id} value={product.id}>
+                                    {product.name} ({product.quantity} units) - {formatCurrency(product.currentPrice)}/unit
+                                </option>
+                            ))
+                        )}
+                    </select>
                 </div>
 
                 {/* Logistics Form */}
                 {selectedProduct && (
-                    <div className="grid gap-4 border-t pt-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="origin-state">Origin State</Label>
-                                <Select
+                    <div className="win7-groupbox">
+                        <legend className="text-xs">Logistics</legend>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <label className="text-xs block">Origin State</label>
+                                <select
+                                    className="win7-input w-full text-xs"
                                     value={logisticsData.originState || ""}
-                                    onValueChange={(value) =>
-                                        setLogisticsData((prev) => ({ ...prev, originState: value || undefined }))
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({ ...prev, originState: e.target.value || undefined }))
                                     }
                                 >
-                                    <SelectTrigger id="origin-state">
-                                        <SelectValue placeholder="Select state" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {INDIAN_STATES.map((state) => (
-                                            <SelectItem key={state} value={state}>
-                                                {state}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <option value="">Select state</option>
+                                    {INDIAN_STATES.map((state) => (
+                                        <option key={state} value={state}>
+                                            {state}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="dest-state">Destination State *</Label>
-                                <Select
+                            <div className="space-y-1">
+                                <label className="text-xs block">Dest State *</label>
+                                <select
+                                    className="win7-input w-full text-xs"
                                     value={logisticsData.destState || ""}
-                                    onValueChange={(value) =>
-                                        setLogisticsData((prev) => ({ ...prev, destState: value || undefined }))
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({ ...prev, destState: e.target.value || undefined }))
                                     }
                                 >
-                                    <SelectTrigger id="dest-state">
-                                        <SelectValue placeholder="Select state" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {INDIAN_STATES.map((state) => (
-                                            <SelectItem key={state} value={state}>
-                                                {state}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <option value="">Select state</option>
+                                    {INDIAN_STATES.map((state) => (
+                                        <option key={state} value={state}>
+                                            {state}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="route-distance">Route Distance (meters) *</Label>
-                                <Input
-                                    id="route-distance"
+                            <div className="space-y-1">
+                                <label className="text-xs block">Distance (m) *</label>
+                                <input
+                                    className="win7-input w-full text-xs"
                                     type="number"
                                     placeholder="150000"
                                     value={logisticsData.routeDistance || ""}
@@ -225,36 +198,30 @@ export function MLPredictionPanel({ warehouse, floor }: MLPredictionPanelProps) 
                                     }
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="route-type">Route Type *</Label>
-                                <Select
+                            <div className="space-y-1">
+                                <label className="text-xs block">Route Type *</label>
+                                <select
+                                    className="win7-input w-full text-xs"
                                     value={logisticsData.routeType || ""}
-                                    onValueChange={(value) =>
+                                    onChange={(e) =>
                                         setLogisticsData((prev) => ({
                                             ...prev,
-                                            routeType: value as RouteType,
+                                            routeType: e.target.value as RouteType,
                                         }))
                                     }
                                 >
-                                    <SelectTrigger id="route-type">
-                                        <SelectValue placeholder="Select route type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {ROUTE_TYPES.map((type) => (
-                                            <SelectItem key={type.value} value={type.value}>
-                                                {type.label}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
+                                    <option value="">Select type</option>
+                                    {ROUTE_TYPES.map((type) => (
+                                        <option key={type.value} value={type.value}>
+                                            {type.label}
+                                        </option>
+                                    ))}
+                                </select>
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="package-weight">Package Weight (kg)</Label>
-                                <Input
-                                    id="package-weight"
+                            <div className="space-y-1">
+                                <label className="text-xs block">Weight (kg)</label>
+                                <input
+                                    className="win7-input w-full text-xs"
                                     type="number"
                                     placeholder="10"
                                     value={logisticsData.packageWeightKg || ""}
@@ -266,10 +233,10 @@ export function MLPredictionPanel({ warehouse, floor }: MLPredictionPanelProps) 
                                     }
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="estimated-duration">Estimated Duration (hours)</Label>
-                                <Input
-                                    id="estimated-duration"
+                            <div className="space-y-1">
+                                <label className="text-xs block">Est. Duration (h)</label>
+                                <input
+                                    className="win7-input w-full text-xs"
                                     type="number"
                                     step="0.1"
                                     placeholder="5.5"
@@ -282,13 +249,10 @@ export function MLPredictionPanel({ warehouse, floor }: MLPredictionPanelProps) 
                                     }
                                 />
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="actual-transit">Actual Transit Hours (optional)</Label>
-                                <Input
-                                    id="actual-transit"
+                            <div className="space-y-1">
+                                <label className="text-xs block">Transit Hours</label>
+                                <input
+                                    className="win7-input w-full text-xs"
                                     type="number"
                                     step="0.1"
                                     placeholder="6.0"
@@ -301,10 +265,10 @@ export function MLPredictionPanel({ warehouse, floor }: MLPredictionPanelProps) 
                                     }
                                 />
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="delay-hours">Delay Hours</Label>
-                                <Input
-                                    id="delay-hours"
+                            <div className="space-y-1">
+                                <label className="text-xs block">Delay Hours</label>
+                                <input
+                                    className="win7-input w-full text-xs"
                                     type="number"
                                     step="0.1"
                                     placeholder="0"
@@ -324,119 +288,89 @@ export function MLPredictionPanel({ warehouse, floor }: MLPredictionPanelProps) 
                 {/* Predict Button */}
                 <div className="flex items-center justify-between gap-2">
                     <div className="text-xs text-red-600">{error ? `Error: ${error}` : ""}</div>
-                    <Button
+                    <button
                         type="button"
-                        className="h-8 text-xs win7-btn"
+                        className="win7-btn text-xs"
                         onClick={handlePredict}
                         disabled={!canPredict || isPredicting}
                     >
-                        {isPredicting ? (
-                            <>
-                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
-                                Predicting…
-                            </>
-                        ) : (
-                            "Predict Price"
-                        )}
-                    </Button>
+                        {isPredicting ? "Predicting…" : "Predict Price"}
+                    </button>
                 </div>
 
                 {/* Prediction Results */}
                 {prediction && (
-                    <div className="border-t pt-4 space-y-4">
-                        <div className="flex items-center gap-2 text-sm font-semibold">
-                            <Sparkles className="h-4 w-4" />
-                            Prediction Results
-                        </div>
-
-                        {/* Deviation Summary */}
-                        <div className="p-4 rounded-lg bg-gradient-to-br from-card to-muted/30 border">
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs text-muted-foreground uppercase tracking-wide">
-                                    Price Deviation
-                                </span>
-                                <span
-                                    className={cn(
-                                        "text-lg font-bold flex items-center gap-1",
-                                        prediction.direction === "positive"
-                                            ? "text-emerald-600"
-                                            : "text-red-600"
-                                    )}
-                                >
-                                    {prediction.direction === "positive" ? (
-                                        <TrendingUp className="h-4 w-4" />
-                                    ) : (
-                                        <TrendingDown className="h-4 w-4" />
-                                    )}
-                                    {prediction.deviationRatioPercent}
-                                </span>
-                            </div>
-                            <div className="text-xs text-muted-foreground">
-                                Deviation: {formatCurrency(prediction.deviationINR)}
-                            </div>
-                        </div>
-
-                        {/* Value Comparison */}
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="p-3 rounded-lg bg-card border">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
-                                    Initial Value
-                                </div>
-                                <div className="text-sm font-bold">{formatCurrency(prediction.initialValueINR)}</div>
-                            </div>
-                            <div className="p-3 rounded-lg bg-card border">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
-                                    Expected Final Value
-                                </div>
-                                <div className="text-sm font-bold">{formatCurrency(prediction.expectedFinalValueINR)}</div>
-                            </div>
-                        </div>
-
-                        {/* Reason Classification */}
-                        {prediction.predictedReason && (
-                            <div className="p-3 rounded-lg bg-card border">
-                                <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
-                                    Predicted Reason
-                                </div>
-                                <div className="text-sm font-semibold capitalize">
-                                    {prediction.predictedReason.replace("_", " ")}
-                                    {prediction.confidence && (
-                                        <span className="text-xs text-muted-foreground ml-2">
-                                            ({Math.round(prediction.confidence * 100)}% confidence)
-                                        </span>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Pricing Recommendations */}
-                        {prediction.pricing && (
-                            <div className="p-4 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <IndianRupee className="h-4 w-4 text-blue-600" />
-                                    <span className="text-xs font-semibold uppercase tracking-wide text-blue-600">
-                                        Pricing Recommendations
+                    <div className="win7-groupbox">
+                        <legend className="text-xs">Results</legend>
+                        <div className="space-y-2">
+                            {/* Deviation Summary */}
+                            <div className="p-2 border border-gray-300 bg-white">
+                                <div className="flex items-center justify-between mb-1">
+                                    <span className="text-xs text-gray-600">Price Deviation</span>
+                                    <span
+                                        className={`text-sm font-bold ${
+                                            prediction.direction === "positive" ? "text-green-600" : "text-red-600"
+                                        }`}
+                                    >
+                                        {prediction.direction === "positive" ? "↑" : "↓"} {prediction.deviationRatioPercent}
                                     </span>
                                 </div>
-                                <div className="grid grid-cols-3 gap-2 text-xs">
-                                    <div>
-                                        <div className="text-muted-foreground mb-1">Base Cost</div>
-                                        <div className="font-semibold">{formatCurrency(prediction.pricing.baseCost)}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-muted-foreground mb-1">Risk Buffer</div>
-                                        <div className="font-semibold">{formatCurrency(prediction.pricing.riskBuffer)}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-muted-foreground mb-1">Suggested Quote</div>
-                                        <div className="font-bold text-blue-600">{formatCurrency(prediction.pricing.suggestedQuote)}</div>
-                                    </div>
+                                <div className="text-xs text-gray-600">
+                                    Deviation: {formatCurrency(prediction.deviationINR)}
                                 </div>
                             </div>
-                        )}
+
+                            {/* Value Comparison */}
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="p-2 border border-gray-300 bg-white">
+                                    <div className="text-[10px] text-gray-600 mb-1">Initial Value</div>
+                                    <div className="text-xs font-bold">{formatCurrency(prediction.initialValueINR)}</div>
+                                </div>
+                                <div className="p-2 border border-gray-300 bg-white">
+                                    <div className="text-[10px] text-gray-600 mb-1">Expected Final</div>
+                                    <div className="text-xs font-bold">{formatCurrency(prediction.expectedFinalValueINR)}</div>
+                                </div>
+                            </div>
+
+                            {/* Reason Classification */}
+                            {prediction.predictedReason && (
+                                <div className="p-2 border border-gray-300 bg-white">
+                                    <div className="text-[10px] text-gray-600 mb-1">Predicted Reason</div>
+                                    <div className="text-xs font-semibold capitalize">
+                                        {prediction.predictedReason.replace("_", " ")}
+                                        {prediction.confidence && (
+                                            <span className="text-xs text-gray-600 ml-1">
+                                                ({Math.round(prediction.confidence * 100)}%)
+                                            </span>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Pricing Recommendations */}
+                            {prediction.pricing && (
+                                <div className="p-2 border border-blue-300 bg-blue-50">
+                                    <div className="text-xs font-semibold text-blue-600 mb-2">Pricing Recommendations</div>
+                                    <div className="grid grid-cols-3 gap-2 text-xs">
+                                        <div>
+                                            <div className="text-gray-600 mb-1">Base Cost</div>
+                                            <div className="font-semibold">{formatCurrency(prediction.pricing.baseCost)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-gray-600 mb-1">Risk Buffer</div>
+                                            <div className="font-semibold">{formatCurrency(prediction.pricing.riskBuffer)}</div>
+                                        </div>
+                                        <div>
+                                            <div className="text-gray-600 mb-1">Suggested Quote</div>
+                                            <div className="font-bold text-blue-600">{formatCurrency(prediction.pricing.suggestedQuote)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
-            </CardContent>
-        </Card>
+            </div>
+        </div>
     );
 }
