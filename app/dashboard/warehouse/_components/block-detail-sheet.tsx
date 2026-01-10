@@ -605,139 +605,180 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                 </SheetContent>
             </Sheet>
 
-            {/* Add Product Dialog */}
+            {/* Add Product Dialog - Windows 7 Theme */}
             <Dialog open={addProductOpen} onOpenChange={setAddProductOpen}>
-                <DialogContent className="sm:max-w-[600px]">
-                    <DialogHeader>
-                        <DialogTitle>Add New Product</DialogTitle>
-                        <DialogDescription>
-                            Add a new product to Block {block.name}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="product-name">Product Name</Label>
-                                <Input
-                                    id="product-name"
-                                    placeholder="Enter product name"
-                                    value={addProductForm.name}
-                                    onChange={(e) =>
-                                        setAddProductForm((prev) => ({
-                                            ...prev,
-                                            name: e.target.value,
-                                        }))
-                                    }
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="product-sku">SKU</Label>
-                                <Input
-                                    id="product-sku"
-                                    placeholder="e.g., ELC-1234"
-                                    value={addProductForm.sku}
-                                    onChange={(e) =>
-                                        setAddProductForm((prev) => ({
-                                            ...prev,
-                                            sku: e.target.value,
-                                        }))
-                                    }
+                <DialogContent showCloseButton={false} className="sm:max-w-[600px] p-0 bg-transparent border-none shadow-none">
+                    <div className="win7-window flex flex-col w-full">
+                        <div className="title-bar">
+                            <div className="title-bar-text" style={{ textShadow: "none" }}>Add New Product</div>
+                            <div className="title-bar-controls">
+                                <button
+                                    aria-label="Close"
+                                    className="close"
+                                    onClick={() => setAddProductOpen(false)}
                                 />
                             </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="product-quantity">Quantity</Label>
-                                <Input
-                                    id="product-quantity"
-                                    type="number"
-                                    placeholder="0"
-                                    value={addProductForm.quantity}
-                                    onChange={(e) =>
-                                        setAddProductForm((prev) => ({
-                                            ...prev,
-                                            quantity: e.target.value,
-                                        }))
-                                    }
-                                />
+
+                        <div className="window-body p-4">
+                            <div className="text-sm mb-4 text-black">
+                                Add a new product to Block {block.name}
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="product-weekly-sales">Avg Weekly Sales</Label>
-                                <Input
-                                    id="product-weekly-sales"
-                                    type="number"
-                                    placeholder="e.g., 25"
-                                    value={addProductForm.averageWeeklySales}
-                                    onChange={(e) =>
-                                        setAddProductForm((prev) => ({
-                                            ...prev,
-                                            averageWeeklySales: e.target.value,
-                                        }))
-                                    }
-                                />
+
+                            <div className="space-y-4">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="product-name" className="text-xs text-black font-normal">Product Name</Label>
+                                        <input
+                                            id="product-name"
+                                            type="text"
+                                            placeholder="Enter product name"
+                                            className="w-full h-6 px-1 border border-[#abadb3] bg-white text-sm text-black shadow-inner focus:outline-none focus:border-[#3c7fb1] placeholder:text-gray-500"
+                                            value={addProductForm.name}
+                                            onChange={(e) =>
+                                                setAddProductForm((prev) => ({
+                                                    ...prev,
+                                                    name: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="product-sku" className="text-xs text-black font-normal">SKU</Label>
+                                        <input
+                                            id="product-sku"
+                                            type="text"
+                                            placeholder="e.g., ELC-1234"
+                                            className="w-full h-6 px-1 border border-[#abadb3] bg-white text-sm text-black shadow-inner focus:outline-none focus:border-[#3c7fb1] placeholder:text-gray-500"
+                                            value={addProductForm.sku}
+                                            onChange={(e) =>
+                                                setAddProductForm((prev) => ({
+                                                    ...prev,
+                                                    sku: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <div className="space-y-1">
+                                        <Label htmlFor="product-quantity" className="text-xs text-black font-normal">Quantity</Label>
+                                        <input
+                                            id="product-quantity"
+                                            type="number"
+                                            placeholder="0"
+                                            className="w-full h-6 px-1 border border-[#abadb3] bg-white text-sm text-black shadow-inner focus:outline-none focus:border-[#3c7fb1] placeholder:text-gray-500"
+                                            value={addProductForm.quantity}
+                                            onChange={(e) =>
+                                                setAddProductForm((prev) => ({
+                                                    ...prev,
+                                                    quantity: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="product-weekly-sales" className="text-xs text-black font-normal">Avg Weekly Sales</Label>
+                                        <input
+                                            id="product-weekly-sales"
+                                            type="number"
+                                            placeholder="e.g., 25"
+                                            className="w-full h-6 px-1 border border-[#abadb3] bg-white text-sm text-black shadow-inner focus:outline-none focus:border-[#3c7fb1] placeholder:text-gray-500"
+                                            value={addProductForm.averageWeeklySales}
+                                            onChange={(e) =>
+                                                setAddProductForm((prev) => ({
+                                                    ...prev,
+                                                    averageWeeklySales: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <Label htmlFor="product-bought" className="text-xs text-black font-normal">Bought At (per unit)</Label>
+                                        <input
+                                            id="product-bought"
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="0.00"
+                                            className="w-full h-6 px-1 border border-[#abadb3] bg-white text-sm text-black shadow-inner focus:outline-none focus:border-[#3c7fb1] placeholder:text-gray-500"
+                                            value={addProductForm.boughtAt}
+                                            onChange={(e) =>
+                                                setAddProductForm((prev) => ({
+                                                    ...prev,
+                                                    boughtAt: e.target.value,
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label htmlFor="product-current" className="text-xs text-black font-normal">Current Price (per unit)</Label>
+                                    <input
+                                        id="product-current"
+                                        type="number"
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        className="w-full h-6 px-1 border border-[#abadb3] bg-white text-sm text-black shadow-inner focus:outline-none focus:border-[#3c7fb1] placeholder:text-gray-500"
+                                        value={addProductForm.currentPrice}
+                                        onChange={(e) =>
+                                            setAddProductForm((prev) => ({
+                                                ...prev,
+                                                currentPrice: e.target.value,
+                                            }))
+                                        }
+                                    />
+                                </div>
+
+                                <div className="space-y-1">
+                                    <Label htmlFor="category" className="text-xs text-black font-normal">Category</Label>
+                                    <select
+                                        id="category"
+                                        className="w-full h-6 px-1 pr-7 border border-[#8e8f8f] bg-gradient-to-b from-[#f2f2f2] via-[#ebebeb] to-[#cfcfcf] text-sm text-black shadow-[inset_0_0_0_1px_rgba(255,255,255,0.8)] focus:outline-none focus:border-[#3c7fb1] focus:shadow-[inset_0_0_0_2px_#98d1ef] hover:border-[#3c7fb1] hover:bg-gradient-to-b hover:from-[#eaf6fd] hover:via-[#bee6fd] hover:to-[#a7d9f5] appearance-none"
+                                        style={{
+                                            backgroundImage: `url("data:image/svg+xml,%3Csvg width='16' height='17' fill='none' version='1.1' viewBox='0 0 16 17' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 6H4V7H5V8H6V9H7V10H8V9H9V8H10V7H11V6Z' fill='%23000'/%3E%3C/svg%3E")`,
+                                            backgroundRepeat: "no-repeat",
+                                            backgroundPosition: "right 4px center",
+                                            paddingRight: "24px",
+                                            color: "#000",
+                                        }}
+                                        value={addProductForm.category}
+                                        onChange={(e) =>
+                                            setAddProductForm((prev) => ({
+                                                ...prev,
+                                                category: e.target.value as ProductCategory,
+                                            }))
+                                        }
+                                    >
+                                        {CATEGORIES.map((category) => (
+                                            <option key={category} value={category} style={{ color: "#000" }}>
+                                                {getCategoryLabel(category)}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="product-bought">Bought At (per unit)</Label>
-                                <Input
-                                    id="product-bought"
-                                    type="number"
-                                    placeholder="0.00"
-                                    value={addProductForm.boughtAt}
-                                    onChange={(e) =>
-                                        setAddProductForm((prev) => ({
-                                            ...prev,
-                                            boughtAt: e.target.value,
-                                        }))
-                                    }
-                                />
+
+                            <div className="flex justify-end gap-2 mt-6">
+                                <button
+                                    className="win7-btn min-w-[70px] px-3 py-1 text-black"
+                                    onClick={() => setAddProductOpen(false)}
+                                    disabled={isSubmitting}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className="win7-btn min-w-[70px] px-3 py-1 font-bold text-black"
+                                    onClick={handleAddProduct}
+                                    disabled={isSubmitting}
+                                >
+                                    {isSubmitting && <Loader2 className="h-3 w-3 mr-1 animate-spin inline" />}
+                                    Add Product
+                                </button>
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="product-current">Current Price (per unit)</Label>
-                            <Input
-                                id="product-current"
-                                type="number"
-                                placeholder="0.00"
-                                value={addProductForm.currentPrice}
-                                onChange={(e) =>
-                                    setAddProductForm((prev) => ({
-                                        ...prev,
-                                        currentPrice: e.target.value,
-                                    }))
-                                }
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="category">Category</Label>
-                            <Select
-                                value={addProductForm.category}
-                                onValueChange={(value) =>
-                                    setAddProductForm((prev) => ({
-                                        ...prev,
-                                        category: value as ProductCategory,
-                                    }))
-                                }
-                            >
-                                <SelectTrigger id="category">
-                                    <SelectValue placeholder="Select category" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {CATEGORIES.map((category) => (
-                                        <SelectItem key={category} value={category}>
-                                            {getCategoryLabel(category)}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                         </div>
                     </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setAddProductOpen(false)}>Cancel</Button>
-                        <Button onClick={handleAddProduct} disabled={isSubmitting}>
-                            {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Add Product
-                        </Button>
-                    </DialogFooter>
                 </DialogContent>
             </Dialog>
 
