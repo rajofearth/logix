@@ -17,7 +17,7 @@ export default function NotificationsPage() {
                     <div className="win7-groupbox h-full flex flex-col bg-white">
                         <legend>All Notifications</legend>
                         <div className="flex-1 overflow-y-auto win7-p-4">
-                            <div className="max-w-2xl mx-auto h-full">
+                            <div className="h-full">
                                 <NotificationList
                                     notifications={notifications}
                                     onMarkAsRead={markAsRead}
