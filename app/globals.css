@@ -621,6 +621,7 @@
   .animate-glow {
     animation: glow-pulse 3s ease-in-out infinite;
   }
+
   /* Gradient Background */
   .bg-gradient-gold {
     background: var(--gradient-gold);

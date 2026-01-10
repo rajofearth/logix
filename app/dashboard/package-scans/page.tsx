@@ -175,46 +175,101 @@ export default function PackageScansPage() {
                     </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {/* Stats Cards */}
-                    {loading ? (
-                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                            {[...Array(4)].map((_, i) => (
-                                <Skeleton key={i} className="h-24 bg-white border border-[#7f9db9]" />
-                            ))}
-                        </div>
-                    ) : data?.stats ? (
-                        <div className="win7-groupbox">
-                            <legend>System Statistics</legend>
-                            <div className="win7-p-4">
-                                <StatsCards stats={data.stats} />
-                            </div>
-                        </div>
-                    ) : null}
-
-                    <div className="flex flex-col lg:flex-row gap-4">
-                        {/* Filters Panel */}
-                        <div className="lg:w-64 shrink-0">
-                            <div className="win7-groupbox h-auto">
-                                <legend>Filters</legend>
-                                <div className="win7-p-4 flex flex-col gap-4">
-                                    <FilterBar
-                                        phase={phase}
-                                        passed={passed}
-                                        onPhaseChange={setPhase}
-                                        onPassedChange={setPassed}
-                                        onClearFilters={handleClearFilters}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Scans Grid */}
-                        <div className="flex-1">
+                <div className="flex-1 flex overflow-hidden">
+                    {/* Left Sidebar: Stats & Filters */}
+                    <div className="w-[350px] flex-shrink-0 border-r border-[#aca899] bg-[#f0f0f0] p-4 overflow-y-auto hidden lg:block">
+                        <div className="space-y-4">
+                            {/* Stats Section with Interactive Filtering */}
                             {loading ? (
+                                <div className="space-y-4">
+                                    {[...Array(4)].map((_, i) => (
+                                        <div
+                                            key={i}
+                                            className="h-24 animate-pulse"
+                                            style={{
+                                                background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                                                border: '1px solid #c0c1cd',
+                                                borderRadius: '3px',
+                                            }}
+                                        />
+                                    ))}
+                                </div>
+                            ) : data?.stats ? (
+                                <div className="win7-groupbox">
+                                    <legend>System Statistics</legend>
+                                    <div className="win7-p-4 pl-0 pr-0">
+                                        <p className="px-4 text-xs text-gray-500 mb-2">
+                                            Click on cards to filter scans.
+                                        </p>
+                                        <StatsCards
+                                            stats={data.stats}
+                                            className="grid-cols-1 lg:grid-cols-1 @xl/main:grid-cols-1 @5xl/main:grid-cols-1 px-0 lg:px-0"
+                                            onFilterChange={(newPhase, newStatus) => {
+                                                setPhase(newPhase);
+                                                setPassed(newStatus);
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            ) : null}
+
+                            {/* Active Filters Display */}
+                            {(phase !== "all" || passed !== "all") && (
+                                <div className="win7-groupbox">
+                                    <legend>Active Filters</legend>
+                                    <div className="win7-p-4 flex flex-wrap gap-2">
+                                        {phase !== "all" && (
+                                            <div className="flex items-center gap-1 bg-white border border-[#7f9db9] px-2 py-1 rounded text-xs">
+                                                <span className="text-gray-500">Phase:</span>
+                                                <span className="font-bold capitalize">{phase}</span>
+                                                <button onClick={() => setPhase("all")} className="ml-1 hover:text-red-500"><IconFilter className="size-3" /></button>
+                                            </div>
+                                        )}
+                                        {passed !== "all" && (
+                                            <div className="flex items-center gap-1 bg-white border border-[#7f9db9] px-2 py-1 rounded text-xs">
+                                                <span className="text-gray-500">Status:</span>
+                                                <span className="font-bold capitalize">{passed === "true" ? "Passed" : "Failed"}</span>
+                                                <button onClick={() => setPassed("all")} className="ml-1 hover:text-red-500"><IconFilter className="size-3" /></button>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={handleClearFilters}
+                                            className="text-xs text-blue-600 hover:underline ml-auto"
+                                        >
+                                            Clear All
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Right Content: Scans Grid */}
+                    <div className="flex-1 flex flex-col min-w-0 bg-white">
+                        {/* Mobile Filters (visible only on small screens) */}
+                        <div className="lg:hidden p-4 border-b border-[#aca899] bg-[#f0f0f0]">
+                            <FilterBar
+                                phase={phase}
+                                passed={passed}
+                                onPhaseChange={setPhase}
+                                onPassedChange={setPassed}
+                                onClearFilters={handleClearFilters}
+                            />
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-4">
+                            {loading && !data ? (
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                                     {[...Array(6)].map((_, i) => (
-                                        <Skeleton key={i} className="h-80 bg-white border border-[#7f9db9]" />
+                                        <div
+                                            key={i}
+                                            className="h-80 animate-pulse"
+                                            style={{
+                                                background: 'linear-gradient(#fff 45%, #f0f0f0 45%, #e0e0e0)',
+                                                border: '1px solid #c0c1cd',
+                                                borderRadius: 'var(--w7-el-bdr)',
+                                            }}
+                                        />
                                     ))}
                                 </div>
                             ) : data?.verifications.length === 0 ? (
