@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 export const runtime = "nodejs";
+// Increase timeout for fuel request transactions
+export const maxDuration = 30;
 
 type FuelRequestDto = {
     id: string;

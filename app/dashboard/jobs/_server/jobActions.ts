@@ -1,8 +1,8 @@
 "use server"
 
-import type { JobDTO, JobUpsertInput, JobStatus, RouteType, GeoJsonFeature, LineStringGeometry } from "../_types"
+import type { JobDTO, JobUpsertInput, JobStatus, RouteType, GeoJsonFeature, LineStringGeometry, CargoUnit } from "../_types"
 import { prisma } from "@/lib/prisma"
-import { jobIdSchema, jobUpsertSchema } from "./jobSchemas"
+import { jobIdSchema, jobUpsertSchema, routeTypeSchema, routeGeoJsonSchema } from "./jobSchemas"
 import { Decimal } from "@prisma/client/runtime/index-browser"
 import { z } from "zod"
 import { notify } from "@/lib/notifications/notify"
@@ -26,6 +26,9 @@ function jobToDto(job: {
   id: string
   title: string
   weightKg: number
+  cargoName: string | null
+  cargoQuantity: unknown
+  cargoUnit: string | null
   pickupAddress: string
   pickupLat: unknown
   pickupLng: unknown
@@ -50,6 +53,9 @@ function jobToDto(job: {
     id: job.id,
     title: job.title,
     weightKg: job.weightKg,
+    cargoName: job.cargoName,
+    cargoQuantity: job.cargoQuantity ? decimalToNumber(job.cargoQuantity) : null,
+    cargoUnit: job.cargoUnit as CargoUnit | null,
     pickupAddress: job.pickupAddress,
     pickupLat: decimalToNumber(job.pickupLat),
     pickupLng: decimalToNumber(job.pickupLng),
@@ -98,6 +104,9 @@ export async function createJob(input: JobUpsertInput): Promise<JobDTO> {
     data: {
       title: parsed.title,
       weightKg: parsed.weightKg,
+      cargoName: parsed.cargoName ?? null,
+      cargoQuantity: parsed.cargoQuantity ? new Decimal(parsed.cargoQuantity.toFixed(2)) : null,
+      cargoUnit: parsed.cargoUnit ?? null,
       pickupAddress: parsed.pickupAddress,
       pickupLng: toDecimal6(parsed.pickupLng),
       pickupLat: toDecimal6(parsed.pickupLat),
@@ -139,6 +148,9 @@ export async function updateJob(
     data: {
       title: parsed.title,
       weightKg: parsed.weightKg,
+      cargoName: parsed.cargoName ?? null,
+      cargoQuantity: parsed.cargoQuantity ? new Decimal(parsed.cargoQuantity.toFixed(2)) : null,
+      cargoUnit: parsed.cargoUnit ?? null,
       pickupAddress: parsed.pickupAddress,
       pickupLng: toDecimal6(parsed.pickupLng),
       pickupLat: toDecimal6(parsed.pickupLat),
@@ -214,6 +226,53 @@ export async function assignDriver(
     await notify.jobUpdated({ jobId: updated.id, title: updated.title })
   } catch (e) {
     console.error("[Notifications] assignDriver notify error:", e)
+  }
+
+  return jobToDto(updated)
+}
+
+const updateJobRouteSchema = z.object({
+  jobId: z.string().uuid(),
+  routeType: routeTypeSchema.nullish(),
+  routeGeometry: routeGeoJsonSchema.nullish(),
+  distanceMeters: z.number().int().nonnegative().nullish(),
+  durationSeconds: z.number().int().nonnegative().nullish(),
+  estimatedFuelCost: z.number().int().nonnegative().nullish(),
+})
+
+export async function updateJobRoute(
+  jobId: string,
+  routeType: RouteType | null,
+  routeGeometry: GeoJsonFeature<LineStringGeometry> | null,
+  distanceMeters: number | null,
+  durationSeconds: number | null,
+  estimatedFuelCost: number | null
+): Promise<JobDTO> {
+  const parsed = updateJobRouteSchema.parse({
+    jobId,
+    routeType,
+    routeGeometry,
+    distanceMeters,
+    durationSeconds,
+    estimatedFuelCost,
+  })
+
+  const updated = await prisma.job.update({
+    where: { id: parsed.jobId },
+    data: {
+      routeType: parsed.routeType ?? null,
+      routeGeometry: parsed.routeGeometry ?? undefined,
+      distanceMeters: parsed.distanceMeters ?? undefined,
+      durationSeconds: parsed.durationSeconds ?? null,
+      estimatedFuelCost: parsed.estimatedFuelCost ?? null,
+    },
+    include: { driver: { select: { name: true } } },
+  })
+
+  try {
+    await notify.jobUpdated({ jobId: updated.id, title: updated.title })
+  } catch (e) {
+    console.error("[Notifications] updateJobRoute notify error:", e)
   }
 
   return jobToDto(updated)

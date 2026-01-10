@@ -2,6 +2,8 @@ import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
+// Increase timeout for warehouse transactions
+export const maxDuration = 30;
 
 // POST /api/warehouse/product/transfer - Transfer product between blocks
 export async function POST(req: Request) {

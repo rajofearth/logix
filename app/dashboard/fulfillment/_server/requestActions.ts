@@ -4,7 +4,8 @@ import { z } from "zod"
 
 import { createJob } from "@/app/dashboard/jobs/_server/jobActions"
 import { getMultipleRoutes } from "@/app/dashboard/jobs/_server/getMultipleRoutes"
-import type { JobDTO, RouteType } from "@/app/dashboard/jobs/_types"
+import type { JobDTO, RouteType, CargoUnit } from "@/app/dashboard/jobs/_types"
+import { cargoUnitSchema } from "@/app/dashboard/jobs/_server/jobSchemas"
 
 const routeTypeSchema = z.enum(["fastest", "economy", "via_gas_station"])
 
@@ -12,6 +13,9 @@ const requestSchema = z
   .object({
     title: z.string().min(1).max(200),
     weightKg: z.number().int().positive(),
+    cargoName: z.string().max(200).nullish(),
+    cargoQuantity: z.number().nonnegative().nullish(),
+    cargoUnit: cargoUnitSchema.nullish(),
     pickupAddress: z.string().min(1).max(500),
     dropAddress: z.string().min(1).max(500),
     pickup: z.object({
@@ -71,6 +75,9 @@ export async function createMasterJobFromRequest(
   return createJob({
     title: parsed.title.trim(),
     weightKg: parsed.weightKg,
+    cargoName: parsed.cargoName?.trim() || null,
+    cargoQuantity: parsed.cargoQuantity ?? null,
+    cargoUnit: parsed.cargoUnit ?? null,
     pickupAddress: parsed.pickupAddress.trim(),
     pickupLat: parsed.pickup.lat,
     pickupLng: parsed.pickup.lng,

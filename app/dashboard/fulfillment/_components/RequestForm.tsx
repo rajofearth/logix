@@ -16,12 +16,24 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { LocationInput } from "./LocationInput"
+import type { CargoUnit } from "@/app/dashboard/jobs/_types"
 
 type ActivePoint = "auto" | "pickup" | "drop"
 
 type FormState = {
   title: string
+  cargoName: string
+  cargoQuantity: number
+  cargoUnit: CargoUnit
+  weightEquivalentKg: number
   weightKg: number
   pickupAddress: string
   dropAddress: string
@@ -52,6 +64,10 @@ function getInitialState(now = new Date()): FormState {
 
   return {
     title: "",
+    cargoName: "",
+    cargoQuantity: 10,
+    cargoUnit: "kg",
+    weightEquivalentKg: 10,
     weightKg: 10,
     pickupAddress: "",
     dropAddress: "",
@@ -75,9 +91,21 @@ export function RequestForm({
 
   const [creating, setCreating] = React.useState(false)
 
+  // Compute weightKg based on unit
+  React.useEffect(() => {
+    if (form.cargoUnit === "kg") {
+      setForm((prev) => ({ ...prev, weightKg: Math.round(prev.cargoQuantity) }))
+    } else {
+      setForm((prev) => ({ ...prev, weightKg: Math.round(prev.weightEquivalentKg) }))
+    }
+  }, [form.cargoUnit, form.cargoQuantity, form.weightEquivalentKg])
+
   const canCreate = Boolean(
     form.title.trim() &&
+      form.cargoName.trim() &&
+      form.cargoQuantity > 0 &&
       form.weightKg > 0 &&
+      (form.cargoUnit === "kg" || form.weightEquivalentKg > 0) &&
       form.pickupAddress.trim() &&
       form.dropAddress.trim() &&
       form.pickup &&
@@ -156,6 +184,9 @@ export function RequestForm({
       const created = await createMasterJobFromRequest({
         title: form.title,
         weightKg: form.weightKg,
+        cargoName: form.cargoName.trim() || null,
+        cargoQuantity: form.cargoQuantity,
+        cargoUnit: form.cargoUnit,
         pickupAddress: form.pickupAddress,
         dropAddress: form.dropAddress,
         pickup: { lat: form.pickup.lat, lng: form.pickup.lng },
@@ -192,15 +223,74 @@ export function RequestForm({
           />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="fulfill-weight">Weight (kg)</Label>
+          <Label htmlFor="fulfill-cargo-name">Item name</Label>
           <Input
-            id="fulfill-weight"
-            type="number"
-            min={1}
-            value={form.weightKg}
-            onChange={(e) => setForm((p) => ({ ...p, weightKg: Number(e.target.value) }))}
+            id="fulfill-cargo-name"
+            value={form.cargoName}
+            onChange={(e) => setForm((p) => ({ ...p, cargoName: e.target.value }))}
+            placeholder="e.g. Electronics, Food items"
           />
         </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="fulfill-quantity">Quantity</Label>
+          <Input
+            id="fulfill-quantity"
+            type="number"
+            min={0.01}
+            step={0.01}
+            value={form.cargoQuantity}
+            onChange={(e) => setForm((p) => ({ ...p, cargoQuantity: Number(e.target.value) }))}
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="fulfill-unit">Unit</Label>
+          <Select
+            value={form.cargoUnit}
+            onValueChange={(v) => setForm((p) => ({ ...p, cargoUnit: v as CargoUnit }))}
+          >
+            <SelectTrigger id="fulfill-unit">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="kg">kg</SelectItem>
+              <SelectItem value="ltr">ltr</SelectItem>
+              <SelectItem value="pcs">pcs</SelectItem>
+              <SelectItem value="box">box</SelectItem>
+              <SelectItem value="pkg">pkg</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        {form.cargoUnit !== "kg" && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="fulfill-weight-equiv">
+              Weight equivalent (kg) <span className="text-destructive">*</span>
+            </Label>
+            <Input
+              id="fulfill-weight-equiv"
+              type="number"
+              min={0.1}
+              step={0.1}
+              value={form.weightEquivalentKg}
+              onChange={(e) => setForm((p) => ({ ...p, weightEquivalentKg: Number(e.target.value) }))}
+            />
+          </div>
+        )}
+        {form.cargoUnit === "kg" && (
+          <div className="flex flex-col gap-2">
+            <Label htmlFor="fulfill-weight-display">Weight (kg)</Label>
+            <Input
+              id="fulfill-weight-display"
+              type="number"
+              min={1}
+              value={form.weightKg}
+              disabled
+              className="bg-muted"
+            />
+          </div>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

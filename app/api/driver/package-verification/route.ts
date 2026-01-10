@@ -5,6 +5,8 @@ import { utapi } from "../uploads/_utils";
 import { notify } from "@/lib/notifications/notify";
 
 export const runtime = "nodejs";
+// Increase timeout for package verification with image uploads
+export const maxDuration = 60;
 
 interface PackageVerificationBody {
     jobId: string;

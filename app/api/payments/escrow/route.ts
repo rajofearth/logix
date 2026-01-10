@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ethers } from 'ethers';
 import { decryptKey } from '@/lib/crypto';
 
+// Increase timeout for blockchain escrow transactions
+export const maxDuration = 60;
+
 // Hardcoded for demo/local node
 // Hardcoded defaults for demo/local node if env not set
 const TOKEN_ADDRESS = process.env.NEXT_PUBLIC_TOKEN_ADDRESS || "0x5FbDB2315678afecb367f032d93F642f64180aa3";

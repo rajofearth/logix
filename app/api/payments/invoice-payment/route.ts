@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '../../../../lib/prisma';
 import { InvoiceStatus } from "@prisma/client";
 
+// Increase timeout for payment transactions
+export const maxDuration = 30;
+
 export async function POST(req: NextRequest) {
     try {
         const { invoiceId, amount, transactionHash, payerAddress } = await req.json();

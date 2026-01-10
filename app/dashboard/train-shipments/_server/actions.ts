@@ -333,6 +333,40 @@ export async function updateTrainShipmentStatus(
 }
 
 /**
+ * Update train shipment details (train selection, dates, etc.)
+ */
+export async function updateTrainShipmentDetails(
+    shipmentId: string,
+    input: {
+        trainNumber: string;
+        trainName: string;
+        journeyDate: Date;
+        scheduledDep: Date;
+        scheduledArr: Date;
+        coachType?: string;
+    }
+): Promise<{ success: true; shipmentId: string } | { success: false; error: string }> {
+    try {
+        await prisma.trainShipment.update({
+            where: { id: shipmentId },
+            data: {
+                trainNumber: input.trainNumber,
+                trainName: input.trainName,
+                journeyDate: input.journeyDate,
+                scheduledDep: input.scheduledDep,
+                scheduledArr: input.scheduledArr,
+                coachType: input.coachType || null,
+            },
+        });
+
+        return { success: true, shipmentId };
+    } catch (error) {
+        console.error("[updateTrainShipmentDetails] Error:", error);
+        return { success: false, error: "Failed to update train shipment details" };
+    }
+}
+
+/**
  * Refresh train position from IRCTC API
  */
 export async function refreshTrainPosition(

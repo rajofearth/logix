@@ -4,6 +4,9 @@ import type { ReactNode } from "react";
 
 import { auth } from "@/lib/auth";
 
+// Increase timeout for server actions that do route calculations (Mapbox API can be slow)
+export const maxDuration = 60; // 60 seconds
+
 export default async function DashboardLayout({
   children,
 }: Readonly<{ children: ReactNode }>) {

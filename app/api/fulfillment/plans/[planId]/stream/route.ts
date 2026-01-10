@@ -89,9 +89,17 @@ export async function GET(
 
             const planRow = planRows[0] ?? null
             if (!planRow) {
-              controller.enqueue(encoder.encode(sseEvent("error", { message: "Plan not found" })))
+              try {
+                controller.enqueue(encoder.encode(sseEvent("error", { message: "Plan not found" })))
+              } catch {
+                // Controller might be closed
+              }
               isActive = false
-              controller.close()
+              try {
+                controller.close()
+              } catch {
+                // Already closed
+              }
               return
             }
 
@@ -146,24 +154,65 @@ export async function GET(
                   updatedAt: s.updated_at.toISOString(),
                 })),
               }
-              controller.enqueue(encoder.encode(sseEvent("plan_update", dto)))
+              if (isActive) {
+                try {
+                  controller.enqueue(encoder.encode(sseEvent("plan_update", dto)))
+                } catch (err) {
+                  // Controller might be closed
+                  if (err instanceof TypeError && err.message.includes("closed")) {
+                    isActive = false
+                    return
+                  }
+                  throw err
+                }
+              }
             }
 
             const terminal = ["completed", "failed", "cancelled"].includes(planRow.status)
             if (terminal) {
-              controller.enqueue(encoder.encode(sseEvent("completed", { status: planRow.status })))
+              if (isActive) {
+                try {
+                  controller.enqueue(encoder.encode(sseEvent("completed", { status: planRow.status })))
+                } catch {
+                  // Controller might be closed
+                }
+              }
               isActive = false
-              controller.close()
+              try {
+                controller.close()
+              } catch {
+                // Already closed
+              }
               return
             }
 
-            controller.enqueue(encoder.encode(`: heartbeat\n\n`))
-            setTimeout(poll, 2000)
+            if (isActive) {
+              try {
+                controller.enqueue(encoder.encode(`: heartbeat\n\n`))
+                setTimeout(poll, 2000)
+              } catch (err) {
+                // Controller closed, stop polling
+                if (err instanceof TypeError && err.message.includes("closed")) {
+                  isActive = false
+                  return
+                }
+                throw err
+              }
+            }
           } catch (e) {
             console.error("[SSE] fulfillment plan poll error:", e)
             if (isActive) {
-              controller.enqueue(encoder.encode(sseEvent("error", { message: "Server error" })))
-              setTimeout(poll, 5000)
+              try {
+                controller.enqueue(encoder.encode(sseEvent("error", { message: "Server error" })))
+                setTimeout(poll, 5000)
+              } catch (err) {
+                // Controller closed, stop polling
+                if (err instanceof TypeError && err.message.includes("closed")) {
+                  isActive = false
+                  return
+                }
+                throw err
+              }
             }
           }
         }

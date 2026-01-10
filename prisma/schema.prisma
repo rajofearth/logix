@@ -189,6 +189,9 @@ model Job {
   id                   String                @id @default(uuid()) @db.Uuid
   title                String
   weightKg             Int                   @map("weight_kg")
+  cargoName            String?               @map("cargo_name")
+  cargoQuantity        Decimal?              @map("cargo_quantity") @db.Decimal(12, 2)
+  cargoUnit            CargoUnit?            @map("cargo_unit")
   pickupAddress        String                @map("pickup_address")
   pickupLat            Decimal               @map("pickup_lat") @db.Decimal(9, 6)
   pickupLng            Decimal               @map("pickup_lng") @db.Decimal(9, 6)
@@ -866,6 +869,14 @@ enum FulfillmentSegmentStatus {
   completed
   failed
   cancelled
+}
+
+enum CargoUnit {
+  kg
+  ltr
+  pcs
+  box
+  pkg
 }
 
 // ============================================

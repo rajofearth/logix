@@ -83,28 +83,57 @@ export async function GET(req: NextRequest) {
             })
 
             for (const r of rows) {
+              if (!isActive) return
               lastCreatedAt = r.createdAt
               const dto = toDto({
                 id: r.id,
                 readAt: r.readAt,
                 event: r.event,
               })
-              controller.enqueue(
-                encoder.encode(`event: notification\ndata: ${JSON.stringify(dto)}\n\n`)
-              )
+              try {
+                controller.enqueue(
+                  encoder.encode(`event: notification\ndata: ${JSON.stringify(dto)}\n\n`)
+                )
+              } catch (err) {
+                // Controller might be closed, stop polling
+                if (err instanceof TypeError && err.message.includes("closed")) {
+                  isActive = false
+                  return
+                }
+                throw err
+              }
             }
 
-            controller.enqueue(encoder.encode(`: heartbeat\n\n`))
-            setTimeout(poll, 2000)
+            if (isActive) {
+              try {
+                controller.enqueue(encoder.encode(`: heartbeat\n\n`))
+                setTimeout(poll, 2000)
+              } catch (err) {
+                if (err instanceof TypeError && err.message.includes("closed")) {
+                  isActive = false
+                  return
+                }
+                throw err
+              }
+            }
           } catch (e) {
             console.error("[SSE] notifications poll error:", e)
             if (isActive) {
-              controller.enqueue(
-                encoder.encode(
-                  `event: error\ndata: ${JSON.stringify({ message: "Server error" })}\n\n`
+              try {
+                controller.enqueue(
+                  encoder.encode(
+                    `event: error\ndata: ${JSON.stringify({ message: "Server error" })}\n\n`
+                  )
                 )
-              )
-              setTimeout(poll, 5000)
+                setTimeout(poll, 5000)
+              } catch (err) {
+                // Controller closed, stop polling
+                if (err instanceof TypeError && err.message.includes("closed")) {
+                  isActive = false
+                  return
+                }
+                throw err
+              }
             }
           }
         }

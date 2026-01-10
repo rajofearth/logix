@@ -5,7 +5,7 @@ import { toast } from "sonner"
 
 import type { JobDTO } from "@/app/dashboard/jobs/_types"
 import { planFulfillment, selectFulfillmentOption } from "../_server/planActions"
-import { executeNextFulfillmentStep, startFulfillmentExecution } from "../_server/executeActions"
+import { executeNextFulfillmentStep, startFulfillmentExecution, completeFulfillmentSegment } from "../_server/executeActions"
 import type { CandidatePlanOption, FulfillmentObjective } from "@/lib/fulfillment/types"
 
 import { Card } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import { PlanSummary } from "./PlanSummary"
 import { RequestForm } from "./RequestForm"
 import { ObjectiveSelect } from "./ObjectiveSelect"
 import { ExecutionProgress } from "./ExecutionProgress"
+import { SegmentActionDialog } from "./SegmentActionDialog"
 
 type PlanState = {
   planId: string
@@ -31,6 +32,14 @@ export function FulfillmentPlanner() {
   const [planning, setPlanning] = React.useState(false)
   const [executing, setExecuting] = React.useState(false)
   const [plan, setPlan] = React.useState<PlanState | null>(null)
+  const [segmentDialog, setSegmentDialog] = React.useState<{
+    open: boolean
+    mode: "ground" | "air" | "train"
+    segmentId: string
+    jobId?: string
+    shipmentId?: string
+    trainShipmentId?: string
+  } | null>(null)
 
   const handlePlan = React.useCallback(async () => {
     if (!job) return
@@ -63,6 +72,37 @@ export function FulfillmentPlanner() {
     [plan]
   )
 
+  const processNextSegment = React.useCallback(async () => {
+    if (!plan) return
+
+    const step = await executeNextFulfillmentStep(plan.planId, { interactive: true })
+    if (!step.success) {
+      toast.error(step.error)
+      setExecuting(false)
+      return
+    }
+
+    if (step.done) {
+      toast.success("Plan executed")
+      setExecuting(false)
+      return
+    }
+
+    if (step.needsUserAction && step.segmentId && step.mode) {
+      setSegmentDialog({
+        open: true,
+        mode: step.mode,
+        segmentId: step.segmentId,
+        jobId: step.jobId,
+        shipmentId: step.shipmentId,
+        trainShipmentId: step.trainShipmentId,
+      })
+    } else {
+      // No user action needed, continue
+      setTimeout(() => processNextSegment(), 400)
+    }
+  }, [plan])
+
   const handleExecute = React.useCallback(async () => {
     if (!plan) return
     setExecuting(true)
@@ -70,35 +110,31 @@ export function FulfillmentPlanner() {
       const start = await startFulfillmentExecution(plan.planId)
       if (!start.success) {
         toast.error(start.error)
+        setExecuting(false)
         return
       }
 
-      const selected =
-        plan.options.find((o) => o.key === plan.selectedPlanKey) ?? plan.options[0]
-      const maxSteps = Math.max(1, selected.segments.length + 2)
-
-      for (let i = 0; i < maxSteps; i++) {
-        const step = await executeNextFulfillmentStep(plan.planId)
-        if (!step.success) {
-          toast.error(step.error)
-          return
-        }
-        if (step.done) {
-          toast.success("Plan executed")
-          return
-        }
-        // small delay so UI/SSE can paint progress between steps
-        await new Promise((r) => setTimeout(r, 400))
-      }
-
-      toast.error("Execution did not finish (unexpected). Please refresh and retry.")
+      await processNextSegment()
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to execute"
       toast.error(msg)
-    } finally {
       setExecuting(false)
     }
-  }, [plan])
+  }, [plan, processNextSegment])
+
+  const handleSegmentComplete = React.useCallback(async () => {
+    if (!plan || !segmentDialog) return
+
+    const result = await completeFulfillmentSegment(plan.planId, segmentDialog.segmentId)
+    if (!result.success) {
+      toast.error(result.error)
+      return
+    }
+
+    setSegmentDialog(null)
+    // Continue to next segment
+    setTimeout(() => processNextSegment(), 400)
+  }, [plan, segmentDialog, processNextSegment])
 
   return (
     <div className="px-4 lg:px-6">
@@ -164,6 +200,25 @@ export function FulfillmentPlanner() {
           />
         </Card>
       </div>
+
+      {segmentDialog && (
+        <SegmentActionDialog
+          open={segmentDialog.open}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSegmentDialog(null)
+              setExecuting(false)
+            }
+          }}
+          mode={segmentDialog.mode}
+          segmentId={segmentDialog.segmentId}
+          planId={plan?.planId ?? ""}
+          jobId={segmentDialog.jobId}
+          shipmentId={segmentDialog.shipmentId}
+          trainShipmentId={segmentDialog.trainShipmentId}
+          onComplete={handleSegmentComplete}
+        />
+      )}
     </div>
   )
 }

@@ -2,10 +2,15 @@ export type LngLat = { lng: number; lat: number }
 
 export type JobStatus = "pending" | "in_progress" | "completed" | "cancelled"
 
+export type CargoUnit = "kg" | "ltr" | "pcs" | "box" | "pkg"
+
 export type JobDTO = {
   id: string
   title: string
   weightKg: number
+  cargoName: string | null
+  cargoQuantity: number | null
+  cargoUnit: CargoUnit | null
   pickupAddress: string
   pickupLat: number
   pickupLng: number
@@ -30,6 +35,9 @@ export type JobDTO = {
 export type JobUpsertInput = {
   title: string
   weightKg: number
+  cargoName?: string | null
+  cargoQuantity?: number | null
+  cargoUnit?: CargoUnit | null
   pickupAddress: string
   pickupLat: number
   pickupLng: number

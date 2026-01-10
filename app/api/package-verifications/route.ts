@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 
 export const runtime = "nodejs";
+// Increase timeout for package verification queries with transactions
+export const maxDuration = 30;
 
 export async function GET(req: Request) {
     try {

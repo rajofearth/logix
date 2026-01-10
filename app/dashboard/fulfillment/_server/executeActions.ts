@@ -225,11 +225,13 @@ type DbSegmentRow = {
 }
 
 export async function executeNextFulfillmentStep(
-  planId: string
+  planId: string,
+  opts?: { interactive?: boolean }
 ): Promise<
-  | { success: true; done: boolean; planStatus: string }
+  | { success: true; done: boolean; planStatus: string; needsUserAction?: boolean; segmentId?: string; mode?: "ground" | "train" | "air"; jobId?: string; trainShipmentId?: string; shipmentId?: string }
   | { success: false; error: string }
 > {
+  const interactive = opts?.interactive ?? false
   let nextSegmentId: string | null = null
   try {
     const parsedPlanId = planIdSchema.parse(planId)
@@ -278,6 +280,7 @@ export async function executeNextFulfillmentStep(
         id: true,
         title: true,
         weightKg: true,
+        cargoName: true,
         pickupAddress: true,
         dropAddress: true,
         pickupAt: true,
@@ -348,10 +351,22 @@ export async function executeNextFulfillmentStep(
         where: { id: next.id },
         data: {
           jobId: createdJob.id,
-          status: "completed",
+          status: interactive ? "in_progress" : "completed",
           updatedAt: new Date(),
         },
       })
+
+      if (interactive) {
+        return {
+          success: true,
+          done: false,
+          planStatus: "executing",
+          needsUserAction: true,
+          segmentId: next.id,
+          mode: "ground",
+          jobId: createdJob.id,
+        }
+      }
     }
 
     if (next.mode === "train") {
@@ -363,7 +378,7 @@ export async function executeNextFulfillmentStep(
         data: {
           referenceCode: `TRN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`,
           status: "created",
-          packageName: masterJob.title,
+          packageName: masterJob.cargoName ?? masterJob.title,
           weightKg: new Decimal(masterJob.weightKg),
           packageCount: 1,
           description: null,
@@ -394,10 +409,22 @@ export async function executeNextFulfillmentStep(
         where: { id: next.id },
         data: {
           trainShipmentId: createdTrain.id,
-          status: "completed",
+          status: interactive ? "in_progress" : "completed",
           updatedAt: new Date(),
         },
       })
+
+      if (interactive) {
+        return {
+          success: true,
+          done: false,
+          planStatus: "executing",
+          needsUserAction: true,
+          segmentId: next.id,
+          mode: "train",
+          trainShipmentId: createdTrain.id,
+        }
+      }
     }
 
     if (next.mode === "air") {
@@ -407,7 +434,7 @@ export async function executeNextFulfillmentStep(
       const plannedArrivalAt = addMinutes(plannedDepartureAt, Math.max(1, Math.round(durationSeconds / 60)))
 
       const shipmentId = await createAirShipment(prisma, {
-        packageName: masterJob.title,
+        packageName: masterJob.cargoName ?? masterJob.title,
         weightKg: masterJob.weightKg,
         fromIcao: planned.fromAirportIcao,
         toIcao: planned.toAirportIcao,
@@ -419,10 +446,22 @@ export async function executeNextFulfillmentStep(
         where: { id: next.id },
         data: {
           shipmentId,
-          status: "completed",
+          status: interactive ? "in_progress" : "completed",
           updatedAt: new Date(),
         },
       })
+
+      if (interactive) {
+        return {
+          success: true,
+          done: false,
+          planStatus: "executing",
+          needsUserAction: true,
+          segmentId: next.id,
+          mode: "air",
+          shipmentId,
+        }
+      }
     }
 
     // If that was the last segment, mark plan completed.
@@ -522,6 +561,60 @@ export async function executeFulfillmentPlan(
     return { success: true, masterJobId, planId, createdJobIds, createdTrainShipmentIds }
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Failed to execute plan"
+    return { success: false, error: msg }
+  }
+}
+
+export async function completeFulfillmentSegment(
+  planId: string,
+  segmentId: string
+): Promise<{ success: true } | { success: false; error: string }> {
+  try {
+    const parsedPlanId = planIdSchema.parse(planId)
+    const parsedSegmentId = z.string().uuid().parse(segmentId)
+
+    const segment = await prisma.fulfillmentSegment.findUnique({
+      where: { id: parsedSegmentId },
+      select: {
+        id: true,
+        planId: true,
+        status: true,
+      },
+    })
+
+    if (!segment) return { success: false, error: "Segment not found" }
+    if (segment.planId !== parsedPlanId) return { success: false, error: "Segment does not belong to plan" }
+    if (segment.status !== "in_progress") return { success: false, error: "Segment is not in progress" }
+
+    await prisma.fulfillmentSegment.update({
+      where: { id: parsedSegmentId },
+      data: {
+        status: "completed",
+        updatedAt: new Date(),
+      },
+    })
+
+    // Check if all segments are completed
+    const remaining = await prisma.fulfillmentSegment.count({
+      where: {
+        planId: parsedPlanId,
+        status: { in: ["planned", "in_progress"] },
+      },
+    })
+
+    if (remaining === 0) {
+      await prisma.fulfillmentPlan.update({
+        where: { id: parsedPlanId },
+        data: {
+          status: "completed",
+          updatedAt: new Date(),
+        },
+      })
+    }
+
+    return { success: true }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Failed to complete segment"
     return { success: false, error: msg }
   }
 }

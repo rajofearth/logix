@@ -10,7 +10,7 @@ export const ROUTE_CONFIG = {
 
     // API settings
     api: {
-        timeoutMs: 10000, // 10 second timeout for Mapbox calls
+        timeoutMs: 30000, // 30 second timeout for Mapbox calls (increased for alternatives + gas station routes)
         maxRetries: 2,
         retryDelayMs: 500,
     },

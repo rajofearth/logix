@@ -488,58 +488,64 @@ export async function updateShipmentStatus(
     try {
         const { eventTitle, flightDetails } = props || {};
 
-        await prisma.$transaction(async (tx) => {
-            // Update status
-            await tx.shipment.update({
-                where: { id: shipmentId },
-                data: { status },
-            });
-
-            // Create event
-            const description = flightDetails
-                ? flightDetails.legs.length > 1
-                    ? `Route updated: ${flightDetails.legs.map(l => l.from).join(" -> ")} -> ${flightDetails.legs[flightDetails.legs.length - 1].to} via ${flightDetails.legs[0].carrier}`
-                    : `Loaded onto ${flightDetails.legs[0].carrier} flight ${flightDetails.legs[0].flightNumber} (${flightDetails.legs[0].aircraft})`
-                : undefined;
-
-            await tx.shipmentEvent.create({
-                data: {
-                    shipmentId,
-                    type: status === "delivered" ? "delivered" : "carrier_update",
-                    title: eventTitle || `Status updated to ${status}`,
-                    description,
-                    occurredAt: new Date(),
-                },
-            });
-
-            // If flight details provided, update the air segment
-            if (flightDetails) {
-                // Delete existing air segments
-                await tx.shipmentSegment.deleteMany({
-                    where: { shipmentId, type: "air" }
+        await prisma.$transaction(
+            async (tx) => {
+                // Update status
+                await tx.shipment.update({
+                    where: { id: shipmentId },
+                    data: { status },
                 });
 
-                // Create new segments for each leg
-                for (let i = 0; i < flightDetails.legs.length; i++) {
-                    const leg = flightDetails.legs[i];
-                    await tx.shipmentSegment.create({
-                        data: {
-                            shipmentId,
-                            type: "air",
-                            sortOrder: i, // 0, 1, 2...
-                            carrier: leg.carrier,
-                            carrierTrackingId: `${flightDetails.legs[0].carrier.substring(0, 2)}-${Date.now()}-${i}`,
-                            flightNumber: leg.flightNumber,
-                            fromAirportIcao: leg.from,
-                            toAirportIcao: leg.to,
-                            icao24: i === 0 ? "3c66a8" : null, // Mock ICAO24 only for first leg for now or random
-                            plannedDepartureAt: leg.departureTime,
-                            plannedArrivalAt: leg.arrivalTime,
-                        }
+                // Create event
+                const description = flightDetails
+                    ? flightDetails.legs.length > 1
+                        ? `Route updated: ${flightDetails.legs.map(l => l.from).join(" -> ")} -> ${flightDetails.legs[flightDetails.legs.length - 1].to} via ${flightDetails.legs[0].carrier}`
+                        : `Loaded onto ${flightDetails.legs[0].carrier} flight ${flightDetails.legs[0].flightNumber} (${flightDetails.legs[0].aircraft})`
+                    : undefined;
+
+                await tx.shipmentEvent.create({
+                    data: {
+                        shipmentId,
+                        type: status === "delivered" ? "delivered" : "carrier_update",
+                        title: eventTitle || `Status updated to ${status}`,
+                        description,
+                        occurredAt: new Date(),
+                    },
+                });
+
+                // If flight details provided, update the air segment
+                if (flightDetails) {
+                    // Delete existing air segments
+                    await tx.shipmentSegment.deleteMany({
+                        where: { shipmentId, type: "air" }
                     });
+
+                    // Create new segments for each leg
+                    for (let i = 0; i < flightDetails.legs.length; i++) {
+                        const leg = flightDetails.legs[i];
+                        await tx.shipmentSegment.create({
+                            data: {
+                                shipmentId,
+                                type: "air",
+                                sortOrder: i, // 0, 1, 2...
+                                carrier: leg.carrier,
+                                carrierTrackingId: `${flightDetails.legs[0].carrier.substring(0, 2)}-${Date.now()}-${i}`,
+                                flightNumber: leg.flightNumber,
+                                fromAirportIcao: leg.from,
+                                toAirportIcao: leg.to,
+                                icao24: i === 0 ? "3c66a8" : null, // Mock ICAO24 only for first leg for now or random
+                                plannedDepartureAt: leg.departureTime,
+                                plannedArrivalAt: leg.arrivalTime,
+                            }
+                        });
+                    }
                 }
+            },
+            {
+                maxWait: 10000, // 10 seconds to acquire transaction (default: 2000ms)
+                timeout: 30000, // 30 seconds for transaction execution (default: 5000ms)
             }
-        });
+        );
 
         return { success: true };
     } catch (error) {

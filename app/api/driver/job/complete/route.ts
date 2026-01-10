@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { notify } from "@/lib/notifications/notify";
 
 export const runtime = "nodejs";
+// Increase timeout for job complete transactions
+export const maxDuration = 30;
 
 interface CompleteJobBody {
     jobId: string;

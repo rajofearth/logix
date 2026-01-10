@@ -30,10 +30,15 @@ export const routeGeoJsonSchema = z.object({
   geometry: lineStringGeometrySchema,
 })
 
+export const cargoUnitSchema = z.enum(["kg", "ltr", "pcs", "box", "pkg"])
+
 export const jobUpsertSchema = z
   .object({
     title: z.string().min(1).max(200),
     weightKg: z.number().int().positive(),
+    cargoName: z.string().max(200).nullish(),
+    cargoQuantity: z.number().nonnegative().nullish(),
+    cargoUnit: cargoUnitSchema.nullish(),
     pickupAddress: z.string().min(1).max(500),
     pickupLng: lngSchema,
     pickupLat: latSchema,
