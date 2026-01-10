@@ -31,49 +31,55 @@ export function ProjectFilters({
     onSearchChange,
 }: ProjectFiltersProps) {
     return (
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            {/* Filter Tabs */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between font-['Segoe_UI']">
+            {/* Filter Tabs - Win7 Button Style */}
             <div className="flex flex-wrap gap-2">
                 {filterOptions.map((option) => {
                     const count = stats[option.key]
                     const isActive = activeFilter === option.value
 
                     return (
-                        <Button
+                        <button
                             key={option.value}
-                            variant={isActive ? "default" : "outline"}
-                            size="sm"
                             onClick={() => onFilterChange(option.value)}
                             className={cn(
-                                "gap-1.5",
-                                isActive && "shadow-sm"
+                                "flex items-center gap-1.5 px-3 py-1 text-xs border rounded-[3px] transition-colors outline-none",
+                                isActive
+                                    ? "bg-[#e5f4fc] border-[#3c7fb1] shadow-[inset_0_0_0_1px_rgba(255,255,255,0.5)]"
+                                    : "bg-gradient-to-b from-[#f2f2f2] to-[#cfcfcf] border-[#707070] hover:border-[#3c7fb1] hover:from-[#eaf6fd] hover:to-[#a7d9f5]"
                             )}
                         >
-                            {option.label}
+                            <span className="text-[#1e5774]">{option.label}</span>
                             <span
                                 className={cn(
-                                    "text-[0.65rem] px-1.5 py-0.5 rounded-full",
+                                    "text-[10px] px-1 rounded-sm border",
                                     isActive
-                                        ? "bg-primary-foreground/20 text-primary-foreground"
-                                        : "bg-muted text-muted-foreground"
+                                        ? "bg-white/50 border-[#3c7fb1]/30 text-[#1e5774]"
+                                        : "bg-white/30 border-[#000]/10 text-gray-600"
                                 )}
                             >
                                 {count}
                             </span>
-                        </Button>
+                        </button>
                     )
                 })}
             </div>
 
-            {/* Search */}
+            {/* Win7 Search */}
             <div className="relative w-full sm:w-64">
-                <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
+                <input
                     placeholder="Search projects..."
                     value={search}
                     onChange={(e) => onSearchChange(e.target.value)}
-                    className="pl-9"
+                    className="pl-2 pr-7 h-7 w-full border border-[#7f9db9] text-xs outline-none focus:border-[#3c7fb1] italic placeholder:text-gray-400"
+                    style={{
+                        background: '#fff',
+                        borderRadius: '2px'
+                    }}
                 />
+                <div className="absolute right-[1px] top-[1px] bottom-[1px] w-[26px] flex items-center justify-center bg-gradient-to-b from-[#f2f2f2] to-[#cfcfcf] border-l border-[#7f9db9] pointer-events-none">
+                    <IconSearch className="size-3.5 text-gray-500" />
+                </div>
             </div>
         </div>
     )
