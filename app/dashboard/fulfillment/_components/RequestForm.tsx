@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { LocationInput } from "./LocationInput"
 
 type ActivePoint = "auto" | "pickup" | "drop"
 
@@ -93,21 +94,33 @@ export function RequestForm({
       return next
     })
 
+    // Always update address when map is clicked
     void (async () => {
       try {
         const addr = await reverseGeocode(coord)
         setForm((prev) => {
           if (kind === "pickup") {
-            if (prev.pickupAddress.trim()) return prev
             return { ...prev, pickupAddress: addr }
           }
-          if (prev.dropAddress.trim()) return prev
           return { ...prev, dropAddress: addr }
         })
       } catch {
         // best-effort
       }
     })()
+  }
+
+  function handleLocationChange(kind: "pickup" | "drop", address: string, coordinates: LngLat) {
+    setForm((prev) => {
+      const next: FormState = {
+        ...prev,
+        pickup: kind === "pickup" ? coordinates : prev.pickup,
+        drop: kind === "drop" ? coordinates : prev.drop,
+        pickupAddress: kind === "pickup" ? address : prev.pickupAddress,
+        dropAddress: kind === "drop" ? address : prev.dropAddress,
+      }
+      return next
+    })
   }
 
   React.useEffect(() => {
@@ -191,24 +204,22 @@ export function RequestForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="fulfill-pickup-address">Pickup address</Label>
-          <Input
-            id="fulfill-pickup-address"
-            value={form.pickupAddress}
-            onChange={(e) => setForm((p) => ({ ...p, pickupAddress: e.target.value }))}
-            placeholder="Pickup address (or click on map)"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="fulfill-drop-address">Drop address</Label>
-          <Input
-            id="fulfill-drop-address"
-            value={form.dropAddress}
-            onChange={(e) => setForm((p) => ({ ...p, dropAddress: e.target.value }))}
-            placeholder="Drop address (or click on map)"
-          />
-        </div>
+        <LocationInput
+          id="fulfill-pickup-address"
+          label="Pickup address"
+          value={form.pickupAddress}
+          placeholder="Search pickup location or click on map"
+          onChange={(address, coordinates) => handleLocationChange("pickup", address, coordinates)}
+          proximity={form.drop}
+        />
+        <LocationInput
+          id="fulfill-drop-address"
+          label="Drop address"
+          value={form.dropAddress}
+          placeholder="Search drop location or click on map"
+          onChange={(address, coordinates) => handleLocationChange("drop", address, coordinates)}
+          proximity={form.pickup}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

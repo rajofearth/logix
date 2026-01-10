@@ -15,7 +15,7 @@ import type {
   ScoreBreakdown,
 } from "@/lib/fulfillment/types"
 import { irctcConnector } from "@/lib/trains"
-import { Prisma } from "@prisma/client"
+import type { Prisma } from "@prisma/client"
 
 const jobIdSchema = z.string().uuid()
 
@@ -361,49 +361,31 @@ export async function planFulfillment(
 
   const selected = sorted[0]
 
-  const optionsJson = JSON.stringify(sorted)
-
-  // Write via raw SQL (Prisma client in this repo may not include FulfillmentPlan delegate at runtime).
-  const inserted = await prisma.$queryRaw<
-    Array<{ id: string; selected_plan_key: string | null }>
-  >(Prisma.sql`
-    insert into fulfillment_plans (master_job_id, status, objective, selected_plan_key, options, updated_at)
-    values (
-      ${parsedJobId}::uuid,
-      'draft'::"FulfillmentPlanStatus",
-      ${objective}::"FulfillmentObjective",
-      ${selected.key},
-      ${optionsJson}::jsonb,
-      now()
-    )
-    returning id, selected_plan_key
-  `)
-
-  const created = inserted[0]
-  if (!created) throw new Error("Failed to create fulfillment plan")
-
-  if (selected.segments.length > 0) {
-    const segmentValues = selected.segments.map((s, idx) => {
-      const plannedJson = JSON.stringify(s.planned ?? {})
-      return Prisma.sql`(
-        ${created.id}::uuid,
-        ${idx}::int,
-        ${s.mode}::"FulfillmentSegmentMode",
-        'planned'::"FulfillmentSegmentStatus",
-        ${plannedJson}::jsonb,
-        now()
-      )`
-    })
-
-    await prisma.$executeRaw(Prisma.sql`
-      insert into fulfillment_segments (plan_id, sort_order, mode, status, planned, updated_at)
-      values ${Prisma.join(segmentValues)}
-    `)
-  }
+  const created = await prisma.fulfillmentPlan.create({
+    data: {
+      masterJobId: parsedJobId,
+      status: "draft",
+      objective,
+      selectedPlanKey: selected.key,
+      options: sorted as Prisma.InputJsonValue,
+      segments: {
+        create: selected.segments.map((s, idx) => ({
+          sortOrder: idx,
+          mode: s.mode,
+          status: "planned",
+          planned: (s.planned ?? {}) as Prisma.InputJsonValue,
+        })),
+      },
+    },
+    select: {
+      id: true,
+      selectedPlanKey: true,
+    },
+  })
 
   return {
     planId: created.id,
-    selectedPlanKey: created.selected_plan_key ?? selected.key,
+    selectedPlanKey: created.selectedPlanKey ?? selected.key,
     options: sorted,
   }
 }
@@ -413,15 +395,14 @@ export async function selectFulfillmentOption(
   selectedPlanKey: string
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
-    const rows = await prisma.$queryRaw<
-      Array<{ id: string; status: string; options: unknown }>
-    >(Prisma.sql`
-      select id, status::text as status, options
-      from fulfillment_plans
-      where id = ${planId}::uuid
-      limit 1
-    `)
-    const plan = rows[0] ?? null
+    const plan = await prisma.fulfillmentPlan.findUnique({
+      where: { id: planId },
+      select: {
+        id: true,
+        status: true,
+        options: true,
+      },
+    })
 
     if (!plan) return { success: false, error: "Plan not found" }
     if (plan.status !== "draft") return { success: false, error: "Plan is not editable" }
@@ -430,33 +411,30 @@ export async function selectFulfillmentOption(
     const chosen = options.find((o) => o.key === selectedPlanKey)
     if (!chosen) return { success: false, error: "Option not found" }
 
-    const segmentValues = chosen.segments.map((s, idx) => {
-      const plannedJson = JSON.stringify(s.planned ?? {})
-      return Prisma.sql`(
-        ${plan.id}::uuid,
-        ${idx}::int,
-        ${s.mode}::"FulfillmentSegmentMode",
-        'planned'::"FulfillmentSegmentStatus",
-        ${plannedJson}::jsonb,
-        now()
-      )`
-    })
-
     await prisma.$transaction([
-      prisma.$executeRaw(Prisma.sql`
-        delete from fulfillment_segments where plan_id = ${plan.id}::uuid
-      `),
-      prisma.$executeRaw(Prisma.sql`
-        update fulfillment_plans
-        set selected_plan_key = ${selectedPlanKey}, updated_at = now()
-        where id = ${plan.id}::uuid
-      `),
-      chosen.segments.length > 0
-        ? prisma.$executeRaw(Prisma.sql`
-            insert into fulfillment_segments (plan_id, sort_order, mode, status, planned, updated_at)
-            values ${Prisma.join(segmentValues)}
-          `)
-        : prisma.$executeRaw(Prisma.sql`select 1`),
+      prisma.fulfillmentSegment.deleteMany({
+        where: { planId: plan.id },
+      }),
+      prisma.fulfillmentPlan.update({
+        where: { id: plan.id },
+        data: {
+          selectedPlanKey,
+          updatedAt: new Date(),
+        },
+      }),
+      ...(chosen.segments.length > 0
+        ? [
+            prisma.fulfillmentSegment.createMany({
+              data: chosen.segments.map((s, idx) => ({
+                planId: plan.id,
+                sortOrder: idx,
+                mode: s.mode,
+                status: "planned",
+                planned: (s.planned ?? {}) as Prisma.InputJsonValue,
+              })),
+            }),
+          ]
+        : []),
     ])
 
     return { success: true }

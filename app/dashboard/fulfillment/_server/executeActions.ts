@@ -5,7 +5,6 @@ import { z } from "zod"
 import { Decimal } from "@prisma/client/runtime/index-browser"
 import type { LngLat } from "@/app/dashboard/jobs/_types"
 import { getRandomCarrier, generateFlightNumber } from "@/lib/carriers/carriers-data"
-import { Prisma } from "@prisma/client"
 
 const planIdSchema = z.string().uuid()
 
@@ -191,21 +190,20 @@ export async function startFulfillmentExecution(
 ): Promise<{ success: true } | { success: false; error: string }> {
   try {
     const parsedPlanId = planIdSchema.parse(planId)
-    const rows = await prisma.$queryRaw<Array<{ id: string; status: string }>>(Prisma.sql`
-      select id, status::text as status
-      from fulfillment_plans
-      where id = ${parsedPlanId}::uuid
-      limit 1
-    `)
-    const plan = rows[0] ?? null
+    const plan = await prisma.fulfillmentPlan.findUnique({
+      where: { id: parsedPlanId },
+      select: { id: true, status: true },
+    })
     if (!plan) return { success: false, error: "Plan not found" }
     if (plan.status !== "draft") return { success: false, error: "Plan is not executable" }
 
-    await prisma.$executeRaw(Prisma.sql`
-      update fulfillment_plans
-      set status = 'executing'::"FulfillmentPlanStatus", updated_at = now()
-      where id = ${plan.id}::uuid
-    `)
+    await prisma.fulfillmentPlan.update({
+      where: { id: plan.id },
+      data: {
+        status: "executing",
+        updatedAt: new Date(),
+      },
+    })
 
     return { success: true }
   } catch (e) {
@@ -236,49 +234,46 @@ export async function executeNextFulfillmentStep(
   try {
     const parsedPlanId = planIdSchema.parse(planId)
 
-    const planRows = await prisma.$queryRaw<
-      Array<{ id: string; master_job_id: string; status: string }>
-    >(Prisma.sql`
-      select id, master_job_id, status::text as status
-      from fulfillment_plans
-      where id = ${parsedPlanId}::uuid
-      limit 1
-    `)
-    const planRow = planRows[0] ?? null
-    if (!planRow) return { success: false, error: "Plan not found" }
-    if (planRow.status !== "executing") {
+    const plan = await prisma.fulfillmentPlan.findUnique({
+      where: { id: parsedPlanId },
+      include: {
+        segments: {
+          orderBy: { sortOrder: "asc" },
+        },
+      },
+    })
+    if (!plan) return { success: false, error: "Plan not found" }
+    if (plan.status !== "executing") {
       return { success: false, error: "Plan is not currently executing" }
     }
 
-    const segments = await prisma.$queryRaw<DbSegmentRow[]>(Prisma.sql`
-      select
-        id,
-        plan_id as "planId",
-        sort_order as "sortOrder",
-        mode::text as mode,
-        status::text as status,
-        planned,
-        job_id as "jobId",
-        shipment_id as "shipmentId",
-        train_shipment_id as "trainShipmentId"
-      from fulfillment_segments
-      where plan_id = ${planRow.id}::uuid
-      order by sort_order asc
-    `)
+    const segments = plan.segments.map((s) => ({
+      id: s.id,
+      planId: s.planId,
+      sortOrder: s.sortOrder,
+      mode: s.mode,
+      status: s.status,
+      planned: s.planned,
+      jobId: s.jobId,
+      shipmentId: s.shipmentId,
+      trainShipmentId: s.trainShipmentId,
+    }))
 
     const next = segments.find((s) => s.status === "planned") ?? null
     if (!next) {
-      await prisma.$executeRaw(Prisma.sql`
-        update fulfillment_plans
-        set status = 'completed'::"FulfillmentPlanStatus", updated_at = now()
-        where id = ${planRow.id}::uuid
-      `)
+      await prisma.fulfillmentPlan.update({
+        where: { id: plan.id },
+        data: {
+          status: "completed",
+          updatedAt: new Date(),
+        },
+      })
       return { success: true, done: true, planStatus: "completed" }
     }
     nextSegmentId = next.id
 
     const masterJob = await prisma.job.findUnique({
-      where: { id: planRow.master_job_id },
+      where: { id: plan.masterJobId },
       select: {
         id: true,
         title: true,
@@ -299,11 +294,13 @@ export async function executeNextFulfillmentStep(
     })
 
     // Mark the segment in-progress first (visible to SSE)
-    await prisma.$executeRaw(Prisma.sql`
-      update fulfillment_segments
-      set status = 'in_progress'::"FulfillmentSegmentStatus", updated_at = now()
-      where id = ${next.id}::uuid
-    `)
+    await prisma.fulfillmentSegment.update({
+      where: { id: next.id },
+      data: {
+        status: "in_progress",
+        updatedAt: new Date(),
+      },
+    })
 
     if (next.mode === "ground") {
       const planned = groundPlannedSchema.parse(next.planned ?? {})
@@ -347,11 +344,14 @@ export async function executeNextFulfillmentStep(
         select: { id: true },
       })
 
-      await prisma.$executeRaw(Prisma.sql`
-        update fulfillment_segments
-        set job_id = ${createdJob.id}::uuid, status = 'completed'::"FulfillmentSegmentStatus", updated_at = now()
-        where id = ${next.id}::uuid
-      `)
+      await prisma.fulfillmentSegment.update({
+        where: { id: next.id },
+        data: {
+          jobId: createdJob.id,
+          status: "completed",
+          updatedAt: new Date(),
+        },
+      })
     }
 
     if (next.mode === "train") {
@@ -382,7 +382,7 @@ export async function executeNextFulfillmentStep(
             create: {
               type: "created",
               title: "Shipment Created",
-              description: `Auto-planned from fulfillment plan ${planRow.id}`,
+              description: `Auto-planned from fulfillment plan ${plan.id}`,
               occurredAt: new Date(),
             },
           },
@@ -390,11 +390,14 @@ export async function executeNextFulfillmentStep(
         select: { id: true },
       })
 
-      await prisma.$executeRaw(Prisma.sql`
-        update fulfillment_segments
-        set train_shipment_id = ${createdTrain.id}::uuid, status = 'completed'::"FulfillmentSegmentStatus", updated_at = now()
-        where id = ${next.id}::uuid
-      `)
+      await prisma.fulfillmentSegment.update({
+        where: { id: next.id },
+        data: {
+          trainShipmentId: createdTrain.id,
+          status: "completed",
+          updatedAt: new Date(),
+        },
+      })
     }
 
     if (next.mode === "air") {
@@ -412,26 +415,31 @@ export async function executeNextFulfillmentStep(
         plannedArrivalAt,
       })
 
-      await prisma.$executeRaw(Prisma.sql`
-        update fulfillment_segments
-        set shipment_id = ${shipmentId}::uuid, status = 'completed'::"FulfillmentSegmentStatus", updated_at = now()
-        where id = ${next.id}::uuid
-      `)
+      await prisma.fulfillmentSegment.update({
+        where: { id: next.id },
+        data: {
+          shipmentId,
+          status: "completed",
+          updatedAt: new Date(),
+        },
+      })
     }
 
     // If that was the last segment, mark plan completed.
-    const remainingRows = await prisma.$queryRaw<Array<{ c: number }>>(Prisma.sql`
-      select count(*)::int as c
-      from fulfillment_segments
-      where plan_id = ${planRow.id}::uuid and status = 'planned'::"FulfillmentSegmentStatus"
-    `)
-    const remaining = remainingRows[0]?.c ?? 0
+    const remaining = await prisma.fulfillmentSegment.count({
+      where: {
+        planId: plan.id,
+        status: "planned",
+      },
+    })
     if (remaining === 0) {
-      await prisma.$executeRaw(Prisma.sql`
-        update fulfillment_plans
-        set status = 'completed'::"FulfillmentPlanStatus", updated_at = now()
-        where id = ${planRow.id}::uuid
-      `)
+      await prisma.fulfillmentPlan.update({
+        where: { id: plan.id },
+        data: {
+          status: "completed",
+          updatedAt: new Date(),
+        },
+      })
       return { success: true, done: true, planStatus: "completed" }
     }
 
@@ -439,25 +447,29 @@ export async function executeNextFulfillmentStep(
   } catch (e) {
     if (nextSegmentId) {
       try {
-        await prisma.$executeRaw(Prisma.sql`
-          update fulfillment_segments
-          set status = 'failed'::"FulfillmentSegmentStatus", updated_at = now()
-          where id = ${nextSegmentId}::uuid
-        `)
+        await prisma.fulfillmentSegment.update({
+          where: { id: nextSegmentId },
+          data: {
+            status: "failed",
+            updatedAt: new Date(),
+          },
+        })
       } catch {
         // ignore
       }
       try {
-        const segRows = await prisma.$queryRaw<Array<{ plan_id: string }>>(Prisma.sql`
-          select plan_id from fulfillment_segments where id = ${nextSegmentId}::uuid limit 1
-        `)
-        const segPlanId = segRows[0]?.plan_id ?? null
-        if (segPlanId) {
-          await prisma.$executeRaw(Prisma.sql`
-            update fulfillment_plans
-            set status = 'failed'::"FulfillmentPlanStatus", updated_at = now()
-            where id = ${segPlanId}::uuid
-          `)
+        const segment = await prisma.fulfillmentSegment.findUnique({
+          where: { id: nextSegmentId },
+          select: { planId: true },
+        })
+        if (segment) {
+          await prisma.fulfillmentPlan.update({
+            where: { id: segment.planId },
+            data: {
+              status: "failed",
+              updatedAt: new Date(),
+            },
+          })
         }
       } catch {
         // ignore
@@ -488,19 +500,24 @@ export async function executeFulfillmentPlan(
     }
 
     // Best-effort: collect created ids from segments
-    const segRows = await prisma.$queryRaw<
-      Array<{ master_job_id: string; job_id: string | null; train_shipment_id: string | null }>
-    >(Prisma.sql`
-      select p.master_job_id, s.job_id, s.train_shipment_id
-      from fulfillment_plans p
-      left join fulfillment_segments s on s.plan_id = p.id
-      where p.id = ${planId}::uuid
-    `)
-    for (const r of segRows) {
-      if (r.job_id) createdJobIds.push(r.job_id)
-      if (r.train_shipment_id) createdTrainShipmentIds.push(r.train_shipment_id)
+    const plan = await prisma.fulfillmentPlan.findUnique({
+      where: { id: planId },
+      include: {
+        segments: {
+          select: {
+            jobId: true,
+            trainShipmentId: true,
+          },
+        },
+      },
+    })
+    if (plan) {
+      for (const segment of plan.segments) {
+        if (segment.jobId) createdJobIds.push(segment.jobId)
+        if (segment.trainShipmentId) createdTrainShipmentIds.push(segment.trainShipmentId)
+      }
     }
-    const masterJobId = segRows[0]?.master_job_id ?? ""
+    const masterJobId = plan?.masterJobId ?? ""
 
     return { success: true, masterJobId, planId, createdJobIds, createdTrainShipmentIds }
   } catch (e) {
@@ -511,32 +528,14 @@ export async function executeFulfillmentPlan(
 
 export async function getFulfillmentPlan(planId: string) {
   const parsedPlanId = planIdSchema.parse(planId)
-  const planRows = await prisma.$queryRaw<
-    Array<{ id: string; master_job_id: string; status: string; objective: string; selected_plan_key: string | null; options: unknown; updated_at: Date }>
-  >(Prisma.sql`
-    select id, master_job_id, status::text as status, objective::text as objective, selected_plan_key, options, updated_at
-    from fulfillment_plans
-    where id = ${parsedPlanId}::uuid
-    limit 1
-  `)
-  const plan = planRows[0] ?? null
-  if (!plan) return null
-  const segments = await prisma.$queryRaw<DbSegmentRow[]>(Prisma.sql`
-    select
-      id,
-      plan_id as "planId",
-      sort_order as "sortOrder",
-      mode::text as mode,
-      status::text as status,
-      planned,
-      job_id as "jobId",
-      shipment_id as "shipmentId",
-      train_shipment_id as "trainShipmentId"
-    from fulfillment_segments
-    where plan_id = ${parsedPlanId}::uuid
-    order by sort_order asc
-  `)
-  return { ...plan, segments }
+  return await prisma.fulfillmentPlan.findUnique({
+    where: { id: parsedPlanId },
+    include: {
+      segments: {
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  })
 }
 
 
