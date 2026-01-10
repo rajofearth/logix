@@ -198,10 +198,8 @@ export function RequestForm({
       })
       toast.success("Request created")
       await onCreated(created)
-      setForm(getInitialState())
-      setRoutes([])
-      setSelectedRouteType("fastest")
-      setActivePoint("auto")
+      // Don't reset form - keep it visible so user can see what was created
+      // and optionally create another similar request
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Failed to create request"
       toast.error(msg)

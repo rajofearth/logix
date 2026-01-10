@@ -4,7 +4,12 @@ import { z } from "zod"
 
 import { prisma } from "@/lib/prisma"
 import { requireAdminSession } from "@/app/api/_utils/admin-session"
-import { Prisma } from "@prisma/client"
+import type {
+  FulfillmentObjective,
+  FulfillmentPlanStatus,
+  FulfillmentSegmentMode,
+  FulfillmentSegmentStatus,
+} from "@prisma/client"
 
 export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
@@ -14,15 +19,15 @@ const planIdSchema = z.string().uuid()
 type PlanUpdateDto = {
   id: string
   masterJobId: string
-  status: string
-  objective: string
+  status: FulfillmentPlanStatus
+  objective: FulfillmentObjective
   selectedPlanKey: string | null
   updatedAt: string
   segments: Array<{
     id: string
     sortOrder: number
-    mode: string
-    status: string
+    mode: FulfillmentSegmentMode
+    status: FulfillmentSegmentStatus
     jobId: string | null
     shipmentId: string | null
     trainShipmentId: string | null
@@ -45,12 +50,15 @@ export async function GET(
   try {
     await requireAdminSession(req.headers)
     const { planId } = await params
-    const parsedPlanId = planIdSchema.parse(planId)
+    const parsed = planIdSchema.safeParse(planId)
+    if (!parsed.success) return new Response("Invalid planId", { status: 400 })
+    const parsedPlanId = parsed.data
 
-    const existsRows = await prisma.$queryRaw<Array<{ id: string }>>(Prisma.sql`
-      select id from fulfillment_plans where id = ${parsedPlanId}::uuid limit 1
-    `)
-    if (existsRows.length === 0) return new Response("Plan not found", { status: 404 })
+    const exists = await prisma.fulfillmentPlan.findUnique({
+      where: { id: parsedPlanId },
+      select: { id: true },
+    })
+    if (!exists) return new Response("Plan not found", { status: 404 })
 
     const encoder = new TextEncoder()
     let isActive = true
@@ -65,30 +73,18 @@ export async function GET(
         const poll = async () => {
           if (!isActive) return
           try {
-            const planRows = await prisma.$queryRaw<
-              Array<{
-                id: string
-                master_job_id: string
-                status: string
-                objective: string
-                selected_plan_key: string | null
-                updated_at: Date
-              }>
-            >(Prisma.sql`
-              select
-                id,
-                master_job_id,
-                status::text as status,
-                objective::text as objective,
-                selected_plan_key,
-                updated_at
-              from fulfillment_plans
-              where id = ${parsedPlanId}::uuid
-              limit 1
-            `)
-
-            const planRow = planRows[0] ?? null
-            if (!planRow) {
+            const plan = await prisma.fulfillmentPlan.findUnique({
+              where: { id: parsedPlanId },
+              select: {
+                id: true,
+                masterJobId: true,
+                status: true,
+                objective: true,
+                selectedPlanKey: true,
+                updatedAt: true,
+              },
+            })
+            if (!plan) {
               try {
                 controller.enqueue(encoder.encode(sseEvent("error", { message: "Plan not found" })))
               } catch {
@@ -103,55 +99,44 @@ export async function GET(
               return
             }
 
-            const segmentRows = await prisma.$queryRaw<
-              Array<{
-                id: string
-                sort_order: number
-                mode: string
-                status: string
-                job_id: string | null
-                shipment_id: string | null
-                train_shipment_id: string | null
-                updated_at: Date
-              }>
-            >(Prisma.sql`
-              select
-                id,
-                sort_order,
-                mode::text as mode,
-                status::text as status,
-                job_id,
-                shipment_id,
-                train_shipment_id,
-                updated_at
-              from fulfillment_segments
-              where plan_id = ${parsedPlanId}::uuid
-              order by sort_order asc
-            `)
+            const segments = await prisma.fulfillmentSegment.findMany({
+              where: { planId: parsedPlanId },
+              orderBy: { sortOrder: "asc" },
+              select: {
+                id: true,
+                sortOrder: true,
+                mode: true,
+                status: true,
+                jobId: true,
+                shipmentId: true,
+                trainShipmentId: true,
+                updatedAt: true,
+              },
+            })
 
-            let updatedAt = planRow.updated_at
-            for (const s of segmentRows) {
-              updatedAt = maxDate(updatedAt, s.updated_at)
+            let updatedAt = plan.updatedAt
+            for (const s of segments) {
+              updatedAt = maxDate(updatedAt, s.updatedAt)
             }
 
             if (!lastUpdatedAt || updatedAt > lastUpdatedAt) {
               lastUpdatedAt = updatedAt
               const dto: PlanUpdateDto = {
-                id: planRow.id,
-                masterJobId: planRow.master_job_id,
-                status: planRow.status,
-                objective: planRow.objective,
-                selectedPlanKey: planRow.selected_plan_key,
-                updatedAt: planRow.updated_at.toISOString(),
-                segments: segmentRows.map((s) => ({
+                id: plan.id,
+                masterJobId: plan.masterJobId,
+                status: plan.status,
+                objective: plan.objective,
+                selectedPlanKey: plan.selectedPlanKey,
+                updatedAt: plan.updatedAt.toISOString(),
+                segments: segments.map((s) => ({
                   id: s.id,
-                  sortOrder: s.sort_order,
+                  sortOrder: s.sortOrder,
                   mode: s.mode,
                   status: s.status,
-                  jobId: s.job_id,
-                  shipmentId: s.shipment_id,
-                  trainShipmentId: s.train_shipment_id,
-                  updatedAt: s.updated_at.toISOString(),
+                  jobId: s.jobId,
+                  shipmentId: s.shipmentId,
+                  trainShipmentId: s.trainShipmentId,
+                  updatedAt: s.updatedAt.toISOString(),
                 })),
               }
               if (isActive) {
@@ -168,11 +153,11 @@ export async function GET(
               }
             }
 
-            const terminal = ["completed", "failed", "cancelled"].includes(planRow.status)
+            const terminal = ["completed", "failed", "cancelled"].includes(plan.status)
             if (terminal) {
               if (isActive) {
                 try {
-                  controller.enqueue(encoder.encode(sseEvent("completed", { status: planRow.status })))
+                  controller.enqueue(encoder.encode(sseEvent("completed", { status: plan.status })))
                 } catch {
                   // Controller might be closed
                 }
