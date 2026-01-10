@@ -51,7 +51,7 @@ export function PlansTable({ plans }: { plans: FulfillmentPlanListItemDTO[] }) {
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="win7-groupbox p-0">
       <Table>
         <TableHeader>
           <TableRow>

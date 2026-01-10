@@ -69,7 +69,7 @@ export function HistoryRequestList({ requests }: { requests: FulfillmentRequestD
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => toggleExpand(request.id)}
-                      className="flex items-center justify-center p-1 hover:bg-muted rounded"
+                      className="win7-btn-ghost flex h-[20px] w-[20px] items-center justify-center p-0"
                       aria-label={isExpanded ? "Collapse" : "Expand"}
                     >
                       {isExpanded ? (
