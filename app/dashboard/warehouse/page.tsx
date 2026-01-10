@@ -14,6 +14,7 @@ import { AddFloorDialog } from "./_components/add-floor-dialog";
 import { AddBlockDialog } from "./_components/add-block-dialog";
 import { Button } from "@/components/ui/button";
 import { RestockAiPanel } from "./_components/restock-ai-panel";
+import { MLPredictionPanel } from "./_components/ml-prediction-panel";
 
 export default function WarehousePage() {
   // Loading and error states
@@ -262,6 +263,7 @@ export default function WarehousePage() {
             floor={selectedFloor || placeholderFloor}
             highlightedBlockId={highlightedBlockId}
             warehouseId={selectedWarehouseId || undefined}
+            warehouse={selectedWarehouse}
             onRefresh={refreshWarehouse}
           />
         </div>
@@ -284,6 +286,19 @@ export default function WarehousePage() {
                 floorId={selectedFloor.id}
                 floorName={selectedFloor.name}
                 categories={availableCategories}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* ML Price Prediction */}
+        {selectedWarehouseId && selectedFloor && (
+          <div className="win7-groupbox">
+            <legend>ML Price Prediction</legend>
+            <div className="win7-p-2">
+              <MLPredictionPanel
+                warehouse={selectedWarehouse}
+                floor={selectedFloor}
               />
             </div>
           </div>
