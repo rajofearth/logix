@@ -1,5 +1,6 @@
+import "../../../../lib/ai-sdk-config";
 import { NextRequest, NextResponse } from "next/server";
-import { google } from "@ai-sdk/google";
+import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { generateText } from "ai";
 import { z } from "zod";
 
@@ -41,8 +42,10 @@ You must respond with a valid JSON object only, no additional text. The JSON mus
 If no threat is detected, set hasThreat to false and threatType to null. If a threat is detected, provide the threat type (e.g., "damage", "tampering", "suspicious_item", "structural_issue") and a clear description. The boundingBox should be provided in normalized coordinates (0-1) relative to the image dimensions if you can identify the threat location.`;
 
 export async function POST(req: NextRequest) {
+    console.log("[Threat Detection] ===== Request received =====");
     try {
         const body = await req.json();
+        console.log("[Threat Detection] Request body received, image data present:", !!body.image);
         const parsed = requestSchema.safeParse(body);
 
         if (!parsed.success) {
@@ -68,22 +71,18 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Initialize Gemini Flash Lite model
-        // The google() function reads API key from GOOGLE_GENERATIVE_AI_API_KEY by default
-        // We'll temporarily set it if THREAT_MODEL_KEY is provided
-        const originalApiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-        if (process.env.THREAT_MODEL_KEY) {
-            process.env.GOOGLE_GENERATIVE_AI_API_KEY = process.env.THREAT_MODEL_KEY;
-        }
+        // Initialize OpenRouter with qwen/qwen-2.5-vl-7b-instruct:free model
+        console.log("[Threat Detection] Initializing OpenRouter...");
+        const openrouter = createOpenRouter({
+            apiKey: process.env.THREAT_MODEL_KEY,
+        });
 
-        const model = google("gemini-flash-lite-latest");
-
-        // Restore original API key if it existed
-        if (originalApiKey) {
-            process.env.GOOGLE_GENERATIVE_AI_API_KEY = originalApiKey;
-        }
+        const model = openrouter("qwen/qwen-2.5-vl-7b-instruct:free");
+        console.log("[Threat Detection] Model initialized: qwen/qwen-2.5-vl-7b-instruct:free");
+        console.log("[Threat Detection] Image data length:", base64Image.length, "characters");
 
         // Generate threat detection analysis
+        console.log("[Threat Detection] Sending request to model...");
         const result = await generateText({
             model,
             messages: [
@@ -101,18 +100,30 @@ export async function POST(req: NextRequest) {
             temperature: 0.3, // Lower temperature for more consistent threat detection
         });
 
+        console.log("[Threat Detection] Model response received");
+        console.log("[Threat Detection] Raw response text:", result.text);
+        console.log("[Threat Detection] Response length:", result.text.length, "characters");
+        if (result.usage) {
+            console.log("[Threat Detection] Token usage:", JSON.stringify(result.usage, null, 2));
+        }
+
         // Parse the JSON response from the model
         let threatResult: ThreatDetectionResult;
         try {
             // Try to extract JSON from the response text
             const responseText = result.text.trim();
+            console.log("[Threat Detection] Attempting to parse JSON from response...");
+            
             // Remove markdown code blocks if present
             const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/) || 
                             responseText.match(/```\s*([\s\S]*?)\s*```/) ||
                             [null, responseText];
             const jsonText = jsonMatch[1] || responseText;
             
+            console.log("[Threat Detection] Extracted JSON text:", jsonText.substring(0, 200) + (jsonText.length > 200 ? "..." : ""));
+            
             threatResult = JSON.parse(jsonText) as ThreatDetectionResult;
+            console.log("[Threat Detection] Successfully parsed JSON:", JSON.stringify(threatResult, null, 2));
 
             // Validate the structure
             if (typeof threatResult.hasThreat !== "boolean") {
@@ -128,9 +139,18 @@ export async function POST(req: NextRequest) {
                     ? "Threat detected" 
                     : "No threats detected";
             }
+            
+            console.log("[Threat Detection] Final parsed result:", {
+                hasThreat: threatResult.hasThreat,
+                threatType: threatResult.threatType,
+                confidence: threatResult.confidence,
+                description: threatResult.description,
+                hasBoundingBox: !!threatResult.boundingBox,
+            });
         } catch (parseError) {
-            console.error("Failed to parse AI response:", parseError);
-            console.error("Raw response:", result.text);
+            console.error("[Threat Detection] Failed to parse AI response:", parseError);
+            console.error("[Threat Detection] Parse error details:", parseError instanceof Error ? parseError.message : String(parseError));
+            console.error("[Threat Detection] Raw response text:", result.text);
             
             // Fallback: try to infer threat from text response
             const lowerText = result.text.toLowerCase();
@@ -144,11 +164,16 @@ export async function POST(req: NextRequest) {
                 confidence: hasThreatKeywords ? 60 : 0,
                 description: result.text || "Analysis completed",
             };
+            
+            console.log("[Threat Detection] Using fallback parsing. Inferred result:", threatResult);
         }
 
+        console.log("[Threat Detection] Returning response:", JSON.stringify(threatResult, null, 2));
         return NextResponse.json(threatResult);
     } catch (error) {
-        console.error("Threat detection error:", error);
+        console.error("[Threat Detection] ===== Error occurred =====");
+        console.error("[Threat Detection] Error:", error);
+        console.error("[Threat Detection] Error stack:", error instanceof Error ? error.stack : "No stack trace");
         const errorMessage = error instanceof Error ? error.message : "Unknown error";
         
         return NextResponse.json(
