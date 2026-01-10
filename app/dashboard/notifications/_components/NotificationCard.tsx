@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { IconBell, IconCheck, IconReceipt, IconScan, IconSettings, IconTruck, IconX } from "@tabler/icons-react"
+import { IconBell, IconBuildingWarehouse, IconCheck, IconReceipt, IconScan, IconSettings, IconTruck, IconX } from "@tabler/icons-react"
 import { formatDistanceToNow } from "date-fns"
 
 import type { NotificationDTO } from "../_types"
@@ -16,6 +16,7 @@ const typeIcons = {
     packageVerification: IconScan,
     billing: IconReceipt,
     system: IconSettings,
+    warehouse: IconBuildingWarehouse,
 }
 
 interface NotificationCardProps {

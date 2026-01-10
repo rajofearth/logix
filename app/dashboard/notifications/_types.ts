@@ -47,6 +47,12 @@ export const notificationTypeConfig = {
         textColor: "text-muted-foreground",
         iconBgColor: "bg-muted",
     },
+    warehouse: {
+        label: "Warehouse",
+        bgColor: "bg-purple-500/10",
+        textColor: "text-purple-500",
+        iconBgColor: "bg-purple-500/20",
+    },
 }
 
 // Mock notifications for development

@@ -54,6 +54,47 @@ export default function WarehousePage() {
     load();
   }, []);
 
+  // Trigger AI restock analysis on page load (fire-and-forget)
+  useEffect(() => {
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+
+    const triggerRestockAnalysis = async () => {
+      try {
+        // Small delay to ensure page is rendered
+        await new Promise((resolve) => {
+          timeoutId = setTimeout(resolve, 500);
+        });
+
+        if (!mounted) return;
+
+        // Fire-and-forget: don't await, don't block UI
+        fetch("/api/warehouse/restock-ai-all/notify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }).catch((e) => {
+          // Silently handle errors - don't show to user
+          console.error("[Warehouse] Failed to trigger restock analysis:", e);
+        });
+      } catch (e) {
+        // Silently handle errors
+        console.error("[Warehouse] Error triggering restock analysis:", e);
+      }
+    };
+
+    // Only trigger if warehouses are loaded
+    if (warehouseList.length > 0) {
+      triggerRestockAnalysis();
+    }
+
+    return () => {
+      mounted = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [warehouseList.length]);
+
   // Load full warehouse data when selection changes
   useEffect(() => {
     if (!selectedWarehouseId) return;
@@ -279,7 +320,6 @@ export default function WarehousePage() {
         {/* AI Restock */}
         {selectedWarehouseId && selectedFloor && (
           <div className="win7-groupbox">
-            <legend>AI</legend>
             <div className="win7-p-2">
               <RestockAiPanel
                 warehouseId={selectedWarehouseId}
@@ -294,7 +334,6 @@ export default function WarehousePage() {
         {/* ML Price Prediction */}
         {selectedWarehouseId && selectedFloor && (
           <div className="win7-groupbox">
-            <legend>ML Price Prediction</legend>
             <div className="win7-p-2">
               <MLPredictionPanel
                 warehouse={selectedWarehouse}
