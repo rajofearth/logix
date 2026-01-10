@@ -309,11 +309,13 @@ export default function ShipmentDetailPage() {
                     </div>
 
                     {/* Right Panel - Map */}
-                    <div className="h-[400px] lg:h-full">
-                        <AirTrackingMap
-                            segments={mapSegments}
-                            aircraftPosition={airPosition}
-                        />
+                    <div className="flex-1 overflow-hidden relative bg-[#ece9d8] border-l border-[#898c95]">
+                        <div className="absolute inset-0">
+                            <AirTrackingMap
+                                segments={mapSegments}
+                                aircraftPosition={airPosition}
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

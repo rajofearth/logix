@@ -269,7 +269,13 @@ export function AirTrackingMap({
     React.useEffect(() => {
         if (!mapContainer.current || map.current) return;
 
-        mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+        const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+        if (!token) {
+            console.error("Missing NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN");
+            return;
+        }
+
+        mapboxgl.accessToken = token;
 
         // Use a default world center - fitBounds will adjust later
         map.current = new mapboxgl.Map({
@@ -566,47 +572,60 @@ export function AirTrackingMap({
     // Find current segment
     const currentSegment = airSegments.find((s) => s.isActive) || airSegments[0];
 
+    const token = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+
+    if (!token) {
+        return (
+            <div className="flex h-full w-full items-center justify-center bg-[#ece9d8] text-sm text-gray-600">
+                <div className="text-center">
+                    <p className="font-semibold">Missing Mapbox Token</p>
+                    <p className="text-xs mt-1">Please configure NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="relative h-full w-full rounded-lg overflow-hidden border">
+        <div className="relative h-full w-full overflow-hidden">
             <div ref={mapContainer} className="h-full w-full" />
 
             {/* Real-time Info Panel */}
             {effectivePosition && (
-                <div className="absolute top-4 right-16 rounded-lg bg-background/95 backdrop-blur-sm border p-3 text-xs shadow-lg max-w-[200px]">
-                    <div className="flex items-center gap-2 mb-2 pb-2 border-b">
+                <div className="absolute top-4 right-4 win7-groupbox p-2 text-xs max-w-[200px]">
+                    <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-300">
                         <div className={`size-2 rounded-full ${isLiveTracking ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`} />
-                        <span className="font-semibold">{isLiveTracking ? 'Live Tracking' : 'Estimated Position'}</span>
+                        <span className="font-semibold text-black">{isLiveTracking ? 'Live Tracking' : 'Estimated Position'}</span>
                     </div>
-                    <div className="mb-2 text-muted-foreground">
+                    <div className="mb-2 text-gray-600 text-[10px]">
                         {formatDateTime(new Date(internalTime))}
                     </div>
                     {currentSegment?.flightNumber && (
-                        <div className="flex justify-between mb-1">
-                            <span className="text-muted-foreground">Flight</span>
-                            <span className="font-mono font-medium">
+                        <div className="flex justify-between mb-1 text-[10px]">
+                            <span className="text-gray-600">Flight</span>
+                            <span className="font-mono font-medium text-black">
                                 {currentSegment.carrier} {currentSegment.flightNumber}
                             </span>
                         </div>
                     )}
-                    <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">Altitude</span>
-                        <span className="font-medium">
+                    <div className="flex justify-between mb-1 text-[10px]">
+                        <span className="text-gray-600">Altitude</span>
+                        <span className="font-medium text-black">
                             {effectivePosition.altitude
                                 ? `${Math.round(effectivePosition.altitude * 3.281)} ft`
                                 : "N/A"}
                         </span>
                     </div>
-                    <div className="flex justify-between mb-1">
-                        <span className="text-muted-foreground">Speed</span>
-                        <span className="font-medium">
+                    <div className="flex justify-between mb-1 text-[10px]">
+                        <span className="text-gray-600">Speed</span>
+                        <span className="font-medium text-black">
                             {effectivePosition.velocity
                                 ? `${Math.round(effectivePosition.velocity * 1.944)} kts`
                                 : "N/A"}
                         </span>
                     </div>
-                    <div className="flex justify-between">
-                        <span className="text-muted-foreground">Heading</span>
-                        <span className="font-medium">
+                    <div className="flex justify-between text-[10px]">
+                        <span className="text-gray-600">Heading</span>
+                        <span className="font-medium text-black">
                             {effectivePosition.heading !== null && effectivePosition.heading !== undefined
                                 ? `${Math.round(effectivePosition.heading)}°`
                                 : "N/A"}
@@ -616,28 +635,28 @@ export function AirTrackingMap({
             )}
 
             {/* Legend */}
-            <div className="absolute bottom-4 left-4 rounded-lg bg-background/90 backdrop-blur-sm border p-3 text-xs">
-                <div className="font-semibold mb-2">Flight Path</div>
+            <div className="absolute bottom-4 left-4 win7-groupbox p-2 text-xs">
+                <div className="font-semibold mb-2 text-black">Flight Path</div>
                 <div className="flex items-center gap-2 mb-1">
                     <div className="size-3 rounded-full bg-blue-500" />
-                    <span>Departure</span>
+                    <span className="text-black">Departure</span>
                 </div>
                 {airSegments.length > 1 && (
                     <div className="flex items-center gap-2 mb-1">
                         <div className="size-3 rounded-full bg-orange-500" />
-                        <span>Connection</span>
+                        <span className="text-black">Connection</span>
                     </div>
                 )}
                 <div className="flex items-center gap-2 mb-1">
                     <div className="size-3 rounded-full bg-green-500" />
-                    <span>Arrival</span>
+                    <span className="text-black">Arrival</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <div className="size-3 rounded-full bg-yellow-500" />
-                    <span>Aircraft</span>
+                    <span className="text-black">Aircraft</span>
                 </div>
                 {airSegments.length > 1 && (
-                    <div className="mt-2 pt-2 border-t text-muted-foreground">
+                    <div className="mt-2 pt-2 border-t border-gray-300 text-gray-600 text-[10px]">
                         {airSegments.length} flight segment{airSegments.length > 1 ? "s" : ""}
                     </div>
                 )}
@@ -645,7 +664,7 @@ export function AirTrackingMap({
 
             {/* Cached warning */}
             {aircraftPosition?.cached && (
-                <div className="absolute top-4 left-4 rounded-lg bg-yellow-500/10 border border-yellow-500/20 px-3 py-1 text-xs text-yellow-500">
+                <div className="absolute top-4 left-4 win7-groupbox px-3 py-1 text-xs text-yellow-600 bg-yellow-50 border-yellow-300">
                     Position data may be delayed
                 </div>
             )}
