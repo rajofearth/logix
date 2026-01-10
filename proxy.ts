@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
+import { auth } from "@/lib/auth";
 
 const AUTH_PAGES = new Set(["/auth/sign-in", "/auth/sign-up"]);
 
@@ -8,11 +8,17 @@ function isDashboardPath(pathname: string): boolean {
   return pathname === "/dashboard" || pathname.startsWith("/dashboard/");
 }
 
-export function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
-  const sessionCookie = getSessionCookie(request, { cookiePrefix: "admin-auth" });
-  const isAuthenticated = Boolean(sessionCookie);
 
+  // Perform full session validation with database check
+  const session = await auth.api.getSession({
+    headers: request.headers,
+  });
+
+  const isAuthenticated = Boolean(session?.user);
+
+  // Redirect unauthenticated users trying to access dashboard
   if (!isAuthenticated && isDashboardPath(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/auth/sign-in";
@@ -20,6 +26,7 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect authenticated users away from auth pages
   if (isAuthenticated && AUTH_PAGES.has(pathname)) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";
@@ -33,5 +40,3 @@ export function proxy(request: NextRequest) {
 export const config = {
   matcher: ["/dashboard/:path*", "/auth/sign-in", "/auth/sign-up"],
 };
-
-

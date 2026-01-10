@@ -13,6 +13,7 @@ import {
     IconMapRoute,
     IconMessageCircle,
     IconPlane,
+    IconRoute,
     IconScan,
     IconSettings2,
     IconSteeringWheel,
@@ -36,6 +37,11 @@ const menuItems = [
             { title: "All Jobs", url: "/dashboard/jobs" },
             { title: "Create Job", url: "/dashboard/jobs/create" },
         ],
+    },
+    {
+        title: "Fulfillment",
+        url: "/dashboard/fulfillment",
+        icon: IconRoute,
     },
     {
         title: "Driver",
