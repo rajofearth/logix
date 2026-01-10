@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Floor, Block, getCategoryLabel, ProductCategory } from "./types";
+import { Floor, Block, Warehouse, getCategoryLabel, ProductCategory } from "./types";
 import { BlockCard, BlockLegend } from "./block-card";
 import { BlockDetailSheet } from "./block-detail-sheet";
 
@@ -9,10 +9,11 @@ interface WarehouseGridProps {
     floor: Floor;
     highlightedBlockId?: string | null;
     warehouseId?: string;
+    warehouse?: Warehouse | null;
     onRefresh?: () => void;
 }
 
-export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, onRefresh }: WarehouseGridProps) {
+export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, warehouse, onRefresh }: WarehouseGridProps) {
     const [selectedBlock, setSelectedBlock] = useState<Block | null>(null);
     const [sheetOpen, setSheetOpen] = useState(false);
 
@@ -80,6 +81,7 @@ export function WarehouseVisualGrid({ floor, highlightedBlockId, warehouseId, on
                 onOpenChange={setSheetOpen}
                 warehouseId={warehouseId}
                 floorId={floor.id}
+                warehouse={warehouse}
                 onRefresh={onRefresh}
             />
         </div>

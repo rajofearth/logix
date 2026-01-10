@@ -1,5 +1,6 @@
 import { jsonError, jsonOk } from "@/app/api/_utils/json";
 import { prisma } from "@/lib/prisma";
+import { hasAverageWeeklySalesColumn } from "./_utils/productWeeklySales";
 
 export const runtime = "nodejs";
 
@@ -21,13 +22,31 @@ type WarehouseListDto = {
 // GET /api/warehouse - List all warehouses with aggregated stats
 export async function GET() {
     try {
+        const hasWeekly = await hasAverageWeeklySalesColumn();
+
         const warehouses = await prisma.warehouse.findMany({
-            include: {
+            select: {
+                id: true,
+                name: true,
+                code: true,
+                address: true,
+                city: true,
+                workers: true,
+                updatedAt: true,
                 floors: {
-                    include: {
+                    select: {
+                        id: true,
                         blocks: {
-                            include: {
-                                products: true,
+                            select: {
+                                id: true,
+                                capacity: true,
+                                products: {
+                                    select: {
+                                        id: true,
+                                        quantity: true,
+                                        ...(hasWeekly ? { averageWeeklySales: true } : {}),
+                                    },
+                                },
                             },
                         },
                     },

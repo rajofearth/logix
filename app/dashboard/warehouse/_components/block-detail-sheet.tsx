@@ -50,10 +50,13 @@ import {
     IndianRupee,
     Check,
     Loader2,
+    Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { createProduct } from "../_lib/api";
+import { createProduct, predictProductPrice } from "../_lib/api";
+import type { Product, LogisticsData, RouteType, PricePrediction, Warehouse } from "./types";
+import { extractStateFromWarehouse } from "@/lib/warehouse/ml-prediction-mapper";
 
 interface BlockDetailSheetProps {
     block: Block | null;
@@ -61,6 +64,7 @@ interface BlockDetailSheetProps {
     onOpenChange: (open: boolean) => void;
     warehouseId?: string;
     floorId?: string;
+    warehouse?: Warehouse | null;
     onRefresh?: () => void;
 }
 
@@ -90,11 +94,24 @@ interface PicklistItem {
     selected: boolean;
 }
 
-export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floorId, onRefresh }: BlockDetailSheetProps) {
+const INDIAN_STATES = [
+    "AP", "AS", "BR", "CH", "DL", "GJ", "HR", "JH", "KA", "KL",
+    "MH", "MP", "OR", "PB", "RJ", "TG", "TN", "UP", "UT", "WB",
+];
+
+const ROUTE_TYPES: { value: RouteType; label: string }[] = [
+    { value: "economy", label: "Economy" },
+    { value: "fastest", label: "Fastest" },
+    { value: "via_gas_station", label: "Via Gas Station" },
+];
+
+export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floorId, warehouse, onRefresh }: BlockDetailSheetProps) {
     // Dialog states
     const [addProductOpen, setAddProductOpen] = useState(false);
     const [transferOpen, setTransferOpen] = useState(false);
     const [picklistOpen, setPicklistOpen] = useState(false);
+    const [predictionOpen, setPredictionOpen] = useState(false);
+    const [selectedProductForPrediction, setSelectedProductForPrediction] = useState<Product | null>(null);
 
     // Form states
     const [addProductForm, setAddProductForm] = useState<AddProductForm>({
@@ -115,6 +132,19 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
 
     const [picklistItems, setPicklistItems] = useState<PicklistItem[]>([]);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Prediction states
+    const [logisticsData, setLogisticsData] = useState<Partial<LogisticsData>>({
+        originState: warehouse ? extractStateFromWarehouse(warehouse) : "",
+        destState: "",
+        routeDistance: 150000,
+        routeType: "fastest",
+        packageWeightKg: 10,
+        estimatedDurationHours: 5.5,
+        delayHours: 0,
+    });
+    const [prediction, setPrediction] = useState<PricePrediction | null>(null);
+    const [isPredicting, setIsPredicting] = useState(false);
 
     // Stable reference for expiry check (30 days from now)
     const expiryThreshold = useMemo(() => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), []);
@@ -246,6 +276,59 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                 item.productId === productId ? { ...item, quantity } : item
             )
         );
+    };
+
+    // Open prediction dialog for a product
+    const openPredictionDialog = (product: Product) => {
+        setSelectedProductForPrediction(product);
+        setLogisticsData({
+            originState: warehouse ? extractStateFromWarehouse(warehouse) : "",
+            destState: "",
+            routeDistance: 150000,
+            routeType: "fastest",
+            packageWeightKg: 10,
+            estimatedDurationHours: 5.5,
+            delayHours: 0,
+        });
+        setPrediction(null);
+        setPredictionOpen(true);
+    };
+
+    // Handle price prediction
+    const handlePredict = async () => {
+        if (!selectedProductForPrediction) return;
+
+        if (!logisticsData.destState || !logisticsData.routeDistance || !logisticsData.routeType) {
+            toast.error("Please fill in all required logistics fields");
+            return;
+        }
+
+        setIsPredicting(true);
+        setPrediction(null);
+
+        try {
+            const fullLogisticsData: LogisticsData = {
+                originState: logisticsData.originState || "",
+                destState: logisticsData.destState,
+                routeDistance: logisticsData.routeDistance,
+                routeType: logisticsData.routeType,
+                packageWeightKg: logisticsData.packageWeightKg || 10,
+                estimatedDurationHours: logisticsData.estimatedDurationHours || 5.5,
+                actualTransitHours: logisticsData.actualTransitHours,
+                delayHours: logisticsData.delayHours || 0,
+                pickupHour: new Date().getHours(),
+                dayOfWeek: new Date().getDay(),
+                pickupMonth: new Date().getMonth() + 1,
+            };
+
+            const result = await predictProductPrice(selectedProductForPrediction, fullLogisticsData, warehouse || undefined);
+            setPrediction(result);
+            toast.success("Price prediction generated successfully");
+        } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Failed to predict price");
+        } finally {
+            setIsPredicting(false);
+        }
     };
 
     return (
@@ -494,21 +577,32 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                                                                 <span className="font-medium">{formatCurrency(product.currentPrice)}</span>
                                                             </span>
                                                         </div>
-                                                        <span
-                                                            className={cn(
-                                                                "text-[10px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
-                                                                priceChange >= 0
-                                                                    ? "text-emerald-600 bg-emerald-500/10"
-                                                                    : "text-red-600 bg-red-500/10"
-                                                            )}
-                                                        >
-                                                            {priceChange >= 0 ? (
-                                                                <TrendingUp className="size-2.5" />
-                                                            ) : (
-                                                                <TrendingDown className="size-2.5" />
-                                                            )}
-                                                            {priceChangePercent}%
-                                                        </span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span
+                                                                className={cn(
+                                                                    "text-[10px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-full",
+                                                                    priceChange >= 0
+                                                                        ? "text-emerald-600 bg-emerald-500/10"
+                                                                        : "text-red-600 bg-red-500/10"
+                                                                )}
+                                                            >
+                                                                {priceChange >= 0 ? (
+                                                                    <TrendingUp className="size-2.5" />
+                                                                ) : (
+                                                                    <TrendingDown className="size-2.5" />
+                                                                )}
+                                                                {priceChangePercent}%
+                                                            </span>
+                                                            <Button
+                                                                size="sm"
+                                                                variant="ghost"
+                                                                className="h-6 px-2 text-[10px] gap-1"
+                                                                onClick={() => openPredictionDialog(product)}
+                                                            >
+                                                                <Sparkles className="h-3 w-3" />
+                                                                Predict
+                                                            </Button>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             );
@@ -847,6 +941,275 @@ export function BlockDetailSheet({ block, open, onOpenChange, warehouseId, floor
                         >
                             <ClipboardList className="h-4 w-4 mr-2" />
                             Generate Picklist
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Price Prediction Dialog */}
+            <Dialog open={predictionOpen} onOpenChange={setPredictionOpen}>
+                <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4" />
+                            ML Price Prediction
+                        </DialogTitle>
+                        <DialogDescription>
+                            Predict price deviation for {selectedProductForPrediction?.name}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="grid gap-4 py-4">
+                        {/* Logistics Form */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-origin-state">Origin State</Label>
+                                <Select
+                                    value={logisticsData.originState || ""}
+                                    onValueChange={(value) =>
+                                        setLogisticsData((prev) => ({ ...prev, originState: value || undefined }))
+                                    }
+                                >
+                                    <SelectTrigger id="pred-origin-state">
+                                        <SelectValue placeholder="Select state" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {INDIAN_STATES.map((state) => (
+                                            <SelectItem key={state} value={state}>
+                                                {state}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-dest-state">Destination State *</Label>
+                                <Select
+                                    value={logisticsData.destState || ""}
+                                    onValueChange={(value) =>
+                                        setLogisticsData((prev) => ({ ...prev, destState: value || undefined }))
+                                    }
+                                >
+                                    <SelectTrigger id="pred-dest-state">
+                                        <SelectValue placeholder="Select state" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {INDIAN_STATES.map((state) => (
+                                            <SelectItem key={state} value={state}>
+                                                {state}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-route-distance">Route Distance (meters) *</Label>
+                                <Input
+                                    id="pred-route-distance"
+                                    type="number"
+                                    placeholder="150000"
+                                    value={logisticsData.routeDistance || ""}
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({
+                                            ...prev,
+                                            routeDistance: parseFloat(e.target.value) || undefined,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-route-type">Route Type *</Label>
+                                <Select
+                                    value={logisticsData.routeType || ""}
+                                    onValueChange={(value) =>
+                                        setLogisticsData((prev) => ({
+                                            ...prev,
+                                            routeType: value as RouteType,
+                                        }))
+                                    }
+                                >
+                                    <SelectTrigger id="pred-route-type">
+                                        <SelectValue placeholder="Select route type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {ROUTE_TYPES.map((type) => (
+                                            <SelectItem key={type.value} value={type.value}>
+                                                {type.label}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-package-weight">Package Weight (kg)</Label>
+                                <Input
+                                    id="pred-package-weight"
+                                    type="number"
+                                    placeholder="10"
+                                    value={logisticsData.packageWeightKg || ""}
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({
+                                            ...prev,
+                                            packageWeightKg: parseFloat(e.target.value) || undefined,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-estimated-duration">Estimated Duration (hours)</Label>
+                                <Input
+                                    id="pred-estimated-duration"
+                                    type="number"
+                                    step="0.1"
+                                    placeholder="5.5"
+                                    value={logisticsData.estimatedDurationHours || ""}
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({
+                                            ...prev,
+                                            estimatedDurationHours: parseFloat(e.target.value) || undefined,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-actual-transit">Actual Transit Hours (optional)</Label>
+                                <Input
+                                    id="pred-actual-transit"
+                                    type="number"
+                                    step="0.1"
+                                    placeholder="6.0"
+                                    value={logisticsData.actualTransitHours || ""}
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({
+                                            ...prev,
+                                            actualTransitHours: parseFloat(e.target.value) || undefined,
+                                        }))
+                                    }
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="pred-delay-hours">Delay Hours</Label>
+                                <Input
+                                    id="pred-delay-hours"
+                                    type="number"
+                                    step="0.1"
+                                    placeholder="0"
+                                    value={logisticsData.delayHours || ""}
+                                    onChange={(e) =>
+                                        setLogisticsData((prev) => ({
+                                            ...prev,
+                                            delayHours: parseFloat(e.target.value) || undefined,
+                                        }))
+                                    }
+                                />
+                            </div>
+                        </div>
+
+                        {/* Prediction Results */}
+                        {prediction && (
+                            <div className="mt-4 p-4 rounded-lg border bg-gradient-to-br from-card to-muted/30 space-y-3">
+                                <div className="flex items-center gap-2 text-sm font-semibold">
+                                    <Sparkles className="h-4 w-4" />
+                                    Prediction Results
+                                </div>
+
+                                <div className="p-3 rounded-lg bg-card border">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-xs text-muted-foreground uppercase tracking-wide">
+                                            Price Deviation
+                                        </span>
+                                        <span
+                                            className={cn(
+                                                "text-lg font-bold flex items-center gap-1",
+                                                prediction.direction === "positive"
+                                                    ? "text-emerald-600"
+                                                    : "text-red-600"
+                                            )}
+                                        >
+                                            {prediction.direction === "positive" ? (
+                                                <TrendingUp className="h-4 w-4" />
+                                            ) : (
+                                                <TrendingDown className="h-4 w-4" />
+                                            )}
+                                            {prediction.deviationRatioPercent}
+                                        </span>
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                        Deviation: {formatCurrency(prediction.deviationINR)}
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div className="p-2 rounded-lg bg-card border">
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+                                            Initial Value
+                                        </div>
+                                        <div className="text-sm font-bold">{formatCurrency(prediction.initialValueINR)}</div>
+                                    </div>
+                                    <div className="p-2 rounded-lg bg-card border">
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+                                            Expected Final Value
+                                        </div>
+                                        <div className="text-sm font-bold">{formatCurrency(prediction.expectedFinalValueINR)}</div>
+                                    </div>
+                                </div>
+
+                                {prediction.predictedReason && (
+                                    <div className="p-2 rounded-lg bg-card border">
+                                        <div className="text-[10px] text-muted-foreground uppercase tracking-wide mb-1">
+                                            Predicted Reason
+                                        </div>
+                                        <div className="text-sm font-semibold capitalize">
+                                            {prediction.predictedReason.replace("_", " ")}
+                                            {prediction.confidence && (
+                                                <span className="text-xs text-muted-foreground ml-2">
+                                                    ({Math.round(prediction.confidence * 100)}% confidence)
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {prediction.pricing && (
+                                    <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/20">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <IndianRupee className="h-3 w-3 text-blue-600" />
+                                            <span className="text-xs font-semibold uppercase tracking-wide text-blue-600">
+                                                Pricing Recommendations
+                                            </span>
+                                        </div>
+                                        <div className="grid grid-cols-3 gap-2 text-xs">
+                                            <div>
+                                                <div className="text-muted-foreground mb-1">Base Cost</div>
+                                                <div className="font-semibold">{formatCurrency(prediction.pricing.baseCost)}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-muted-foreground mb-1">Risk Buffer</div>
+                                                <div className="font-semibold">{formatCurrency(prediction.pricing.riskBuffer)}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-muted-foreground mb-1">Suggested Quote</div>
+                                                <div className="font-bold text-blue-600">{formatCurrency(prediction.pricing.suggestedQuote)}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setPredictionOpen(false)}>Close</Button>
+                        <Button onClick={handlePredict} disabled={isPredicting || !logisticsData.destState || !logisticsData.routeDistance || !logisticsData.routeType}>
+                            {isPredicting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                            Predict Price
                         </Button>
                     </DialogFooter>
                 </DialogContent>

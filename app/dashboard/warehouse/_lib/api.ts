@@ -1,4 +1,4 @@
-import { Warehouse, Floor, Block, Product } from "../_components/types";
+import { Warehouse, Floor, Block, Product, PricePrediction, LogisticsData } from "../_components/types";
 
 const API_BASE = "/api/warehouse";
 
@@ -219,6 +219,56 @@ export async function transferProduct(
         throw new Error(err.message || "Failed to transfer product");
     }
     return res.json();
+}
+
+// ====================
+// Price Prediction API
+// ====================
+
+export async function predictProductPrice(
+    product: Product,
+    logisticsData: LogisticsData,
+    warehouse?: Warehouse
+): Promise<PricePrediction> {
+    const res = await fetch(`${API_BASE}/price-prediction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product, logisticsData, warehouse }),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || err.message || "Failed to predict price");
+    }
+    const data = await res.json();
+    if (!data.success || !data.prediction) {
+        throw new Error(data.error || "Prediction failed");
+    }
+    return data.prediction;
+}
+
+export interface BatchPredictionResult {
+    productId: string;
+    prediction: PricePrediction | null;
+    error?: string;
+}
+
+export async function predictBatchProductPrices(
+    items: Array<{ product: Product; logisticsData: LogisticsData; warehouse?: Warehouse }>
+): Promise<BatchPredictionResult[]> {
+    const res = await fetch(`${API_BASE}/price-prediction`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items }),
+    });
+    if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || err.message || "Failed to predict prices");
+    }
+    const data = await res.json();
+    if (!data.success) {
+        throw new Error(data.error || "Batch prediction failed");
+    }
+    return data.results || [];
 }
 
 // ====================
