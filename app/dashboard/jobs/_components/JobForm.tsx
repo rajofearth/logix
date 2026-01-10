@@ -339,7 +339,7 @@ export function JobForm({
             <SelectContent>
               <SelectItem value="unassigned">Unassigned</SelectItem>
               {availableDrivers.map((driver) => (
-                <SelectItem key={driver.id} value={driver.name}>
+                <SelectItem key={driver.id} value={driver.id}>
                   {driver.name}
                 </SelectItem>
               ))}
