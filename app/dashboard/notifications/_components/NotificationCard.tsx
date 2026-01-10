@@ -5,10 +5,7 @@ import { IconBell, IconCheck, IconReceipt, IconScan, IconSettings, IconTruck, Ic
 import { formatDistanceToNow } from "date-fns"
 
 import type { NotificationDTO } from "../_types"
-import { notificationTypeConfig } from "../_types"
 import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 
 const typeIcons = {
     job: IconTruck,
@@ -30,28 +27,22 @@ export function NotificationCard({
     onDelete,
 }: NotificationCardProps) {
     const [isHovered, setIsHovered] = React.useState(false)
-    const [isDeleting, setIsDeleting] = React.useState(false)
-    const [isMarking, setIsMarking] = React.useState(false)
 
-    const config = notificationTypeConfig[notification.type]
+    // Win7 list items usually don't have separate delete/mark actions on the item itself 
+    // unless it's a context menu, but for UX we keep them.
+    // We will show them on hover, Win7 style (simple icons).
+
     const Icon = typeIcons[notification.type]
 
     const handleMarkAsRead = (e: React.MouseEvent) => {
         e.stopPropagation()
         if (notification.read) return
-        setIsMarking(true)
-        setTimeout(() => {
-            onMarkAsRead(notification.id)
-            setIsMarking(false)
-        }, 200)
+        onMarkAsRead(notification.id)
     }
 
     const handleDelete = (e: React.MouseEvent) => {
         e.stopPropagation()
-        setIsDeleting(true)
-        setTimeout(() => {
-            onDelete(notification.id)
-        }, 300)
+        onDelete(notification.id)
     }
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -62,101 +53,73 @@ export function NotificationCard({
     }
 
     return (
-        <button
-            type="button"
+        <div
+            role="button"
+            tabIndex={0}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             onKeyDown={handleKeyDown}
-            className={cn(
-                "group relative flex gap-3 rounded-lg p-3 transition-all duration-300 ease-out text-left w-full",
-                "hover:bg-muted/50 hover:shadow-sm hover:-translate-y-0.5",
-                "border border-transparent",
-                !notification.read && "bg-primary/5 border-primary/10",
-                isDeleting && "opacity-0 scale-95 h-0 p-0 m-0 overflow-hidden",
-                isMarking && "opacity-70"
-            )}
             onClick={handleMarkAsRead}
+            className={cn(
+                "win7-listbox-item relative group w-full text-left select-none",
+                notification.read ? "opacity-70 grayscale-[0.5]" : "font-medium"
+            )}
         >
-            {/* Icon with unread indicator */}
-            <div className="relative shrink-0">
-                <div
-                    className={cn(
-                        "flex size-10 items-center justify-center rounded-full transition-transform duration-200",
-                        config.iconBgColor,
-                        isHovered && "scale-110"
+            {/* Icon */}
+            <div className="shrink-0 flex items-center justify-center p-1">
+                {/* Use a simple image wrapper or just the icon */}
+                <div className="relative">
+                    <Icon className={cn("size-6",
+                        // In Win7 list items, icons usually keep their color but text changes to white on select.
+                        // Our listbox-item css handles text color helper classes? Not fully.
+                        // Let's force icon color to be visible or white on hover.
+                        "text-[#444] group-hover:text-white"
+                    )} />
+                    {!notification.read && (
+                        <div className="absolute -top-1 -right-1 size-2 rounded-full bg-[#0066cc] border border-white shadow-sm" />
                     )}
-                >
-                    <Icon className={cn("size-5", config.textColor)} />
                 </div>
-                {/* Unread indicator dot - positioned on icon */}
-                {!notification.read && (
-                    <span className="absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary border-2 border-background" />
-                )}
             </div>
 
             {/* Content */}
-            <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                        <p
-                            className={cn(
-                                "text-sm font-medium truncate transition-colors",
-                                notification.read ? "text-muted-foreground" : "text-foreground"
-                            )}
-                        >
-                            {notification.title}
-                        </p>
-                        <Badge
-                            variant="outline"
-                            className={cn(
-                                "shrink-0 text-[10px] px-1.5 py-0",
-                                config.textColor
-                            )}
-                        >
-                            {config.label}
-                        </Badge>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground shrink-0">
+            <div className="flex-1 min-w-0 pr-14 flex flex-col justify-center h-full py-1">
+                <div className="flex items-center gap-2">
+                    <span className="truncate text-sm group-hover:text-white">
+                        {notification.title}
+                    </span>
+                    <span className="text-[10px] text-[#666] group-hover:text-white/80 shrink-0">
                         {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
                     </span>
                 </div>
-
-                <p
-                    className={cn(
-                        "text-xs leading-relaxed transition-colors",
-                        notification.read ? "text-muted-foreground/70" : "text-muted-foreground"
-                    )}
-                >
+                <p className="text-xs text-[#555] group-hover:text-white/90 truncate leading-tight">
                     {notification.message}
                 </p>
             </div>
 
-            {/* Actions - revealed on hover */}
+            {/* Hover Actions (Win7 style: usually visible on selection) */}
             <div
                 className={cn(
-                    "absolute right-2 top-2 flex gap-1 transition-all duration-200",
-                    isHovered ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+                    "absolute right-2 top-1/2 -translate-y-1/2 flex gap-1",
+                    isHovered ? "opacity-100" : "opacity-0"
                 )}
             >
                 {!notification.read && (
-                    <Button
-                        variant="ghost"
-                        size="icon-sm"
+                    <button
                         onClick={handleMarkAsRead}
-                        className="size-6 hover:bg-primary/10 hover:text-primary"
+                        title="Mark as read"
+                        className="size-6 flex items-center justify-center rounded border border-transparent hover:border-[#fff9] hover:bg-[#ffffff33] text-[#444] group-hover:text-white"
                     >
-                        <IconCheck className="size-3.5" />
-                    </Button>
+                        <IconCheck className="size-4" />
+                    </button>
                 )}
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
+                <button
                     onClick={handleDelete}
-                    className="size-6 hover:bg-destructive/10 hover:text-destructive"
+                    title="Dismiss"
+                    className="size-6 flex items-center justify-center rounded border border-transparent hover:border-[#fff9] hover:bg-[#ffffff33] text-[#444] group-hover:text-white"
                 >
-                    <IconX className="size-3.5" />
-                </Button>
+                    <IconX className="size-4" />
+                </button>
             </div>
-        </button>
+        </div>
     )
 }
