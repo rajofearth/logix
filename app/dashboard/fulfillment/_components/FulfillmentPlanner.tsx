@@ -140,8 +140,8 @@ export function FulfillmentPlanner() {
   }, [plan, segmentDialog, processNextSegment])
 
   return (
-    <div className="px-4 lg:px-6">
-      <div className="mb-4 flex items-center justify-end">
+    <div>
+      <div className="win7-mb-4 flex items-center justify-end">
         <Button
           variant="outline"
           onClick={() => router.push("/dashboard/fulfillment/history")}
@@ -151,7 +151,8 @@ export function FulfillmentPlanner() {
           View History
         </Button>
       </div>
-      <div className="grid gap-4 lg:grid-cols-[420px_1fr]">
+
+      <div className="grid gap-4 lg:grid-cols-[440px_1fr]">
         <Card className="p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
