@@ -11,10 +11,12 @@ import {
 } from "@tabler/icons-react";
 import { REAL_AIRPORTS } from "@/lib/carriers/carriers-data";
 import { createShipment } from "../_server/actions";
+import { useShipmentForm } from "../_context/ShipmentFormContext";
 
 
 export function ShipmentForm() {
     const router = useRouter();
+    const { fromIcao, toIcao, setFromIcao, setToIcao } = useShipmentForm();
     const [isLoading, setIsLoading] = React.useState(false);
     const [error, setError] = React.useState<string | null>(null);
 
@@ -23,8 +25,6 @@ export function ShipmentForm() {
     const [description, setDescription] = React.useState("");
 
     // Combobox states
-    const [fromIcao, setFromIcao] = React.useState<string | null>(null);
-    const [toIcao, setToIcao] = React.useState<string | null>(null);
     const [fromQuery, setFromQuery] = React.useState("");
     const [toQuery, setToQuery] = React.useState("");
 
