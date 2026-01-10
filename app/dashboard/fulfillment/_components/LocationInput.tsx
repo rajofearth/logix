@@ -37,7 +37,7 @@ export function LocationInput({
   const [suggestions, setSuggestions] = React.useState<Suggestion[]>([])
   const [isOpen, setIsOpen] = React.useState(false)
   const [isLoading, setIsLoading] = React.useState(false)
-  
+
   // Generate UUIDv4 for session token
   const generateSessionToken = (): string => {
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
@@ -46,7 +46,7 @@ export function LocationInput({
       return v.toString(16)
     })
   }
-  
+
   const sessionTokenRef = React.useRef<string>(generateSessionToken())
 
   const inputRef = React.useRef<HTMLInputElement>(null)
@@ -178,8 +178,7 @@ export function LocationInput({
                   onMouseDown={(e) => e.preventDefault()} // Prevent input blur
                   className={cn(
                     "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-                    "hover:bg-accent hover:text-accent-foreground",
-                    "focus:bg-accent focus:text-accent-foreground"
+                    "win7-autocomplete-item"
                   )}
                 >
                   <div className="flex flex-col gap-1">

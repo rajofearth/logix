@@ -1632,3 +1632,20 @@
 .win7-notification-item.unread {
   font-weight: 600;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   🔍 AUTOCOMPLETE / DROPDOWN ITEMS
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.win7-autocomplete-item {
+  border: 1px solid transparent;
+  cursor: default;
+}
+
+.win7-autocomplete-item:hover,
+.win7-autocomplete-item:focus,
+.win7-autocomplete-item[data-highlighted] {
+  background: var(--w7-li-bg-hl);
+  border-color: var(--w7-li-bd-hl);
+  color: #000 !important;
+}
